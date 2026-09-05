@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,6 +64,11 @@ def health_check():
         "service": "ATM_CORE_GATEWAY",
         "mock_hardware": serial_controller.mock_mode
     }
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    from fastapi import Response
+    return Response(status_code=204)
 
 @app.get("/")
 def root():

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { WelcomeAuthView } from "./views/WelcomeAuthView";
 import { UserDashboardView } from "./views/UserDashboardView";
 import { AdminConsoleView } from "./views/AdminConsoleView";
+import { WindowBar } from "./components/WindowBar";
 
 export function App() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
@@ -51,22 +52,28 @@ export function App() {
   };
 
   return (
-    <div className="w-screen h-screen bg-discord-base overflow-hidden relative">
-      {/* Toast notification for hardware events */}
-      {wsNotification && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-2xl bg-discord-surface border border-discord-blurple text-white font-bold text-sm shadow-kiosk flex items-center gap-3 animate-bounce">
-          <div className="w-2.5 h-2.5 rounded-full bg-discord-green animate-ping" />
-          <span>{wsNotification}</span>
-        </div>
-      )}
+    <div className="w-screen h-screen bg-discord-base overflow-hidden relative flex flex-col">
+      {/* Top Window Bar: Modo Ventana / Pantalla Completa & Controls */}
+      <WindowBar />
 
-      {!currentUser ? (
-        <WelcomeAuthView onLoginSuccess={handleLoginSuccess} />
-      ) : isAdminSession ? (
-        <AdminConsoleView adminUser={currentUser} onLogout={handleLogout} />
-      ) : (
-        <UserDashboardView user={currentUser} onLogout={handleLogout} />
-      )}
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden relative">
+        {/* Toast notification for hardware events */}
+        {wsNotification && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-2xl bg-discord-surface border border-discord-blurple text-white font-bold text-sm shadow-kiosk flex items-center gap-3 animate-bounce">
+            <div className="w-2.5 h-2.5 rounded-full bg-discord-green animate-ping" />
+            <span>{wsNotification}</span>
+          </div>
+        )}
+
+        {!currentUser ? (
+          <WelcomeAuthView onLoginSuccess={handleLoginSuccess} />
+        ) : isAdminSession ? (
+          <AdminConsoleView adminUser={currentUser} onLogout={handleLogout} />
+        ) : (
+          <UserDashboardView user={currentUser} onLogout={handleLogout} />
+        )}
+      </div>
     </div>
   );
 }

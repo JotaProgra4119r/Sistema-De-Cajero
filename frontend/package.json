@@ -8,8 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "electron:dev": "electron .",
-    "electron:build": "vite build && electron ."
+    "start": "electron .",
+    "electron": "electron .",
+    "electron:dev": "electron . --dev"
   },
   "dependencies": {
     "react": "^19.2.8",
