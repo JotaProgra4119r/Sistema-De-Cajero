@@ -1,0 +1,84 @@
+﻿import asyncio
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from backend.app.core.config import settings
+from backend.app.db.init_db import init_db
+from backend.app.db.database import SessionLocal
+from backend.app.storage_txt.txt_manager import txt_manager
+from backend.app.hardware.serial_controller import serial_controller
+from backend.app.api.ws import ws_manager
+from backend.app.api import auth, user, admin, hardware, ws
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("==================================================")
+    print("   INICIANDO BACKEND SISTEMA BANCARIO CAJERO ATM  ")
+    print("==================================================")
+    init_db()
+    
+    # Sync txt files from DB on startup
+    db = SessionLocal()
+    try:
+        await txt_manager.sync_all_from_db(db)
+        print("[STORAGE] Persistencia dual sincronizada en ./data/storage_txt/")
+    finally:
+        db.close()
+
+    # Hook hardware events into WebSocket broadcast
+    def on_hardware_event(evt):
+        asyncio.create_task(ws_manager.broadcast(evt))
+    serial_controller.register_callback(on_hardware_event)
+
+    yield
+    print("[BACKEND] Apagando servicios bancarios.")
+
+app = FastAPI(
+    title="Sistema Bancario y Cajero Automático Embebido API",
+    description="API Gateway y Motor Transaccional para Kiosco ATM y Hardware Embebido (Arduino/ESP32)",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# CORS configuration for Electron / React Kiosk
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount API Routers
+app.include_router(auth.router)
+app.include_router(user.router)
+app.include_router(admin.router)
+app.include_router(hardware.router)
+app.include_router(ws.router)
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ONLINE",
+        "service": "ATM_CORE_GATEWAY",
+        "mock_hardware": serial_controller.mock_mode
+    }
+
+@app.get("/")
+def root():
+    return {
+        "name": "ATM Banking System Core API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "backend.main:app",
+        host=settings.API_HOST,
+        port=settings.API_PORT,
+        reload=False
+    )
