@@ -109,3 +109,4 @@ El repositorio incorpora la herramienta de análisis estático multiagente **Gra
 * [ANALISIS_DISENO_EPS.md](file:///docs/ANALISIS_DISENO_EPS.md): Matrices de Entradas, Procesos y Salidas para las 10 operaciones.
 * [MANUAL_TECNICO.md](file:///docs/MANUAL_TECNICO.md): Arquitectura, esquemas DDL, protocolos serie y diagramas Mermaid.
 * [MANUAL_USUARIO.md](file:///docs/MANUAL_USUARIO.md): Guía paso a paso ilustrada para el usuario y el administrador.
+* [GUIA_GITHUB_Y_RAMAS.md](file:///docs/GUIA_GITHUB_Y_RAMAS.md): Guía de flujo de trabajo GitFlow, ramas modulares y protección de CI/CD para el equipo.
