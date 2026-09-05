@@ -88,6 +88,22 @@ Cobertura de pruebas incluidas:
 
 ---
 
+## 🤖 Herramientas de Soporte Multiagente (Graphify)
+
+El repositorio incorpora la herramienta de análisis estático multiagente **Graphify**:
+* **Función:** Mapea el repositorio generando un grafo de dependencias determinista mediante **AST Tree-sitter** (sin consumo de tokens LLM en el análisis de código) y agrupa los módulos en comunidades conceptuales mediante el algoritmo de **Leiden**.
+* **Instalación y uso:**
+  ```bash
+  uv tool install graphifyy
+  graphify extract . --code-only
+  graphify cluster-only .
+  ```
+* **Archivos resultantes:**
+  * `graphify-out/GRAPH_REPORT.md`: Reporte estructural con comunidades de código, hubs principales y grados de centralidad (306 nodos, 553 aristas, 27 comunidades).
+  * `graphify-out/graph.json`: Estructura serializada de grafo transferible a agentes de IA para inyectar únicamente el contexto relevante de clases e interfaces, logrando **un ahorro de hasta un 70% en consumo de tokens**.
+
+---
+
 ## 📂 Documentación Completa del Proyecto
 
 * [ANALISIS_DISENO_EPS.md](file:///docs/ANALISIS_DISENO_EPS.md): Matrices de Entradas, Procesos y Salidas para las 10 operaciones.

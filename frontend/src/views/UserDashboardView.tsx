@@ -140,6 +140,38 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     setFeedbackMessage(null);
   };
 
+  // Auto-distribute greedy denomination breakdown for requested amount
+  const handleAutoDistribute = () => {
+    resetInactivity();
+    const amt = parseFloat(requestedAmount) || 0;
+    if (amt <= 0) {
+      setFeedbackMessage({ type: "error", text: "Ingrese un monto mayor a 0 para desglosar." });
+      return;
+    }
+    let rem = amt;
+    const newBills: Record<number, number> = { 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 };
+    for (const d of DENOMINATIONS) {
+      const stock = userSummary.stock_boveda ? userSummary.stock_boveda[d] : 99;
+      if (rem >= d && stock > 0) {
+        const count = Math.min(Math.floor(rem / d), stock);
+        newBills[d] = count;
+        rem -= count * d;
+      }
+    }
+    setSelectedBills(newBills);
+    if (rem > 0) {
+      setFeedbackMessage({
+        type: "error",
+        text: `No hay suficientes billetes en bóveda para desglosar exactamente Q${amt}.00 (remanente: Q${rem.toFixed(2)}).`
+      });
+    } else {
+      setFeedbackMessage({
+        type: "success",
+        text: `Desglose automático de Q${amt}.00 calculado con éxito.`
+      });
+    }
+  };
+
   // Execute Withdrawal
   const handleExecuteWithdrawal = async () => {
     resetInactivity();
@@ -218,15 +250,15 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   const strokeDashoffset = 251.2 * (1 - usedRatio);
 
   return (
-    <div className="w-screen h-screen flex flex-col justify-between bg-discord-base p-6 text-discord-textNormal select-none">
+    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-4 lg:p-5 text-discord-textNormal select-none overflow-hidden">
       {/* Top Bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-discord-surface">
+      <div className="flex items-center justify-between pb-3 border-b border-discord-surface flex-shrink-0">
         <div className="flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-discord-blurple flex items-center justify-center shadow-glow">
-            <Wallet className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-discord-blurple flex items-center justify-center shadow-glow">
+            <Wallet className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-discord-textPure tracking-wide">
+            <h1 className="text-lg font-black text-discord-textPure tracking-wide">
               Área de Autoservicio Bancario
             </h1>
             <p className="text-xs text-discord-textMuted">
@@ -236,8 +268,8 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         </div>
 
         {/* Inactivity & Logout */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-discord-surface border border-discord-hover text-xs font-mono">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-discord-surface border border-discord-hover text-xs font-mono">
             <span className="text-discord-textMuted">Inactividad:</span>
             <span className={`font-bold ${secondsRemaining <= 15 ? "text-discord-red animate-pulse" : "text-discord-amber"}`}>
               {secondsRemaining}s
@@ -247,7 +279,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           <button
             type="button"
             onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white border border-discord-red font-bold text-xs transition-all shadow-sm"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white border border-discord-red font-bold text-xs transition-all shadow-sm active:scale-95"
           >
             <LogOut className="w-4 h-4" />
             <span>Cerrar Sesión</span>
@@ -256,26 +288,26 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
       </div>
 
       {/* Main 3-Column Grid */}
-      <div className="grid grid-cols-12 gap-6 my-auto items-stretch h-[calc(100vh-130px)]">
+      <div className="grid grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-hidden my-2">
         {/* COLUMN 1 (Left, 3 cols) */}
-        <div className="col-span-3 flex flex-col justify-between p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk">
+        <div className="col-span-3 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
               Saldo Contable Disponible
             </div>
-            <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover shadow-inner">
+            <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover shadow-inner">
               <div className="text-xs font-semibold text-discord-textMuted">Fondos en Cuenta (Q.):</div>
-              <div className="text-3xl font-black text-discord-green tracking-tight font-mono mt-1">
+              <div className="text-2xl font-black text-discord-green tracking-tight font-mono mt-1">
                 Q{userSummary.saldo_actual?.toFixed(2) || "0.00"}
               </div>
             </div>
 
             {/* Circular Progress Gauge */}
-            <div className="mt-6 p-4 rounded-xl bg-discord-sidebar/60 border border-discord-hover text-center">
-              <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-3">
+            <div className="mt-4 p-3 rounded-xl bg-discord-sidebar/60 border border-discord-hover text-center">
+              <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
                 Cupo Diario de Retiro
               </div>
-              <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
+              <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" stroke="#2F3136" strokeWidth="10" fill="transparent" />
                   <circle
@@ -292,23 +324,23 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-black text-white font-mono">
+                  <span className="text-lg font-black text-white font-mono">
                     {Math.round(usedRatio * 100)}%
                   </span>
-                  <span className="text-[10px] text-discord-textMuted uppercase font-bold">Consumido</span>
+                  <span className="text-[9px] text-discord-textMuted uppercase font-bold">Consumido</span>
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 text-left pt-3 border-t border-discord-hover">
+              <div className="mt-3 grid grid-cols-2 gap-2 text-left pt-2 border-t border-discord-hover">
                 <div>
                   <div className="text-[10px] text-discord-textMuted">Retirado hoy:</div>
-                  <div className="text-sm font-bold font-mono text-discord-amber">
+                  <div className="text-xs font-bold font-mono text-discord-amber">
                     Q{userSummary.total_retirado_hoy?.toFixed(2) || "0.00"}
                   </div>
                 </div>
                 <div>
                   <div className="text-[10px] text-discord-textMuted">Cupo restante:</div>
-                  <div className="text-sm font-bold font-mono text-discord-green">
+                  <div className="text-xs font-bold font-mono text-discord-green">
                     Q{userSummary.cupo_disponible?.toFixed(2) || "0.00"}
                   </div>
                 </div>
@@ -317,76 +349,76 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           </div>
 
           {/* Tab Selector */}
-          <div className="space-y-2 mt-4">
+          <div className="space-y-2 mt-3">
             <button
               type="button"
               onClick={() => { setActiveTab("withdraw"); setFeedbackMessage(null); resetInactivity(); }}
-              className={`w-full py-3 px-4 rounded-xl text-left font-bold text-sm flex items-center gap-3 transition-all ${
+              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
                 activeTab === "withdraw"
                   ? "bg-discord-blurple text-white shadow-md"
                   : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
               }`}
             >
-              <ArrowDownRight className="w-5 h-5" />
+              <ArrowDownRight className="w-4 h-4" />
               <span>Retiro Personalizado</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveTab("deposit"); setFeedbackMessage(null); resetInactivity(); }}
-              className={`w-full py-3 px-4 rounded-xl text-left font-bold text-sm flex items-center gap-3 transition-all ${
+              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
                 activeTab === "deposit"
                   ? "bg-discord-green text-black font-extrabold shadow-md"
                   : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
               }`}
             >
-              <ArrowUpRight className="w-5 h-5" />
+              <ArrowUpRight className="w-4 h-4" />
               <span>Depósito Desglosado</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveTab("pin"); setFeedbackMessage(null); resetInactivity(); }}
-              className={`w-full py-3 px-4 rounded-xl text-left font-bold text-sm flex items-center gap-3 transition-all ${
+              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
                 activeTab === "pin"
                   ? "bg-discord-amber text-black font-extrabold shadow-md"
                   : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
               }`}
             >
-              <KeyRound className="w-5 h-5" />
+              <KeyRound className="w-4 h-4" />
               <span>Actualizar PIN</span>
             </button>
           </div>
         </div>
 
         {/* COLUMN 2 (Center, 6 cols) */}
-        <div className="col-span-6 flex flex-col justify-between p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
+        <div className="col-span-6 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-hidden">
           {feedbackMessage && (
             <div
-              className={`p-3.5 mb-4 rounded-xl border flex items-center gap-3 text-sm font-medium animate-shake ${
+              className={`p-2.5 mb-2.5 rounded-xl border flex items-center gap-2 text-xs font-medium animate-shake flex-shrink-0 ${
                 feedbackMessage.type === "success"
                   ? "bg-discord-green/20 border-discord-green text-discord-green"
                   : "bg-discord-red/20 border-discord-red text-discord-red"
               }`}
             >
-              {feedbackMessage.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+              {feedbackMessage.type === "success" ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
               <span>{feedbackMessage.text}</span>
             </div>
           )}
 
           {activeTab === "withdraw" && (
-            <div className="flex flex-col justify-between h-full">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-black text-white flex items-center gap-2">
+            <div className="flex flex-col justify-between h-full overflow-hidden">
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="flex items-center justify-between mb-2 flex-shrink-0">
+                  <h2 className="text-base font-black text-white flex items-center gap-2">
                     <Banknote className="w-5 h-5 text-discord-blurple" />
                     <span>Monto de Retiro Arbitrario No Estandarizado</span>
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-12 gap-3 mb-4">
-                  <div className="col-span-7 flex items-center bg-discord-sidebar px-4 py-2.5 rounded-xl border border-discord-hover">
-                    <span className="text-2xl font-black text-discord-green mr-2">Q.</span>
+                <div className="grid grid-cols-12 gap-2 mb-2 flex-shrink-0">
+                  <div className="col-span-6 flex items-center bg-discord-sidebar px-3 py-2 rounded-xl border border-discord-hover">
+                    <span className="text-xl font-black text-discord-green mr-1.5">Q.</span>
                     <input
                       type="number"
                       value={requestedAmount}
@@ -394,46 +426,82 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                         setRequestedAmount(e.target.value);
                         resetInactivity();
                       }}
-                      className="w-full bg-transparent font-mono text-2xl font-black text-white focus:outline-none"
+                      className="w-full bg-transparent font-mono text-xl font-black text-white focus:outline-none"
                       placeholder="0.00"
                     />
                   </div>
-                  <div className="col-span-5 grid grid-cols-2 gap-1.5">
+                  <div className="col-span-6 grid grid-cols-4 gap-1">
                     <button
                       type="button"
                       onClick={() => setPresetAmount(123, true)}
-                      className="px-2 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-cyan-300 border border-cyan-800 transition-all"
+                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-cyan-300 border border-cyan-800 transition-all text-center"
                     >
-                      ⚡ Q123.00
+                      ⚡ Q123
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(239, true)}
-                      className="px-2 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-amber-300 border border-amber-800 transition-all"
+                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-amber-300 border border-amber-800 transition-all text-center"
                     >
-                      ⚡ Q239.00
+                      ⚡ Q239
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(500, true)}
-                      className="px-2 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-white border border-discord-hover transition-all"
+                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-white border border-discord-hover transition-all text-center"
                     >
                       Q500
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(1000, true)}
-                      className="px-2 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-white border border-discord-hover transition-all"
+                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-white border border-discord-hover transition-all text-center"
                     >
                       Q1000
                     </button>
                   </div>
                 </div>
 
-                <div className="text-xs font-bold text-discord-textMuted uppercase tracking-wider mb-2">
-                  Selector Táctil de Billetes Oficiales (Quetzales):
+                {/* Intelligent Auto-Breakdown & Status bar */}
+                <div className="flex items-center justify-between gap-2 p-2 mb-2 rounded-xl bg-discord-sidebar/80 border border-discord-hover text-xs flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleAutoDistribute}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold transition-all shadow-sm active:scale-95"
+                    >
+                      <span>⚡ Desglose Automático</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
+                        setFeedbackMessage(null);
+                        resetInactivity();
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-hover text-gray-300 font-semibold border border-discord-hover transition-all"
+                    >
+                      Limpiar
+                    </button>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-discord-textMuted mr-1">Seleccionado:</span>
+                    <span className={`font-mono font-bold ${amountsMatch ? "text-discord-green" : "text-discord-amber"}`}>
+                      Q{totalSelectedWithdraw.toFixed(2)}
+                    </span>
+                    <span className="text-discord-textMuted mx-1">/</span>
+                    <span className="font-mono text-white font-bold">
+                      Q{parsedRequestedAmount.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+
+                <div className="text-[10px] font-bold text-discord-textMuted uppercase tracking-wider mb-1.5 flex-shrink-0">
+                  Selector Táctil de Billetes Oficiales (7 Denominaciones):
+                </div>
+
+                {/* 7 Bills Grid without awkward cutoff */}
+                <div className="grid grid-cols-2 gap-2 flex-1 min-h-0 overflow-y-auto pr-1 pb-1">
                   {DENOMINATIONS.map((d) => (
                     <QuetzalBillCard
                       key={d}

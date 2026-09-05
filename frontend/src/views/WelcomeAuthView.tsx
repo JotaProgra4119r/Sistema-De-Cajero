@@ -131,7 +131,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   };
 
   return (
-    <div className="w-screen h-screen flex flex-col justify-between bg-discord-base p-8 text-discord-textNormal select-none">
+    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-6 text-discord-textNormal select-none overflow-hidden">
       {/* Top Header Bar */}
       <div className="flex items-center justify-between pb-4 border-b border-discord-surface">
         <div className="flex items-center gap-3">

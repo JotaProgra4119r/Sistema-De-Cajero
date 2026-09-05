@@ -18,7 +18,6 @@ declare global {
 
 export const WindowBar: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const isElectron = Boolean(window.electronAPI?.isElectron);
 
   useEffect(() => {
     // Listen to Electron state changes
@@ -84,7 +83,10 @@ export const WindowBar: React.FC = () => {
   };
 
   return (
-    <header className="w-full bg-[#1e1f22] border-b border-[#2b2d31] px-4 py-1.5 flex items-center justify-between text-xs select-none z-50">
+    <header
+      style={{ WebkitAppRegion: "drag" } as any}
+      className="w-full bg-[#1e1f22] border-b border-[#2b2d31] px-4 py-2 flex items-center justify-between text-xs select-none z-50 h-9"
+    >
       {/* Brand / Mode info */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
@@ -109,10 +111,11 @@ export const WindowBar: React.FC = () => {
         </span>
       </div>
 
-      {/* Mode Switchers and Window Controls */}
-      <div className="flex items-center gap-2">
+      {/* Mode Switchers and Window Controls (no-drag) */}
+      <div style={{ WebkitAppRegion: "no-drag" } as any} className="flex items-center gap-2">
         {/* Switch to Windowed Mode */}
         <button
+          type="button"
           onClick={handleSetWindowed}
           title="Cambiar a Modo Ventana"
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
@@ -127,6 +130,7 @@ export const WindowBar: React.FC = () => {
 
         {/* Switch to Fullscreen Mode */}
         <button
+          type="button"
           onClick={handleToggleFullscreen}
           title="Cambiar a Pantalla Completa (F11)"
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
@@ -139,32 +143,33 @@ export const WindowBar: React.FC = () => {
           <span>{isFullscreen ? "Salir Completa" : "Pantalla Completa"}</span>
         </button>
 
-        {/* Electron Window Actions */}
-        {isElectron && (
-          <div className="flex items-center ml-2 border-l border-[#35373c] pl-2 gap-1">
-            <button
-              onClick={handleMinimize}
-              title="Minimizar"
-              className="p-1.5 rounded hover:bg-[#35373c] text-gray-400 hover:text-white transition-colors"
-            >
-              <Minus className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={handleMaximize}
-              title="Maximizar / Restaurar"
-              className="p-1.5 rounded hover:bg-[#35373c] text-gray-400 hover:text-white transition-colors"
-            >
-              <Square className="w-3 h-3" />
-            </button>
-            <button
-              onClick={handleClose}
-              title="Cerrar Aplicación"
-              className="p-1.5 rounded hover:bg-discord-red text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+        {/* Window Actions */}
+        <div className="flex items-center ml-2 border-l border-[#35373c] pl-2 gap-1">
+          <button
+            type="button"
+            onClick={handleMinimize}
+            title="Minimizar"
+            className="p-1.5 rounded hover:bg-[#35373c] text-gray-400 hover:text-white transition-colors"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleMaximize}
+            title="Maximizar / Restaurar"
+            className="p-1.5 rounded hover:bg-[#35373c] text-gray-400 hover:text-white transition-colors"
+          >
+            <Square className="w-3 h-3" />
+          </button>
+          <button
+            type="button"
+            onClick={handleClose}
+            title="Cerrar Aplicación"
+            className="p-1.5 rounded hover:bg-discord-red text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </header>
   );

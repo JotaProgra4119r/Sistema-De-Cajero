@@ -170,3 +170,31 @@ Cada mutación contable u operativa ejecuta simultáneamente una escritura en My
   `ID_LOG|TIMESTAMP|ID_USUARIO|ACCION|DETALLES`
 
 El gestor `TxtStorageManager` utiliza un `asyncio.Lock()` para evitar condiciones de carrera (*race conditions*) en escenarios de concurrencia elevada.
+
+---
+
+### 5. Herramientas de Soporte Multiagente (Graphify)
+
+Para habilitar flujos de trabajo colaborativos entre agentes de inteligencia artificial y desarrolladores sin sobrecargar los contextos de token, el sistema integra **Graphify**:
+
+* **Principio de Operación:**
+  * Mapea determinísticamente todo el árbol sintáctico abstracto (AST) del repositorio utilizando **Tree-sitter** (sin consumo de tokens LLM).
+  * Detecta dependencias funcionales, imports cruzados, herencias y firmas de métodos en Python, TypeScript y JSON.
+  * Agrupa el código en comunidades lógicas y conceptuales mediante el algoritmo de particionamiento modular de **Leiden**.
+
+* **Ejecución y Comandos:**
+  ```bash
+  # Instalación global de la herramienta con uv
+  uv tool install graphifyy
+
+  # Extracción determinista de AST en modo sólo código (sin API keys)
+  graphify extract . --code-only
+
+  # Agrupación modular en comunidades e informes
+  graphify cluster-only .
+  ```
+
+* **Artefactos Producidos (`graphify-out/`):**
+  * `graphify-out/GRAPH_REPORT.md`: Diagnóstico arquitectónico con identificación de **God Nodes** (`BankingService` con 32 conexiones, `Usuario` con 25 conexiones), comunidades de código y ciclos de importación.
+  * `graphify-out/graph.json`: Grafo dirigido serializado (306 nodos, 553 aristas y 27 comunidades) listo para transferirse a agentes de soporte para inyectar únicamente el contexto pertinente, ahorrando hasta un 70% en tokens de prompt.
+  * `graphify-out/graph.html`: Visualizador interactivo D3 en navegador del mapa completo del proyecto.

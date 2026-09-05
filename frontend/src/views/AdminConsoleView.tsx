@@ -160,9 +160,9 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
   };
 
   return (
-    <div className="w-screen h-screen flex bg-discord-base text-discord-textNormal select-none overflow-hidden">
+    <div className="w-full h-full flex bg-discord-base text-discord-textNormal select-none overflow-hidden">
       {/* LEFT NAVIGATION RAIL */}
-      <div className="w-64 bg-discord-sidebar flex flex-col justify-between p-4 border-r border-discord-hover">
+      <div className="w-64 bg-discord-sidebar flex flex-col justify-between p-4 border-r border-discord-hover h-full flex-shrink-0">
         <div>
           <div className="flex items-center gap-3 pb-4 border-b border-discord-hover">
             <div className="w-10 h-10 rounded-xl bg-discord-amber flex items-center justify-center text-black font-black text-xl shadow-md">
@@ -244,17 +244,17 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
           </nav>
         </div>
 
-        <div className="pt-4 border-t border-discord-hover">
-          <div className="text-xs text-discord-textMuted mb-2 truncate">
+        <div className="pt-3 pb-2 border-t border-discord-hover flex flex-col gap-2 flex-shrink-0">
+          <div className="text-xs text-discord-textMuted truncate">
             Administrador: <span className="text-white font-bold">{adminUser.nombre_completo}</span>
           </div>
           <button
             type="button"
             onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white font-bold text-xs transition-all"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white font-bold text-sm transition-all shadow-sm active:scale-95"
           >
             <LogOut className="w-4 h-4" />
-            <span>Salir a Bienvenida</span>
+            <span>Cerrar Sesión</span>
           </button>
         </div>
       </div>

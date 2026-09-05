@@ -13,7 +13,7 @@ function createWindow() {
     center: true,
     fullscreen: false,
     kiosk: false,
-    frame: true, // Standard window frame so user can resize and move
+    frame: false, // Frameless window to avoid duplicate OS title bar; uses Discord-style WindowBar
     autoHideMenuBar: true,
     backgroundColor: "#202225",
     webPreferences: {

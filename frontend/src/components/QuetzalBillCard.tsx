@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Plus, Minus, Banknote } from "lucide-react";
 
 export interface BillConfig {
@@ -100,21 +100,21 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col justify-between p-3.5 rounded-xl border bg-gradient-to-b ${cfg.bgGradient} ${cfg.borderColor} transition-all shadow-md ${
+      className={`relative flex flex-col justify-between p-2.5 rounded-xl border bg-gradient-to-b ${cfg.bgGradient} ${cfg.borderColor} transition-all shadow-md ${
         count > 0 ? "ring-2 ring-discord-blurple shadow-glow" : ""
       }`}
     >
       {/* Top row: Denomination preview & Available stock */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-discord-surface/80 border border-discord-hover">
-            <Banknote className="w-5 h-5 text-discord-textPure" />
+          <div className="p-1.5 rounded-lg bg-discord-surface/80 border border-discord-hover">
+            <Banknote className="w-4 h-4 text-discord-textPure" />
           </div>
           <div>
-            <div className="font-extrabold text-xl text-discord-textPure tracking-wide">
+            <div className="font-extrabold text-lg text-discord-textPure tracking-wide leading-tight">
               {cfg.label}
             </div>
-            <div className="text-[11px] text-discord-textMuted truncate max-w-[110px]">
+            <div className="text-[10px] text-discord-textMuted truncate max-w-[100px]">
               {cfg.sublabel}
             </div>
           </div>
@@ -123,7 +123,7 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
         {/* Available stock pill */}
         <div className="text-right">
           <span
-            className={`inline-block px-2 py-0.5 text-[11px] font-semibold rounded-md border ${
+            className={`inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded border ${
               isStockEmpty
                 ? "bg-red-950/60 text-red-400 border-red-800"
                 : cfg.badgeColor
@@ -132,7 +132,7 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
             Disp: {stock}
           </span>
           {count > 0 && (
-            <div className="text-xs font-bold text-discord-green mt-0.5">
+            <div className="text-xs font-bold text-discord-green">
               Q{(denom * count).toFixed(2)}
             </div>
           )}
@@ -140,36 +140,36 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
       </div>
 
       {/* Stepper controls */}
-      <div className="flex items-center justify-between mt-3.5 pt-2 border-t border-discord-surface/80">
+      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-discord-surface/80">
         <button
           type="button"
           onClick={onDecrement}
           disabled={count <= 0 || disabled}
-          className={`w-12 h-12 flex items-center justify-center rounded-xl font-bold text-xl transition-all active:scale-95 border ${
+          className={`w-9 h-9 flex items-center justify-center rounded-lg font-bold text-base transition-all active:scale-95 border ${
             count > 0
               ? "bg-discord-surface hover:bg-discord-hover text-white border-discord-hover"
               : "bg-discord-surface/40 text-gray-600 border-transparent cursor-not-allowed"
           }`}
         >
-          <Minus className="w-5 h-5" />
+          <Minus className="w-4 h-4" />
         </button>
 
         <div className="flex flex-col items-center">
-          <span className="text-2xl font-black text-white">{count}</span>
-          <span className="text-[10px] text-discord-textMuted uppercase tracking-wider">piezas</span>
+          <span className="text-xl font-black text-white leading-none">{count}</span>
+          <span className="text-[9px] text-discord-textMuted uppercase tracking-wider">piezas</span>
         </div>
 
         <button
           type="button"
           onClick={onIncrement}
           disabled={!canIncrement}
-          className={`w-12 h-12 flex items-center justify-center rounded-xl font-bold text-xl transition-all active:scale-95 border ${
+          className={`w-9 h-9 flex items-center justify-center rounded-lg font-bold text-base transition-all active:scale-95 border ${
             canIncrement
               ? "bg-discord-blurple hover:bg-discord-blurpleHover text-white shadow-sm"
               : "bg-discord-surface/40 text-gray-600 border-transparent cursor-not-allowed"
           }`}
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
         </button>
       </div>
     </div>
