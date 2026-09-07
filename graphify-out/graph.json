@@ -1867,7 +1867,7 @@
     },
     {
       "id": "backend_app_api_auth_rationale_24",
-      "label": "Endpoint de conveniencia para visualizar el token din\u00e1mico de seguridad actual\u2026",
+      "label": "Endpoint de conveniencia para visualizar el token dinámico de seguridad actual…",
       "_origin": "ast",
       "community": 0,
       "community_name": "generate_totp_token",
@@ -1889,7 +1889,7 @@
     },
     {
       "id": "backend_app_core_security_rationale_43",
-      "label": "Verifies TOTP token with clock-drift window (current and previous step) and\u2026",
+      "label": "Verifies TOTP token with clock-drift window (current and previous step) and…",
       "_origin": "ast",
       "community": 0,
       "community_name": "generate_totp_token",
@@ -1922,7 +1922,7 @@
     },
     {
       "id": "backend_tests_test_banking_rationale_194",
-      "label": "Verifies that consuming the same TOTP token twice triggers an anti-replay\u2026",
+      "label": "Verifies that consuming the same TOTP token twice triggers an anti-replay…",
       "_origin": "ast",
       "community": 0,
       "community_name": "generate_totp_token",
@@ -1933,7 +1933,7 @@
     },
     {
       "id": "backend_tests_test_banking_rationale_216",
-      "label": "Verifies non-destructive soft deletion, immutable archiving, and user-facing\u2026",
+      "label": "Verifies non-destructive soft deletion, immutable archiving, and user-facing…",
       "_origin": "ast",
       "community": 0,
       "community_name": "generate_totp_token",
@@ -3154,7 +3154,7 @@
     },
     {
       "id": "backend_app_core_security_rationale_19",
-      "label": "Secure PIN comparison using constant-time comparison against salted hash.\u2026",
+      "label": "Secure PIN comparison using constant-time comparison against salted hash.…",
       "_origin": "ast",
       "community": 3,
       "community_name": "LogAuditoria",
@@ -3165,7 +3165,7 @@
     },
     {
       "id": "backend_app_services_banking_service_rationale_596",
-      "label": "Ejecuta baja l\u00f3gica estricta sin destrucci\u00f3n de registros (Soft Delete). Marca\u2026",
+      "label": "Ejecuta baja lógica estricta sin destrucción de registros (Soft Delete). Marca…",
       "_origin": "ast",
       "community": 3,
       "community_name": "LogAuditoria",
@@ -3176,7 +3176,7 @@
     },
     {
       "id": "database_init_rationale_1",
-      "label": "M\u00f3dulo de Base de Datos y Persistencia Dual (MySQL InnoDB / SQLite + Archivos\u2026",
+      "label": "Módulo de Base de Datos y Persistencia Dual (MySQL InnoDB / SQLite + Archivos…",
       "_origin": "ast",
       "community": 3,
       "community_name": "LogAuditoria",
@@ -3187,7 +3187,7 @@
     },
     {
       "id": "database_models_rationale_95",
-      "label": "Bit\u00e1cora estricta e inmutable de eliminaciones l\u00f3gicas (Soft Delete). Almacena\u2026",
+      "label": "Bitácora estricta e inmutable de eliminaciones lógicas (Soft Delete). Almacena…",
       "_origin": "ast",
       "community": 3,
       "community_name": "LogAuditoria",
@@ -3264,7 +3264,7 @@
     },
     {
       "id": "backend_app_api_admin_rationale_67",
-      "label": "Ejecuta baja l\u00f3gica estricta sin destrucci\u00f3n f\u00edsica de datos.",
+      "label": "Ejecuta baja lógica estricta sin destrucción física de datos.",
       "_origin": "ast",
       "community": 4,
       "community_name": "BankingService",
@@ -3275,7 +3275,7 @@
     },
     {
       "id": "backend_app_api_admin_rationale_72",
-      "label": "Ruta POST alternativa para baja l\u00f3gica desde paneles y clientes HTTP.",
+      "label": "Ruta POST alternativa para baja lógica desde paneles y clientes HTTP.",
       "_origin": "ast",
       "community": 4,
       "community_name": "BankingService",
@@ -3286,7 +3286,7 @@
     },
     {
       "id": "backend_app_api_admin_rationale_77",
-      "label": "Retorna el inventario consolidado de registros y cuentas dadas de baja\u2026",
+      "label": "Retorna el inventario consolidado de registros y cuentas dadas de baja…",
       "_origin": "ast",
       "community": 4,
       "community_name": "BankingService",
@@ -3374,7 +3374,7 @@
     },
     {
       "id": "sensors_drivers_esp32_controller_rationale_28",
-      "label": "Simula o captura la fotograf\u00eda de auditor\u00eda de la c\u00e1mara OV2640.",
+      "label": "Simula o captura la fotografía de auditoría de la cámara OV2640.",
       "_origin": "ast",
       "community": 5,
       "community_name": "ArduinoSerialController",
@@ -3385,7 +3385,7 @@
     },
     {
       "id": "sensors_drivers_esp32_controller_rationale_6",
-      "label": "Controlador para ESP32-CAM (c\u00e1mara OV2640) y Sensor Ultras\u00f3nico HC-SR04. Provee\u2026",
+      "label": "Controlador para ESP32-CAM (cámara OV2640) y Sensor Ultrasónico HC-SR04. Provee…",
       "_origin": "ast",
       "community": 5,
       "community_name": "ArduinoSerialController",
@@ -3396,7 +3396,7 @@
     },
     {
       "id": "sensors_drivers_serial_controller_rationale_18",
-      "label": "Controlador de comunicaci\u00f3n USB-Serial a 115200 baudios con Arduino Mega 2560\u2026",
+      "label": "Controlador de comunicación USB-Serial a 115200 baudios con Arduino Mega 2560…",
       "_origin": "ast",
       "community": 5,
       "community_name": "ArduinoSerialController",
@@ -3407,7 +3407,7 @@
     },
     {
       "id": "sensors_drivers_serial_controller_rationale_59",
-      "label": "Env\u00eda la trama JSON de dispensaci\u00f3n y espera la confirmaci\u00f3n de eyecci\u00f3n por\u2026",
+      "label": "Envía la trama JSON de dispensación y espera la confirmación de eyección por…",
       "_origin": "ast",
       "community": 5,
       "community_name": "ArduinoSerialController",
@@ -3418,7 +3418,7 @@
     },
     {
       "id": "sensors_init_rationale_1",
-      "label": "M\u00f3dulo de Sensores, Controladores de Hardware y Firmware Embebido. Sistema\u2026",
+      "label": "Módulo de Sensores, Controladores de Hardware y Firmware Embebido. Sistema…",
       "_origin": "ast",
       "community": 5,
       "community_name": "ArduinoSerialController",
@@ -3704,7 +3704,7 @@
     },
     {
       "id": "database_txt_manager_rationale_148",
-      "label": "Extrae directamente de transacciones_historico.txt las \u00faltimas transacciones\u2026",
+      "label": "Extrae directamente de transacciones_historico.txt las últimas transacciones…",
       "_origin": "ast",
       "community": 7,
       "community_name": "TxtStorageManager",
@@ -3715,7 +3715,7 @@
     },
     {
       "id": "database_txt_manager_rationale_9",
-      "label": "Gestor del patr\u00f3n Dual-Write Concurrente para archivos de texto plano\u2026",
+      "label": "Gestor del patrón Dual-Write Concurrente para archivos de texto plano…",
       "_origin": "ast",
       "community": 7,
       "community_name": "TxtStorageManager",
@@ -3968,7 +3968,7 @@
     },
     {
       "id": "backend_app_api_user_rationale_41",
-      "label": "Obtiene directamente de transacciones_historico.txt las \u00faltimas 5 transacciones\u2026",
+      "label": "Obtiene directamente de transacciones_historico.txt las últimas 5 transacciones…",
       "_origin": "ast",
       "community": 9,
       "community_name": "user.py",
@@ -3979,7 +3979,7 @@
     },
     {
       "id": "backend_app_api_user_rationale_52",
-      "label": "Permite al usuario consultar el historial transparente de tarjetas o registros\u2026",
+      "label": "Permite al usuario consultar el historial transparente de tarjetas o registros…",
       "_origin": "ast",
       "community": 9,
       "community_name": "user.py",
@@ -4504,18 +4504,6 @@
       "context": "call",
       "source_file": "database/init_db.py",
       "source_location": "L36",
-      "weight": 1.0
-    },
-    {
-      "source": "database_init_db_init_db",
-      "target": "backend_app_core_security_get_pin_hash",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "database/init_db.py",
-      "source_location": "L39",
       "weight": 1.0
     },
     {
@@ -5779,18 +5767,6 @@
       "weight": 1.0
     },
     {
-      "source": "database_init_db",
-      "target": "backend_app_core_security_get_pin_hash",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "database/init_db.py",
-      "source_location": "L15",
-      "weight": 1.0
-    },
-    {
       "source": "database_txt_manager",
       "target": "database_models_denominacioncajero",
       "relation": "imports",
@@ -6775,18 +6751,6 @@
       "weight": 1.0
     },
     {
-      "source": "database_connection",
-      "target": "backend_app_core_config",
-      "relation": "imports_from",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "database/connection.py",
-      "source_location": "L8",
-      "weight": 1.0
-    },
-    {
       "source": "database_init_db",
       "target": "datetime",
       "relation": "imports_from",
@@ -6820,18 +6784,6 @@
       "context": "import",
       "source_file": "database/init_db.py",
       "source_location": "L12",
-      "weight": 1.0
-    },
-    {
-      "source": "database_init_db",
-      "target": "backend_app_core_security",
-      "relation": "imports_from",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "database/init_db.py",
-      "source_location": "L15",
       "weight": 1.0
     },
     {
