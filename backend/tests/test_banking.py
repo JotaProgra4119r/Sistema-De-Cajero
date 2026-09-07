@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
 from backend.app.core.security import generate_totp_token, _consumed_totp_tokens
@@ -214,6 +214,7 @@ def test_totp_anti_replay_protection():
 
 def test_soft_delete_and_transparency_audit():
     """Verifies non-destructive soft deletion, immutable archiving, and user-facing visibility."""
+    import time
     _consumed_totp_tokens.clear()
     admin_tok = generate_totp_token()
     admin_login = client.post("/api/auth/login", json={
@@ -225,10 +226,12 @@ def test_soft_delete_and_transparency_audit():
     admin_token = admin_login.json()["access_token"]
     admin_headers = {"Authorization": f"Bearer {admin_token}"}
 
+    unique_card = f"77{int(time.time() * 1000) % 100000000000000:014d}"
+
     # Register a temporary employee to soft-delete
     reg_res = client.post("/api/admin/users/register", headers=admin_headers, json={
         "nombre_completo": "Empleado Para Baja",
-        "numero_tarjeta": "7777888899990000",
+        "numero_tarjeta": unique_card,
         "pin": "4321",
         "saldo_inicial": 800.0,
         "monto_max_diario": 1000.0
@@ -254,7 +257,7 @@ def test_soft_delete_and_transparency_audit():
     _consumed_totp_tokens.clear()
     tok_user = generate_totp_token()
     login_blocked = client.post("/api/auth/login", json={
-        "card_number": "7777888899990000",
+        "card_number": unique_card,
         "pin": "4321",
         "token": tok_user,
         "is_admin": False
