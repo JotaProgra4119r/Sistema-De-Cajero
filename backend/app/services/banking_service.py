@@ -1,12 +1,12 @@
-﻿import json
-from datetime import datetime
+import json
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from backend.app.db.models import (
-    Usuario, Tarjeta, Role, DenominacionCajero, ArqueoCajero, Transaccion, LogAuditoria
+    Usuario, Tarjeta, Role, DenominacionCajero, ArqueoCajero, Transaccion, LogAuditoria, RegistroEliminado
 )
 from backend.app.core.security import (
     verify_pin, get_pin_hash, verify_totp_token, create_access_token
@@ -26,13 +26,17 @@ class BankingService:
         if len(clean_card) != 16 or not clean_card.isdigit():
             raise HTTPException(status_code=400, detail="El número de tarjeta debe tener exactamente 16 dígitos numéricos.")
         
-        card = db.query(Tarjeta).filter(Tarjeta.numero_tarjeta == clean_card, Tarjeta.activa == True).first()
+        card = db.query(Tarjeta).filter(
+            Tarjeta.numero_tarjeta == clean_card,
+            Tarjeta.activa == True,
+            Tarjeta.is_deleted == False
+        ).first()
         if not card:
-            raise HTTPException(status_code=401, detail="Tarjeta no encontrada o inactiva.")
+            raise HTTPException(status_code=401, detail="Tarjeta no encontrada, inactiva o dada de baja.")
         
         user = card.usuario
-        if not user or not user.activo:
-            raise HTTPException(status_code=401, detail="Usuario no encontrado o inactivo.")
+        if not user or not user.activo or user.is_deleted:
+            raise HTTPException(status_code=401, detail="Usuario no encontrado, inactivo o dado de baja.")
         
         if is_admin_mode and user.rol.nombre_rol != "ADMINISTRADOR":
             raise HTTPException(status_code=403, detail="Acceso denegado: Se requieren credenciales de Administrador.")
@@ -44,12 +48,12 @@ class BankingService:
         if not verify_pin(pin, user.pin_hash):
             raise HTTPException(status_code=401, detail="PIN de seguridad incorrecto.")
         
-        # Verify dynamic TOTP token
+        # Verify dynamic TOTP token (enforces anti-replay protection)
         if not verify_totp_token(token):
-            raise HTTPException(status_code=401, detail="Token dinámico de seguridad inválido o expirado.")
+            raise HTTPException(status_code=401, detail="Token dinámico de seguridad inválido, expirado o ya consumido.")
         
         # Update last access
-        user.fecha_ultimo_acceso = datetime.now()
+        user.fecha_ultimo_acceso = datetime.now(timezone.utc)
         db.commit()
 
         # Generate JWT
@@ -78,10 +82,10 @@ class BankingService:
 
     @staticmethod
     def get_user_summary(db: Session, user_id: int) -> Dict[str, Any]:
-        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
+        user = db.query(Usuario).filter(Usuario.id_usuario == user_id, Usuario.is_deleted == False).first()
         if not user:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado.")
-        active_card = next((c.numero_tarjeta for c in user.tarjetas if c.activa), "N/A")
+            raise HTTPException(status_code=404, detail="Usuario no encontrado o inactivo.")
+        active_card = next((c.numero_tarjeta for c in user.tarjetas if c.activa and not c.is_deleted), "N/A")
         
         # Fetch vault stock for user denomination selection
         vault_denoms = db.query(DenominacionCajero).all()
@@ -104,9 +108,9 @@ class BankingService:
         if amount <= 0:
             raise HTTPException(status_code=400, detail="El monto de retiro debe ser mayor a cero.")
         
-        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).with_for_update().first()
+        user = db.query(Usuario).filter(Usuario.id_usuario == user_id, Usuario.is_deleted == False).with_for_update().first()
         if not user:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+            raise HTTPException(status_code=404, detail="Usuario no encontrado o cuenta inactiva.")
         
         # 1. Verificación de balance
         if float(user.saldo_actual) < amount:
@@ -143,8 +147,8 @@ class BankingService:
                 detail=f"Consistencia aritmética inválida: La suma de billetes seleccionados (Q{sum_selected}) no coincide con el monto solicitado (Q{amount:.2f})."
             )
         
-        # 4. Verificación de existencias físicas en la bóveda
-        vault_records = {d.denominacion: d for d in db.query(DenominacionCajero).all()}
+        # 4. Verificación y reserva atómica de existencias físicas en la bóveda
+        vault_records = {d.denominacion: d for d in db.query(DenominacionCajero).with_for_update().all()}
         for denom_str, count in clean_bills.items():
             d = int(denom_str)
             rec = vault_records.get(d)
@@ -234,9 +238,9 @@ class BankingService:
 
     @staticmethod
     async def deposit_custom(db: Session, user_id: int, bills: Dict[str, int]) -> Dict[str, Any]:
-        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).with_for_update().first()
+        user = db.query(Usuario).filter(Usuario.id_usuario == user_id, Usuario.is_deleted == False).with_for_update().first()
         if not user:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+            raise HTTPException(status_code=404, detail="Usuario no encontrado o cuenta inactiva.")
 
         clean_bills = {}
         total_deposit = 0
@@ -254,7 +258,7 @@ class BankingService:
         if total_deposit <= 0:
             raise HTTPException(status_code=400, detail="Debe ingresar al menos un billete para realizar el depósito.")
 
-        vault_records = {d.denominacion: d for d in db.query(DenominacionCajero).all()}
+        vault_records = {d.denominacion: d for d in db.query(DenominacionCajero).with_for_update().all()}
         current_vault_total = sum(d.denominacion * d.cantidad_billetes for d in vault_records.values())
         if current_vault_total + total_deposit > MAX_VAULT_CAPACITY:
             raise HTTPException(
@@ -584,6 +588,132 @@ class BankingService:
 
         return {"status": "SUCCESS", "mensaje": f"Límite diario de {user.nombre_completo} ajustado a Q{new_limit:.2f}."}
 
+    # ==========================
+    # SECCIÓN DE BORRADO LÓGICO (SOFT DELETE) Y AUDITORÍA
+    # ==========================
+    @staticmethod
+    async def soft_delete_user(db: Session, admin_user_id: int, user_id: int, reason: str = "Baja solicitada por administración") -> Dict[str, Any]:
+        """
+        Ejecuta baja lógica estricta sin destrucción de registros (Soft Delete).
+        Marca is_deleted=True, desactiva tarjetas asociadas y almacena el estado completo
+        en registros_eliminados para auditoría y visualización del usuario final.
+        """
+        if admin_user_id == user_id:
+            raise HTTPException(status_code=400, detail="Un administrador no puede darse de baja a sí mismo.")
+
+        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+        if user.is_deleted:
+            raise HTTPException(status_code=400, detail="El usuario ya ha sido dado de baja previamente.")
+
+        admin = db.query(Usuario).filter(Usuario.id_usuario == admin_user_id).first()
+        admin_name = admin.nombre_completo if admin else "ADMINISTRADOR"
+
+        now = datetime.now(timezone.utc)
+        
+        snapshot = {
+            "id_usuario": user.id_usuario,
+            "nombre_completo": user.nombre_completo,
+            "rol": user.rol.nombre_rol,
+            "saldo_final": float(user.saldo_actual),
+            "monto_max_diario": float(user.monto_max_diario),
+            "tarjetas": [
+                {"id_tarjeta": t.id_tarjeta, "numero_tarjeta": t.numero_tarjeta, "activa": t.activa}
+                for t in user.tarjetas
+            ]
+        }
+
+        user.is_deleted = True
+        user.activo = False
+        user.deleted_at = now
+        user.deleted_by_id = admin_user_id
+
+        for card in user.tarjetas:
+            card.is_deleted = True
+            card.activa = False
+            card.deleted_at = now
+
+        reg = RegistroEliminado(
+            tabla_origen="usuarios",
+            id_registro_origen=user_id,
+            datos_eliminados_json=snapshot,
+            motivo=reason.strip() if reason else "Baja administrativa",
+            eliminado_por_id=admin_user_id,
+            eliminado_por_nombre=admin_name,
+            id_usuario_afectado=user_id,
+            visible_para_usuario=True,
+            fecha_eliminacion=now
+        )
+        db.add(reg)
+
+        log = LogAuditoria(
+            id_usuario=admin_user_id,
+            accion="BAJA_LOGICA_USUARIO",
+            detalles=f"Baja lógica de usuario {user.nombre_completo} (ID {user.id_usuario}). Motivo: {reason}. Saldo preservado: Q{float(user.saldo_actual):.2f}.",
+            fecha_hora=now
+        )
+        db.add(log)
+        db.commit()
+        db.refresh(reg)
+        db.refresh(log)
+
+        active_card = next((c.numero_tarjeta for c in user.tarjetas), "N/A")
+        await txt_manager.update_usuario(
+            user.id_usuario, user.nombre_completo, active_card, user.pin_hash,
+            float(user.saldo_actual), float(user.monto_max_diario), float(user.total_retirado_hoy),
+            user.cambio_pin_realizado, user.fecha_ultimo_acceso, is_deleted=True
+        )
+        await txt_manager.append_registro_eliminado(
+            reg.id_eliminacion, "usuarios", user_id, reason, admin_name, user_id, now
+        )
+        await txt_manager.append_auditoria(log.id_log, admin_user_id, log.accion, log.detalles, now)
+
+        return {
+            "status": "SUCCESS",
+            "mensaje": f"Usuario {user.nombre_completo} dado de baja lógicamente sin pérdida de datos.",
+            "id_eliminacion": reg.id_eliminacion,
+            "fecha_eliminacion": now.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+    @staticmethod
+    def get_user_deleted_records(db: Session, user_id: int) -> List[Dict[str, Any]]:
+        records = db.query(RegistroEliminado).filter(
+            RegistroEliminado.id_usuario_afectado == user_id,
+            RegistroEliminado.visible_para_usuario == True
+        ).order_by(RegistroEliminado.fecha_eliminacion.desc()).all()
+
+        results = []
+        for r in records:
+            results.append({
+                "id_eliminacion": r.id_eliminacion,
+                "tabla_origen": r.tabla_origen,
+                "id_registro_origen": r.id_registro_origen,
+                "motivo": r.motivo,
+                "eliminado_por": r.eliminado_por_nombre or "ADMINISTRACION",
+                "fecha_eliminacion": r.fecha_eliminacion.strftime("%Y-%m-%d %H:%M:%S") if r.fecha_eliminacion else "",
+                "datos_archivados": r.datos_eliminados_json
+            })
+        return results
+
+    @staticmethod
+    def get_all_deleted_records(db: Session) -> List[Dict[str, Any]]:
+        records = db.query(RegistroEliminado).order_by(RegistroEliminado.fecha_eliminacion.desc()).all()
+        results = []
+        for r in records:
+            results.append({
+                "id_eliminacion": r.id_eliminacion,
+                "tabla_origen": r.tabla_origen,
+                "id_registro_origen": r.id_registro_origen,
+                "motivo": r.motivo,
+                "eliminado_por_id": r.eliminado_por_id,
+                "eliminado_por": r.eliminado_por_nombre or "ADMINISTRACION",
+                "id_usuario_afectado": r.id_usuario_afectado,
+                "fecha_eliminacion": r.fecha_eliminacion.strftime("%Y-%m-%d %H:%M:%S") if r.fecha_eliminacion else "",
+                "datos_archivados": r.datos_eliminados_json
+            })
+        return results
+
     @staticmethod
     def get_admin_metrics(db: Session) -> Dict[str, Any]:
         vault_records = db.query(DenominacionCajero).order_by(DenominacionCajero.denominacion.desc()).all()
@@ -593,8 +723,8 @@ class BankingService:
         # KPI 1: Saldo en Bóveda (gauge to max Q30,000)
         vault_gauge = min(100.0, (total_vault / MAX_VAULT_CAPACITY) * 100.0)
 
-        # KPI 2: Total retirado hoy por todos los usuarios
-        total_retirado_hoy = db.query(func.sum(Usuario.total_retirado_hoy)).scalar() or 0.0
+        # KPI 2: Total retirado hoy por usuarios activos
+        total_retirado_hoy = db.query(func.sum(Usuario.total_retirado_hoy)).filter(Usuario.is_deleted == False).scalar() or 0.0
 
         # KPI 3: Promedio de depósitos
         avg_deposits = db.query(func.avg(Transaccion.monto)).filter(Transaccion.tipo_transaccion == "DEPOSITO").scalar() or 0.0
@@ -604,20 +734,20 @@ class BankingService:
         init_status = "Inicializado" if has_init else "Pendiente"
 
         # Users who changed PIN
-        pin_changed_count = db.query(Usuario).filter(Usuario.cambio_pin_realizado == True).count()
+        pin_changed_count = db.query(Usuario).filter(Usuario.cambio_pin_realizado == True, Usuario.is_deleted == False).count()
 
         # Last logged user
-        last_user = db.query(Usuario).order_by(Usuario.fecha_ultimo_acceso.desc().nullslast()).first()
+        last_user = db.query(Usuario).filter(Usuario.is_deleted == False).order_by(Usuario.fecha_ultimo_acceso.desc().nullslast()).first()
         last_user_info = {
             "nombre": last_user.nombre_completo if last_user else "Ninguno",
             "timestamp": last_user.fecha_ultimo_acceso.strftime("%Y-%m-%d %H:%M:%S") if (last_user and last_user.fecha_ultimo_acceso) else "Sin accesos"
         }
 
-        # Users table
+        # Users table (including soft-delete status)
         users = db.query(Usuario).all()
         users_table = []
         for u in users:
-            active_card = next((c.numero_tarjeta for c in u.tarjetas if c.activa), "N/A")
+            active_card = next((c.numero_tarjeta for c in u.tarjetas if c.activa and not c.is_deleted), "N/A")
             users_table.append({
                 "id_usuario": u.id_usuario,
                 "nombre_completo": u.nombre_completo,
@@ -627,7 +757,9 @@ class BankingService:
                 "total_retirado_hoy": float(u.total_retirado_hoy),
                 "ultimo_acceso": u.fecha_ultimo_acceso.strftime("%Y-%m-%d %H:%M:%S") if u.fecha_ultimo_acceso else "Nunca",
                 "cambio_pin_realizado": u.cambio_pin_realizado,
-                "rol": u.rol.nombre_rol
+                "rol": u.rol.nombre_rol,
+                "is_deleted": u.is_deleted,
+                "deleted_at": u.deleted_at.strftime("%Y-%m-%d %H:%M:%S") if u.deleted_at else None
             })
 
         # Recent audit logs

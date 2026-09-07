@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Wallet, LogOut, CheckCircle2, AlertTriangle, ArrowDownRight,
-  ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote
+  ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote, Archive
 } from "lucide-react";
 import { QuetzalBillCard } from "../components/QuetzalBillCard";
 import { userService } from "../services/api";
@@ -14,8 +14,10 @@ interface UserDashboardViewProps {
 const DENOMINATIONS = [200, 100, 50, 20, 10, 5, 1];
 
 export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<"withdraw" | "deposit" | "pin">("withdraw");
+  const [activeTab, setActiveTab] = useState<"withdraw" | "deposit" | "pin" | "audit">("withdraw");
   const [userSummary, setUserSummary] = useState<any>(user);
+  const [deletedRecords, setDeletedRecords] = useState<any[]>([]);
+  const [loadingAudit, setLoadingAudit] = useState<boolean>(false);
   
   // Custom withdrawal state
   const [requestedAmount, setRequestedAmount] = useState<string>("123");
@@ -81,8 +83,21 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     }
   };
 
+  const loadDeletedRecords = async () => {
+    try {
+      setLoadingAudit(true);
+      const recs = await userService.getDeletedRecords();
+      setDeletedRecords(recs);
+    } catch (err) {
+      console.error("Error loading deleted records:", err);
+    } finally {
+      setLoadingAudit(false);
+    }
+  };
+
   useEffect(() => {
     reloadData();
+    loadDeletedRecords();
   }, []);
 
   // Compute withdrawal sum
@@ -388,6 +403,19 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
               <KeyRound className="w-4 h-4" />
               <span>Actualizar PIN</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => { setActiveTab("audit"); setFeedbackMessage(null); resetInactivity(); loadDeletedRecords(); }}
+              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
+                activeTab === "audit"
+                  ? "bg-purple-600 text-white font-extrabold shadow-md"
+                  : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
+              }`}
+            >
+              <Archive className="w-4 h-4" />
+              <span>Mis Registros y Bajas</span>
+            </button>
           </div>
         </div>
 
@@ -637,6 +665,62 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 >
                   {loading ? "Actualizando..." : "Confirmar Nuevo PIN"}
                 </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "audit" && (
+            <div className="flex flex-col h-full overflow-hidden">
+              <div className="flex items-center justify-between mb-2.5 flex-shrink-0">
+                <h2 className="text-base font-black text-white flex items-center gap-2">
+                  <Archive className="w-5 h-5 text-purple-400" />
+                  <span>Historial de Bajas y Desactivaciones</span>
+                </h2>
+                <button
+                  type="button"
+                  onClick={loadDeletedRecords}
+                  className="px-2.5 py-1 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white text-xs font-bold border border-discord-hover flex items-center gap-1.5"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingAudit ? "animate-spin" : ""}`} />
+                  <span>Actualizar</span>
+                </button>
+              </div>
+
+              <div className="text-[11px] text-discord-textMuted mb-2.5 bg-discord-sidebar/60 p-2.5 rounded-xl border border-discord-hover">
+                Por política de transparencia bancaria, ninguna operación se elimina destructivamente. Aquí puede consultar el historial de plásticos sustituidos, bloqueos o registros desactivados de su cuenta.
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                {deletedRecords.length === 0 ? (
+                  <div className="p-8 text-center text-discord-textMuted bg-discord-sidebar rounded-xl border border-discord-hover">
+                    <CheckCircle2 className="w-8 h-8 text-discord-green mx-auto mb-2 opacity-80" />
+                    <div className="font-bold text-sm text-white">Sin Registros Dados de Baja</div>
+                    <div className="text-xs mt-1">Su cuenta y tarjetas se encuentran en estado activo sin incidencias.</div>
+                  </div>
+                ) : (
+                  deletedRecords.map((r) => (
+                    <div
+                      key={r.id_eliminacion}
+                      className="p-3 rounded-xl bg-discord-sidebar border border-purple-900/40 hover:border-purple-600/60 transition-all space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800">
+                          {r.tabla_origen === "tarjetas" ? "Tarjeta Desactivada" : "Usuario / Cuenta"}
+                        </span>
+                        <span className="text-[11px] font-mono text-discord-textMuted">
+                          {r.fecha_eliminacion}
+                        </span>
+                      </div>
+                      <div className="text-xs font-semibold text-white">
+                        Motivo: <span className="text-purple-200 font-normal">{r.motivo || "Baja o sustitución administrativa"}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-discord-textMuted pt-1 border-t border-discord-hover">
+                        <span>Autorizado por: <strong className="text-white">{r.eliminado_por}</strong></span>
+                        <span className="font-mono text-purple-400">ID #{r.id_registro_origen}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

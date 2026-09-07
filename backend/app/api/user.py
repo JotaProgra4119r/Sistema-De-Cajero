@@ -1,4 +1,4 @@
-﻿from typing import Dict
+from typing import Dict
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -46,3 +46,8 @@ async def change_pin(payload: ChangePinRequest, current_user: Usuario = Depends(
     return await BankingService.change_pin(
         db, current_user.id_usuario, payload.card_number, payload.current_pin, payload.token, payload.new_pin
     )
+
+@router.get("/audit/deleted-records")
+def get_my_deleted_records(current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Permite al usuario consultar el historial transparente de tarjetas o registros desactivados/dados de baja que le pertenecen."""
+    return BankingService.get_user_deleted_records(db, current_user.id_usuario)

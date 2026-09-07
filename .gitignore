@@ -9,6 +9,7 @@ dist/
 build/
 graphify-out/cache/
 graphify-out/.graphify*
+graphify-out/20*/
 *.db
 *.sqlite3
 .DS_Store

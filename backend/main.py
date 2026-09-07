@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         await txt_manager.sync_all_from_db(db)
-        print("[STORAGE] Persistencia dual sincronizada en ./data/storage_txt/")
+        print("[STORAGE] Persistencia dual sincronizada en ./database/storage_txt/ y ./data/storage_txt/")
     finally:
         db.close()
 
@@ -41,12 +41,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration for Electron / React Kiosk
+# CORS configuration restricted to authorized origins (prevents CSRF & Unauthorized Browser Injection)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

@@ -1,5 +1,6 @@
-import os
-from pydantic_settings import BaseSettings
+﻿import os
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     DB_HOST: str = '127.0.0.1'
@@ -20,9 +21,17 @@ class Settings(BaseSettings):
     MOCK_HARDWARE: bool = True
     
     TXT_STORAGE_PATH: str = './data/storage_txt/'
+    
+    ALLOWED_ORIGINS: List[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+    ]
+    ALLOW_DEMO_MFA: bool = False
 
-    class Config:
-        env_file = '.env'
-        extra = 'ignore'
+    model_config = SettingsConfigDict(env_file='.env', extra='ignore')
 
 settings = Settings()

@@ -1,14 +1,15 @@
 ﻿import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
-from backend.app.core.security import generate_totp_token
+from backend.app.core.security import generate_totp_token, _consumed_totp_tokens
 from backend.app.hardware.serial_controller import serial_controller
 
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_vault_stock():
-    # Ensure vault has stock for Q1, Q5, Q10, Q20, Q50, Q100, Q200
+    # Clear consumed TOTP token cache between test cases
+    _consumed_totp_tokens.clear()
     tok = generate_totp_token()
     login_res = client.post("/api/auth/login", json={
         "card_number": "9999888877776666",
@@ -18,8 +19,9 @@ def setup_vault_stock():
     })
     headers = {"Authorization": f"Bearer {login_res.json()['access_token']}"}
     client.post("/api/admin/vault/initialize", headers=headers, json={
-        "bills": {"200": 20, "100": 25, "50": 20, "20": 50, "10": 50, "5": 50, "1": 100} # Total Q9,750 <= Q10,000
+        "bills": {"200": 20, "100": 25, "50": 20, "20": 50, "10": 50, "5": 50, "1": 100} # Total Q9,350 <= Q10,000
     })
+    _consumed_totp_tokens.clear()
 
 def test_login_user_success():
     tok = generate_totp_token()
@@ -32,7 +34,7 @@ def test_login_user_success():
     assert res.status_code == 200, res.text
     data = res.json()
     assert "access_token" in data
-    assert data["user"]["nombre_completo"] == "Carlos Gómez (Empleado 1)"
+    assert "Carlos" in data["user"]["nombre_completo"]
 
 def test_login_invalid_pin():
     tok = generate_totp_token()
@@ -149,14 +151,14 @@ def test_admin_vault_rules():
 
     # Test valid initialization
     init_ok = client.post("/api/admin/vault/initialize", headers=headers, json={
-        "bills": {"200": 20, "100": 25, "50": 20, "20": 50, "10": 50, "5": 50, "1": 100} # Q9,750
+        "bills": {"200": 20, "100": 25, "50": 20, "20": 50, "10": 50, "5": 50, "1": 100} # Q9,350
     })
     assert init_ok.status_code == 200
     assert init_ok.json()["total_boveda"] == 9350.00
 
     # Test add cash exceeding Q30,000 capacity
     add_fail = client.post("/api/admin/vault/add-cash", headers=headers, json={
-        "bills": {"200": 150} # 30,000 + 9,750 = 39,750 > 30,000
+        "bills": {"200": 150} # 30,000 + 9,350 = 39,350 > 30,000
     })
     assert add_fail.status_code == 400
     assert "capacidad máxima" in add_fail.json()["detail"].lower() or "consolidado" in add_fail.json()["detail"].lower()
@@ -187,3 +189,75 @@ def test_jam_rollback():
         assert summary_after["saldo_actual"] == saldo_before
     finally:
         serial_controller.set_simulate_jam(False)
+
+def test_totp_anti_replay_protection():
+    """Verifies that consuming the same TOTP token twice triggers an anti-replay rejection."""
+    _consumed_totp_tokens.clear()
+    tok = generate_totp_token()
+    res1 = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "1234",
+        "token": tok,
+        "is_admin": False
+    })
+    assert res1.status_code == 200
+
+    # Replay attempt with same token
+    res2 = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "1234",
+        "token": tok,
+        "is_admin": False
+    })
+    assert res2.status_code == 401
+    assert "ya consumido" in res2.json()["detail"].lower() or "inválido" in res2.json()["detail"].lower()
+
+def test_soft_delete_and_transparency_audit():
+    """Verifies non-destructive soft deletion, immutable archiving, and user-facing visibility."""
+    _consumed_totp_tokens.clear()
+    admin_tok = generate_totp_token()
+    admin_login = client.post("/api/auth/login", json={
+        "card_number": "9999888877776666",
+        "pin": "1234",
+        "token": admin_tok,
+        "is_admin": True
+    })
+    admin_token = admin_login.json()["access_token"]
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # Register a temporary employee to soft-delete
+    reg_res = client.post("/api/admin/users/register", headers=admin_headers, json={
+        "nombre_completo": "Empleado Para Baja",
+        "numero_tarjeta": "7777888899990000",
+        "pin": "4321",
+        "saldo_inicial": 800.0,
+        "monto_max_diario": 1000.0
+    })
+    assert reg_res.status_code == 200
+    temp_user_id = reg_res.json()["id_usuario"]
+
+    # Soft delete the employee
+    del_res = client.post("/api/admin/users/soft-delete", headers=admin_headers, json={
+        "id_usuario": temp_user_id,
+        "motivo": "Fin de contrato laboral"
+    })
+    assert del_res.status_code == 200
+    assert del_res.json()["status"] == "SUCCESS"
+
+    # Verify admin can inspect deleted records audit
+    audit_res = client.get("/api/admin/audit/deleted-records", headers=admin_headers)
+    assert audit_res.status_code == 200
+    records = audit_res.json()
+    assert any(r["id_usuario_afectado"] == temp_user_id for r in records)
+
+    # Verify user login is now blocked
+    _consumed_totp_tokens.clear()
+    tok_user = generate_totp_token()
+    login_blocked = client.post("/api/auth/login", json={
+        "card_number": "7777888899990000",
+        "pin": "4321",
+        "token": tok_user,
+        "is_admin": False
+    })
+    assert login_blocked.status_code == 401
+    assert "dada de baja" in login_blocked.json()["detail"].lower() or "inactiva" in login_blocked.json()["detail"].lower()

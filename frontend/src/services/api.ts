@@ -1,4 +1,4 @@
-﻿import axios from "axios";
+import axios from "axios";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -57,6 +57,10 @@ export const userService = {
     });
     return res.data;
   },
+  getDeletedRecords: async () => {
+    const res = await apiClient.get("/api/user/audit/deleted-records");
+    return res.data;
+  },
 };
 
 export const adminService = {
@@ -94,6 +98,17 @@ export const adminService = {
       id_usuario: userId,
       nuevo_limite_diario: newLimit,
     });
+    return res.data;
+  },
+  softDeleteUser: async (userId: number, motivo: string) => {
+    const res = await apiClient.post("/api/admin/users/soft-delete", {
+      id_usuario: userId,
+      motivo,
+    });
+    return res.data;
+  },
+  getDeletedRecords: async () => {
+    const res = await apiClient.get("/api/admin/audit/deleted-records");
     return res.data;
   },
 };
