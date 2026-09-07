@@ -1,58 +1,97 @@
-﻿# Módulo de Frontend y Kiosco Táctil (Frontend Module)
+﻿# Módulo de Frontend y Kiosco Táctil Embebido (`frontend/`)
 
-## 1. Visión General de la Interfaz
-El módulo `frontend/` implementa la experiencia interactiva táctil del cajero automático. Diseñado para operar como una terminal de kiosco embebida o como aplicación de escritorio nativa mediante **Electron**:
-- **Framework Core:** React 18 con TypeScript y Vite.
-- **Estilos Visuales:** Tailwind CSS con una cuidada paleta visual inspirada en el modo oscuro profundo de Discord (tarjetas modulares, micro-interacciones táctiles, acentos en Blurple, Verde esmeralda, Ámbar y Rojo).
-- **Contenedor de Escritorio:** Electron (`electron/main.js` y `electron/preload.js`), configurado con controles de ventana para alternar entre modo pantalla completa (Kiosk Mode) y modo ventana para pruebas de desarrollo.
+## 1. Propósito e Importancia Crítica en el Sistema
+El módulo `frontend/` constituye la única capa de interacción física y visual entre el cliente bancario/administrador y el cajero automático. 
 
----
-
-## 2. Vistas y Módulos de Usuario
-1. **Pantalla de Acceso (Login Kiosk):**
-   - Teclado numérico táctil interactivo (Numpad).
-   - Ingreso de tarjeta de 16 dígitos, PIN confidencial de 4 dígitos y token dinámico TOTP de 6 dígitos con refresco en tiempo real.
-2. **Panel de Usuario (User Dashboard):**
-   - **Retiro Personalizado:** Permite al usuario solicitar montos arbitrarios no estandarizados (ej. Q123.00, Q239.00) mediante selección interactiva o desglose automático eficiente según las 7 denominaciones en Quetzales.
-   - **Depósito Desglosado:** Inserción de billetes por denominación con validación de capacidad de bóveda.
-   - **Actualización de PIN:** Cambio confidencial de contraseña con verificación de token TOTP.
-   - **Historial Transparente de Bajas (Soft Delete):** Pestaña dedicada (*Mis Registros y Bajas*) donde el usuario puede consultar en cualquier momento plásticos sustituidos, bloqueos o registros desactivados asociados a su cuenta bancaria.
-3. **Panel Administrativo (Admin Console):**
-   - Arqueo e inicialización de bóveda (tope diario Q10,000.00).
-   - Recarga de efectivo (tope acumulado Q30,000.00).
-   - Registro de trabajadores corporativos y reasignación de tarjetas.
-   - Auditoría de bajas lógicas y registros archivados.
-   - Telemetría en vivo del hardware (sensores de bóveda, cámara ESP32 y atascos simulados).
+### ¿Por qué es crítico?
+- **Seguridad en Entrada de Datos:** Gestiona la captura segura de credenciales sensibles (PIN de 4 dígitos, tarjeta de 16 dígitos y tokens dinámicos TOTP de 6 dígitos) mediante un teclado numérico táctil en pantalla (Numpad) que evita keyloggers físicos o captura por hardware externo.
+- **Validación Aritmética Reactiva:** En retiros con montos arbitrarios no estandarizados (ej. Q123.00, Q239.00), el frontend valida en tiempo real que la suma del vector de billetes coincida al céntimo con el monto escalar antes de despachar la petición a la red.
+- **Tolerancia y Resiliencia en Kiosco:** Diseñado para operar 24/7 en terminales de autoservicio sin teclado físico ni mouse convencional, encapsulado en **Electron** con mecanismos de auto-recuperación, bloqueo de atajos de sistema y temporizador de cierre de sesión por inactividad (60 segundos).
 
 ---
 
-## 3. Instrucciones de Compilación y Ejecución
-### Modo Desarrollo Web:
+## 2. Estructura de Archivos y Responsabilidad de Componentes
+
+```
+frontend/
+├── electron/
+│   ├── main.js                  # Proceso principal de Electron: gestión de ventana nativa (Kiosk / Ventana), IPC y controles.
+│   └── preload.js               # Puente de contexto seguro (ContextBridge) para exponer APIs del sistema al renderer.
+├── src/
+│   ├── components/
+│   │   ├── Numpad.tsx           # Teclado táctil en pantalla con respuesta sonora/háptica y mezcla de dígitos opcional.
+│   │   ├── QuetzalBillCard.tsx  # Tarjeta interactiva con visual de denominaciones de Quetzales (Q200, Q100, Q50, Q20, Q10, Q5, Q1).
+│   │   ├── WindowBar.tsx        # Barra de control personalizada para alternar entre pantalla completa y modo ventana en pruebas.
+│   │   └── VaultStatusBadge.tsx # Indicador visual del estado de los sensores y stock de la bóveda.
+│   ├── views/
+│   │   ├── LoginView.tsx        # Pantalla de autenticación bancaria de doble factor (Tarjeta + PIN + TOTP).
+│   │   ├── UserDashboardView.tsx# Panel del usuario: retiros no estandarizados, depósitos, cambio de PIN y auditoría de bajas.
+│   │   └── AdminConsoleView.tsx # Consola del administrador: arqueo inicial (Q10k), recargas (Q30k), auditoría y hardware.
+│   ├── services/
+│   │   ├── api.ts               # Cliente HTTP Axios configurado con interceptor JWT y timeout de 10s.
+│   │   └── websocket.ts         # Conexión WebSocket al backend (`/ws/hardware`) para telemetría en tiempo real.
+│   ├── App.tsx                  # Enrutador principal de estados de autenticación y renderizado de vistas.
+│   ├── index.css                # Configuración de Tailwind CSS con paleta oscura Discord (Blurple, Dark Theme, Emerald).
+│   └── main.tsx                 # Punto de entrada React 18 con StrictMode montado en root del DOM.
+├── index.html                   # HTML base con meta-etiquetas de viewport móvil para kiosco táctil.
+├── vite.config.ts               # Configuración de bundling rápido con Vite, proxy HTTP hacia backend y hot reload.
+├── tsconfig.json                # Reglas estrictas de compilación TypeScript.
+└── package.json                 # Dependencias: React 18, Lucide-React, Axios, TailwindCSS, Electron.
+```
+
+---
+
+## 3. Especificaciones Técnicas y Patrones de Diseño
+
+### 3.1 Estética Visual Discord Dark Mode
+La interfaz implementa un tema oscuro modular de alta legibilidad en pantallas táctiles industriales:
+- **Fondo Primario:** `#202225` (Gris profundo Discord).
+- **Superficie de Tarjetas:** `#2F3136` con bordes `#36393F`.
+- **Acento Primario (Blurple):** `#5865F2` para acciones principales de retiro y foco.
+- **Acento Positivo (Verde Esmeralda):** `#57F287` para confirmaciones contables y saldos.
+- **Acento Advertencia (Ámbar):** `#FEE75C` para alertas de límite diario y cambio de PIN.
+- **Acento Crítico (Rojo):** `#ED4245` para bloqueos, rechazos y cierre de sesión.
+
+### 3.2 Desglose Ávido (Greedy Algorithm) en Retiros
+Para cantidades no múltiplos de 100 (ej. Q123.00), el algoritmo implementado en `UserDashboardView.tsx` selecciona dinámicamente:
+$$\text{Remanente} = Q123 \longrightarrow 1 \times Q100 + 1 \times Q20 + 3 \times Q1$$
+contrastando contra el inventario disponible de cada cartucho en tiempo real.
+
+### 3.3 Visualización Transparente de Bajas (*Soft Delete*)
+La pestaña **Mis Registros y Bajas** consume el endpoint `GET /api/user/audit/deleted-records`. Presenta al usuario los plásticos anteriores dados de baja, el motivo formal de sustitución y el ID de autorización, cumpliendo con la normativa de transparencia financiera.
+
+---
+
+## 4. Guía Operativa de Ejecución y Compilación
+
+### Instalación de Dependencias:
 ```bash
 cd frontend
+npm install
+```
+
+### Ejecución en Modo Desarrollo (Vite HMR):
+```bash
 npm run dev
 ```
-Disponible en `http://localhost:5173`.
+Acceso en navegador: `http://localhost:5173`.
 
-### Compilación para Producción:
+### Compilación Estricta de Producción:
 ```bash
-cd frontend
 npm run build
 ```
+Genera los binarios optimizados en `dist/`.
 
-### Ejecución en Kiosco Nativo (Electron):
+### Lanzar Aplicación en Kiosco Nativo (Electron):
 ```bash
 npm run electron:start
 ```
 
 ---
 
-## 4. Estrategia Multiagente GitFlow
-Para proteger la rama principal de producción (`main`), todos los desarrolladores y agentes de IA dedicados a UI/UX, componentes React y empaquetado Electron deben trabajar exclusivamente en su rama delegada:
+## 5. Directrices para el Agente de IA (`feature/frontend-kiosk`)
 
-- **Rama Asignada:** `feature/frontend-kiosk`
-- **Reglas de Aislamiento:**
-  1. No realizar commits directos en `main`.
-  2. Todo nuevo componente debe ser responsivo y apto para resolución táctil de Kiosco (1920x1080 o pantallas táctiles industriales).
-  3. Probar siempre la compilación estricta de TypeScript (`npm run build`) antes de abrir Pull Request hacia `main`.
-  4. Mantener sincronizados los tipos de datos con los esquemas Pydantic del backend.
+- **Rama Exclusiva:** `feature/frontend-kiosk` (prohibido hacer push directo a `main`).
+- **Validación Obligatoria:** Ejecutar siempre `npm run build` localmente antes de proponer un Pull Request.
+- **Regla de Tipos:** Todo nuevo campo o respuesta de API debe tiparse estrictamente en `src/services/api.ts` reflejando los esquemas Pydantic del backend.
+- **Ergonomía Táctil:** Los botones deben mantener un área de impacto mínima de 48x48 píxeles con retroalimentación visual (`active:scale-95`).

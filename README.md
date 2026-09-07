@@ -10,10 +10,21 @@ Proyecto integral de terminal de autoservicio bancario con estética visual insp
 * **Backend:** Python 3.14 (FastAPI, Uvicorn, SQLAlchemy, Pydantic, PyJWT, PySerial, WebSockets).
 * **Persistencia Dual Concurrente:**
   * Base de Datos Relacional: MySQL Server 8.4 (con conmutador transparente automático a SQLite de respaldo para ejecución inmediata sin configuración previa).
-  * Archivos Planos Obligatorios: `./data/storage_txt/` (`usuarios.txt`, `cajero_inventario.txt`, `transacciones_historico.txt`, `auditoria_eventos.txt`).
+  * Archivos Planos Obligatorios: `./database/storage_txt/` y `./data/storage_txt/` (`usuarios.txt`, `cajero_inventario.txt`, `transacciones_historico.txt`, `auditoria_eventos.txt`, `bajas_eliminaciones.txt`).
 * **Firmware Embebido:**
   * Arduino Mega 2560 (C++ / `.ino`): Control de 7 drivers A4988 / motores paso a paso y 7 sensores infrarrojos de ranura.
   * ESP32-CAM (C++ / `.ino`): Streaming de video OV2640 y telemetría de proximidad con sensor ultrasónico HC-SR04.
+
+---
+
+## 🧩 Los 4 Módulos Desacoplados del Sistema
+
+Cada subsistema cuenta con su propio `README.md` técnico exhaustivo, arquitectura independiente y su respectiva rama de desarrollo multiagente para no afectar el nodo principal (`main`):
+
+1. 💻 [**Módulo de Frontend y Kiosco Táctil** (`frontend/README.md`)](file:///frontend/README.md): React 18, Vite, Tailwind CSS, Electron Kiosk. Rama: `feature/frontend-kiosk`.
+2. ⚙️ [**Módulo de Backend y Core Transaccional** (`backend/README.md`)](file:///backend/README.md): FastAPI, WebSockets, MFA TOTP Anti-Replay, reglas bancarias. Rama: `feature/backend-core`.
+3. 🗄️ [**Módulo de Base de Datos y Persistencia Dual** (`database/README.md`)](file:///database/README.md): MySQL 8.4 InnoDB, SQLite fallback, Soft Delete inmutable y sincronización `.txt`. Rama: `feature/database-dualwrite`.
+4. 🔌 [**Módulo de Sensores, Controladores y Firmware** (`sensors/README.md`)](file:///sensors/README.md): Arduino Mega 2560 (C++), ESP32-CAM (cámara OV2640 y HC-SR04), protocolo JSON RS-232. Rama: `feature/sensors-firmware`.
 
 ---
 
