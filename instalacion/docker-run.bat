@@ -1,5 +1,6 @@
-﻿@echo off
+@echo off
 title Lanzador Docker - Sistema Cajero Automatico Bancario
+cd /d "%~dp0"
 echo ===================================================================
 echo   INICIANDO CONTENEDORES DOCKER (SOLO INSTALAR Y ABRIR)
 echo ===================================================================

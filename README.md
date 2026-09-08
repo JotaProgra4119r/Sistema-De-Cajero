@@ -55,60 +55,60 @@ Cada subsistema cuenta con su propio `README.md` técnico exhaustivo, arquitectu
 
 ## 🛠️ Instrucciones de Instalación y Ejecución
 
-El proyecto está preparado para ejecutarse bajo dos modalidades inmediatas ("solo instalar y abrir"): mediante **Docker** (tanto en Windows como en Linux Debian) o de forma **Nativa Directa**.
+Todos los scripts de instalación, despliegue y contenedores Docker se encuentran centralizados de forma limpia y ordenada en la carpeta [`instalacion/`](file:///instalacion/):
 
 ---
 
 ### 🐳 Modalidad 1: Contenedor Docker ("Solo Instalar y Abrir")
 
-Tanto en Windows como en Linux Debian se incluye orquestación completa con `docker-compose.yml` que levanta el backend FastAPI (Python 3.12) y el frontend Nginx con proxy inverso, volumen persistente para archivos `.txt` y healthcheck automático.
+Tanto en Windows como en Linux Debian se incluye orquestación completa con `instalacion/docker-compose.yml` que levanta el backend FastAPI (Python 3.12) y el frontend Nginx con proxy inverso, volumen persistente para archivos `.txt` y healthcheck automático.
 
 #### En Windows (Docker Desktop):
 Haga doble clic en:
 ```cmd
-docker-run.bat
+instalacion\docker-run.bat
 ```
-*(O ejecute `docker compose up -d` y abra `http://localhost:5173`)*.
+*(O desde terminal: `cd instalacion && docker compose up -d` y abra `http://localhost:5173`)*.
 
 #### En Linux Debian / Ubuntu:
 Ejecute en la terminal:
 ```bash
-chmod +x docker-run.sh
-./docker-run.sh
+chmod +x instalacion/docker-run.sh
+./instalacion/docker-run.sh
 ```
 *(El script detecta Docker, construye las imágenes, levanta los contenedores y lanza Chromium en modo Kiosco a pantalla completa).*
 
 Para detener los contenedores:
 ```bash
-docker compose down
+cd instalacion && docker compose down
 ```
 
 ---
 
 ### 🖥️ Modalidad 2: Ejecución Nativa Directa (Scripts Automatizados)
 
-Si prefiere ejecutar sin Docker, se proporcionan instaladores y lanzadores automáticos de un solo clic:
+Si prefiere ejecutar sin Docker, se proporcionan instaladores y lanzadores automáticos de un solo clic dentro de `instalacion/`:
 
 #### En Windows:
 1. **Instalación de dependencias (solo la primera vez):**
    ```cmd
-   install_windows.bat
+   instalacion\install_windows.bat
    ```
 2. **Lanzamiento de aplicación y servidor:**
    ```cmd
-   run_windows.bat
+   instalacion\run_windows.bat
    ```
    *(Inicia FastAPI en segundo plano y despliega la ventana Kiosco en Electron).*
 
 #### En Linux Debian:
 1. **Instalación de paquetes del sistema y entornos:**
    ```bash
-   chmod +x install_debian.sh run_debian.sh
-   ./install_debian.sh
+   chmod +x instalacion/install_debian.sh instalacion/run_debian.sh
+   ./instalacion/install_debian.sh
    ```
 2. **Lanzamiento:**
    ```bash
-   ./run_debian.sh
+   ./instalacion/run_debian.sh
    ```
 
 ---

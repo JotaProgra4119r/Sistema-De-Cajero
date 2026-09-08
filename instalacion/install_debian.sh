@@ -1,5 +1,7 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -e
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 echo "==================================================================="
 echo "  INSTALADOR NATIVO PARA DEBIAN GNU/LINUX (SISTEMA DE CAJERO)"
@@ -30,5 +32,5 @@ cd ..
 echo ""
 echo "==================================================================="
 echo "  INSTALACIÓN COMPLETADA CON ÉXITO EN DEBIAN"
-echo "  Para iniciar el cajero en modo nativo ejecute: ./run_debian.sh"
+echo "  Para iniciar el cajero en modo nativo ejecute: ./instalacion/run_debian.sh"
 echo "==================================================================="

@@ -1,4 +1,4 @@
-﻿# Dockerfile para Backend y Core Transaccional (Base Debian Bookworm)
+# Dockerfile para Backend y Core Transaccional (Base Debian Bookworm)
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
@@ -21,7 +21,7 @@ COPY database/ ./database/
 COPY sensors/ ./sensors/
 COPY data/ ./data/
 
-# Variables de entorno por defecto (utiliza SQLite local resiliente para "instalar y abrir")
+# Variables de entorno por defecto
 ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
     API_HOST=0.0.0.0 \

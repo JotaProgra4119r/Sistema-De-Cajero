@@ -1,4 +1,4 @@
-﻿# Dockerfile Todo-en-Uno (All-In-One Kiosk) basado en Debian Bookworm
+# Dockerfile Todo-en-Uno (All-In-One Kiosk) basado en Debian Bookworm
 # Permite correr Backend + Frontend con un solo comando: "Instalar y Abrir"
 FROM python:3.12-slim-bookworm
 
@@ -32,7 +32,7 @@ COPY backend/ ./backend/
 COPY database/ ./database/
 COPY sensors/ ./sensors/
 COPY data/ ./data/
-COPY nginx.conf /etc/nginx/sites-available/default
+COPY instalacion/nginx.conf /etc/nginx/sites-available/default
 
 # 5. Configuración de Supervisor para arranque simultáneo de Nginx + Uvicorn
 RUN echo "[supervisord]\nnodaemon=true\n\n[program:nginx]\ncommand=nginx -g 'daemon off;'\nautostart=true\nautorestart=true\n\n[program:backend]\ncommand=python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000\ndirectory=/app\nautostart=true\nautorestart=true\n" > /etc/supervisor/conf.d/supervisord.conf

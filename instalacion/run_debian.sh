@@ -1,5 +1,7 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -e
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 echo "==================================================================="
 echo "  EJECUTOR NATIVO PARA DEBIAN GNU/LINUX (SISTEMA DE CAJERO)"
@@ -15,7 +17,6 @@ echo "[1/2] Arrancando Backend Core API en http://127.0.0.1:8000..."
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 &
 BACKEND_PID=$!
 
-# Asegurar que al salir se detenga el backend
 trap "kill $BACKEND_PID 2>/dev/null || true" EXIT
 
 sleep 3

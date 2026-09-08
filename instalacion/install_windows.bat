@@ -1,5 +1,6 @@
-﻿@echo off
+@echo off
 title Instalador Sistema Bancario Cajero ATM (Windows)
+cd /d "%~dp0\.."
 echo ===================================================================
 echo   INSTALACION DE DEPENDENCIAS (WINDOWS)
 echo ===================================================================
@@ -20,6 +21,6 @@ cd ..
 echo.
 echo ===================================================================
 echo   INSTALACION EXITOSA EN WINDOWS
-echo   Para iniciar el cajero ejecute: run_all.bat o run_windows.bat
+echo   Para iniciar el cajero ejecute: instalacion\run_windows.bat
 echo ===================================================================
 pause

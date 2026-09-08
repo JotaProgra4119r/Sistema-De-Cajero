@@ -1,11 +1,11 @@
-﻿version: '3.8'
+version: '3.8'
 
 services:
   # Servicio de Core Transaccional Bancario (FastAPI)
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ..
+      dockerfile: instalacion/Dockerfile.backend
     container_name: atm_backend_core
     restart: unless-stopped
     ports:
@@ -23,9 +23,8 @@ services:
       - MOCK_HARDWARE=True
       - TXT_STORAGE_PATH=/app/data/storage_txt/
     volumes:
-      # Persistencia de archivos planos en el host
-      - ./data/storage_txt:/app/data/storage_txt
-      - ./database/storage_txt:/app/database/storage_txt
+      - ../data/storage_txt:/app/data/storage_txt
+      - ../database/storage_txt:/app/database/storage_txt
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -35,8 +34,8 @@ services:
   # Servicio de Kiosco Frontend (React 18 + Nginx Reverse Proxy)
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ..
+      dockerfile: instalacion/Dockerfile.frontend
     container_name: atm_frontend_kiosk
     restart: unless-stopped
     ports:
