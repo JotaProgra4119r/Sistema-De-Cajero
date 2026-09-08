@@ -119,6 +119,24 @@
 127|2026-09-07 17:58:08|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
 128|2026-09-07 17:58:08|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
 129|2026-09-07 17:58:08|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+130|2026-09-07 17:58:08|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701788825488180, saldo Q800.00, límite Q1000.00.
+132|2026-09-07 17:58:08|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801788825488325, saldo Q750.00, límite Q1000.00.
+134|2026-09-07 17:58:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+135|2026-09-07 17:58:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+136|2026-09-07 17:58:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+137|2026-09-07 17:58:49|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}. Foto: security_tx_2_1788825529.jpg
+138|2026-09-07 17:58:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+139|2026-09-07 17:58:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+140|2026-09-07 17:58:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+141|2026-09-07 17:58:50|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
+142|2026-09-07 17:58:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+143|2026-09-07 17:58:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+144|2026-09-07 17:58:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+145|2026-09-07 17:58:50|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+146|2026-09-07 17:58:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+147|2026-09-07 17:58:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
+148|2026-09-07 17:58:50|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701788825530918, saldo Q800.00, límite Q1000.00.
+150|2026-09-07 17:58:51|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801788825531054, saldo Q750.00, límite Q1000.00.
 17|2026-09-07 23:32:55|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 7). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
 47|2026-09-07 23:36:27|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 8). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
 63|2026-09-07 23:47:47|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 9). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
@@ -127,7 +145,11 @@
 97|2026-09-07 23:56:46|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 12). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
 113|2026-09-07 23:57:51|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 13). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
 115|2026-09-07 23:57:51|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 14). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-130|2026-09-07 17:58:08|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701788825488180, saldo Q800.00, límite Q1000.00.
 131|2026-09-07 23:58:08|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 15). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-132|2026-09-07 17:58:08|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801788825488325, saldo Q750.00, límite Q1000.00.
 133|2026-09-07 23:58:08|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 16). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
+149|2026-09-07 23:58:50|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 17). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
+151|2026-09-07 23:58:51|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 18). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
+152|2026-09-07 18:13:24|2|RETIRO_EFECTIVO|Retiro exitoso de Q239.00 con desglose {'1': 4, '5': 1, '10': 1, '20': 1, '200': 1}. Foto: security_tx_2_1788826404.jpg
+153|2026-09-07 18:15:19|3|RETIRO_EFECTIVO|Retiro exitoso de Q1000.00 con desglose {'200': 5}. Foto: security_tx_3_1788826519.jpg
+154|2026-09-07 18:15:21|3|RETIRO_EFECTIVO|Retiro exitoso de Q1000.00 con desglose {'200': 5}. Foto: security_tx_3_1788826521.jpg
+155|2026-09-07 18:15:26|3|RETIRO_EFECTIVO|Retiro exitoso de Q500.00 con desglose {'100': 1, '200': 2}. Foto: security_tx_3_1788826526.jpg

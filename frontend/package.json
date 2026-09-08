@@ -3,6 +3,31 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.cajero.atm.kiosk",
+    "productName": "CajeroAutomaticoKiosk",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Office"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -10,7 +35,9 @@
     "preview": "vite preview",
     "start": "electron .",
     "electron": "electron .",
-    "electron:dev": "electron . --dev"
+    "electron:dev": "electron . --dev",
+    "pack:win": "tsc -b && vite build && electron-builder --win",
+    "pack:linux": "tsc -b && vite build && electron-builder --linux deb AppImage"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -24,12 +51,12 @@
     "autoprefixer": "^10.5.5",
     "axios": "^1.20.0",
     "electron": "^44.2.0",
+    "electron-builder": "^26.15.3",
     "lucide-react": "^1.41.0",
     "oxlint": "^1.79.0",
     "postcss": "^8.5.28",
     "tailwindcss": "^3.4.19",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
-  },
-  "main": "electron/main.cjs"
+  }
 }

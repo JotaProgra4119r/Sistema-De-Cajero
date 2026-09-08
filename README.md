@@ -53,16 +53,85 @@ Cada subsistema cuenta con su propio `README.md` técnico exhaustivo, arquitectu
 
 ---
 
-## 🛠️ Instrucciones de Ejecución Rápida
+## 🛠️ Instrucciones de Instalación y Ejecución
 
-### Opción 1: Lanzador Todo en Uno
+El proyecto está preparado para ejecutarse bajo dos modalidades inmediatas ("solo instalar y abrir"): mediante **Docker** (tanto en Windows como en Linux Debian) o de forma **Nativa Directa**.
+
+---
+
+### 🐳 Modalidad 1: Contenedor Docker ("Solo Instalar y Abrir")
+
+Tanto en Windows como en Linux Debian se incluye orquestación completa con `docker-compose.yml` que levanta el backend FastAPI (Python 3.12) y el frontend Nginx con proxy inverso, volumen persistente para archivos `.txt` y healthcheck automático.
+
+#### En Windows (Docker Desktop):
 Haga doble clic en:
-```bash
-run_all.bat
+```cmd
+docker-run.bat
 ```
-Este script arrancará automáticamente el servidor backend en `http://127.0.0.1:8000` y abrirá la terminal Kiosco en Electron.
+*(O ejecute `docker compose up -d` y abra `http://localhost:5173`)*.
 
-### Opción 2: Ejecución Manual por Componente
+#### En Linux Debian / Ubuntu:
+Ejecute en la terminal:
+```bash
+chmod +x docker-run.sh
+./docker-run.sh
+```
+*(El script detecta Docker, construye las imágenes, levanta los contenedores y lanza Chromium en modo Kiosco a pantalla completa).*
+
+Para detener los contenedores:
+```bash
+docker compose down
+```
+
+---
+
+### 🖥️ Modalidad 2: Ejecución Nativa Directa (Scripts Automatizados)
+
+Si prefiere ejecutar sin Docker, se proporcionan instaladores y lanzadores automáticos de un solo clic:
+
+#### En Windows:
+1. **Instalación de dependencias (solo la primera vez):**
+   ```cmd
+   install_windows.bat
+   ```
+2. **Lanzamiento de aplicación y servidor:**
+   ```cmd
+   run_windows.bat
+   ```
+   *(Inicia FastAPI en segundo plano y despliega la ventana Kiosco en Electron).*
+
+#### En Linux Debian:
+1. **Instalación de paquetes del sistema y entornos:**
+   ```bash
+   chmod +x install_debian.sh run_debian.sh
+   ./install_debian.sh
+   ```
+2. **Lanzamiento:**
+   ```bash
+   ./run_debian.sh
+   ```
+
+---
+
+### 📦 Compilación de Binarios Distribuidos (Electron Builder)
+
+Para generar instaladores independientes empaquetados:
+* **Instalador y Portable para Windows (`.exe` NSIS / x64):**
+  ```bash
+  cd frontend
+  npm run pack:win
+  ```
+  *(Genera el instalador `CajeroAutomaticoKiosk Setup 0.0.0.exe` en `frontend/release/`)*.
+* **Paquete Debian (`.deb` / `AppImage` para Linux):**
+  ```bash
+  cd frontend
+  npm run pack:linux
+  ```
+  *(Genera el binario `.deb` listo para `dpkg -i` en `frontend/release/`)*.
+
+---
+
+### Opción 3: Ejecución Manual por Componente
 
 1. **Iniciar Servidor Backend:**
    ```powershell

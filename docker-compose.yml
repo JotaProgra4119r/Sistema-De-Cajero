@@ -1,0 +1,51 @@
+﻿version: '3.8'
+
+services:
+  # Servicio de Core Transaccional Bancario (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: atm_backend_core
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DB_HOST=127.0.0.1
+      - DB_PORT=3306
+      - DB_NAME=atm_system
+      - DB_USER=root
+      - DB_PASSWORD=
+      - MOCK_HARDWARE=True
+      - TXT_STORAGE_PATH=/app/data/storage_txt/
+    volumes:
+      # Persistencia de archivos planos en el host
+      - ./data/storage_txt:/app/data/storage_txt
+      - ./database/storage_txt:/app/database/storage_txt
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Servicio de Kiosco Frontend (React 18 + Nginx Reverse Proxy)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: atm_frontend_kiosk
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  default:
+    name: atm_banking_network
