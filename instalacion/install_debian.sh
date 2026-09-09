@@ -17,8 +17,15 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+if [ -f "requirements.txt" ]; then
+    pip install -r requirements.txt
+elif [ -f "backend/requirements.txt" ]; then
+    pip install -r backend/requirements.txt
+else
+    echo "ERROR: No se encontró requirements.txt en la raíz ni en backend/"
+    exit 1
+fi
+chmod +x instalacion/*.sh 2>/dev/null || true
 
 echo "[3/4] Inicializando base de datos local y tablas..."
 python database/init_db.py

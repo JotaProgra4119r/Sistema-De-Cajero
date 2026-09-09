@@ -1,5 +1,7 @@
-﻿import os
+import os
+import sys
 from typing import List
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -15,7 +17,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = 'HS256'
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     
-    SERIAL_PORT: str = 'COM3'
+    SERIAL_PORT: str = 'COM3' if sys.platform == 'win32' else '/dev/ttyUSB0'
     SERIAL_BAUDRATE: int = 115200
     ESP32_IP: str = '192.168.1.50'
     MOCK_HARDWARE: bool = True
@@ -30,8 +32,17 @@ class Settings(BaseSettings):
         "http://localhost:8000",
         "http://127.0.0.1:8000"
     ]
-    ALLOW_DEMO_MFA: bool = False
+    ALLOW_DEMO_MFA: bool = True
 
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
+
+    @model_validator(mode='after')
+    def validate_platform_serial(self):
+        # Si el archivo .env contiene COM3 pero estamos en Linux, ajustar automáticamente
+        if sys.platform != 'win32' and self.SERIAL_PORT.upper().startswith('COM'):
+            self.SERIAL_PORT = '/dev/ttyUSB0'
+        elif sys.platform == 'win32' and self.SERIAL_PORT.startswith('/dev/'):
+            self.SERIAL_PORT = 'COM3'
+        return self
 
 settings = Settings()

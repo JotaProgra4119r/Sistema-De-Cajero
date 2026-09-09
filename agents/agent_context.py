@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Dict, Any, List, Set
+from typing import Dict, Any, List, Set, Optional
 
 class AgentContext:
     """
