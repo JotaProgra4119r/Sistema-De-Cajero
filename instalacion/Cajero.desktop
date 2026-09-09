@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Cajero Automático ATM
+Comment=Sistema de Kiosco Bancario Multiplataforma
+Exec=bash -c 'cd "$(dirname "%k")" && ./run_debian.sh'
+Icon=utilities-terminal
+Terminal=true
+Categories=Office;Finance;
+StartupNotify=true
