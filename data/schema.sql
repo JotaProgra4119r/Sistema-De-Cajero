@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     nombre_completo VARCHAR(100) NOT NULL,
-    pin_hash CHAR(60) NOT NULL,
+    pin_hash VARCHAR(255) NOT NULL,
     token_temporal VARCHAR(10) NULL,
     saldo_actual DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     monto_max_diario DECIMAL(12,2) NOT NULL DEFAULT 2000.00,
