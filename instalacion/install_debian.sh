@@ -25,8 +25,12 @@ python database/init_db.py
 
 echo "[4/4] Instalando dependencias de Node.js y compilando Frontend..."
 cd frontend
-npm install
+npm install --include=dev
 npm run build
+if [ ! -f "dist/index.html" ]; then
+    echo "ERROR: Falló la compilación de frontend/dist/index.html"
+    exit 1
+fi
 cd ..
 
 echo ""
