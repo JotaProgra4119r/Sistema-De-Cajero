@@ -1,4 +1,4 @@
-﻿-- Schema DDL: Sistema Bancario y Cajero Automático Embebido
+-- Schema DDL: Sistema Bancario y Cajero Automático Embebido
 -- Motor primario: MySQL 8.4 InnoDB (con soporte para SQLite)
 CREATE DATABASE IF NOT EXISTS atm_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE atm_system;
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     nombre_completo VARCHAR(100) NOT NULL,
-    pin_hash CHAR(60) NOT NULL,
+    pin_hash VARCHAR(255) NOT NULL,
     token_temporal VARCHAR(10) NULL,
     saldo_actual DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     monto_max_diario DECIMAL(12,2) NOT NULL DEFAULT 2000.00,
