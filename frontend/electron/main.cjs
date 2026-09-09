@@ -62,23 +62,49 @@ function createWindow() {
     e.preventDefault();
   });
 
-  // Loading strategy: prefer built dist/index.html if exists, unless VITE_DEV_SERVER_URL is explicitly set
-  const distPath = path.join(__dirname, "../dist/index.html");
+  // Loading strategy: search in candidate paths for built dist/index.html
+  const candidatePaths = [
+    path.join(__dirname, "../dist/index.html"),
+    path.join(__dirname, "dist/index.html"),
+    path.join(app.getAppPath(), "dist/index.html"),
+    path.join(app.getAppPath(), "frontend/dist/index.html"),
+    path.join(process.cwd(), "dist/index.html"),
+    path.join(process.cwd(), "frontend/dist/index.html")
+  ];
+  const distPath = candidatePaths.find(p => fs.existsSync(p));
   const useDevServer = process.argv.includes("--dev") || process.env.USE_DEV_SERVER === "true";
 
   if (useDevServer) {
     const devUrl = "http://localhost:5173";
     mainWindow.loadURL(devUrl).catch(() => {
       console.log("[Electron] Servidor dev no disponible en 5173, cargando dist/index.html local...");
-      if (fs.existsSync(distPath)) {
+      if (distPath) {
         mainWindow.loadFile(distPath);
       }
     });
   } else {
-    if (fs.existsSync(distPath)) {
+    if (distPath) {
       mainWindow.loadFile(distPath);
     } else {
-      mainWindow.loadURL("http://localhost:5173");
+      console.warn("[Electron] dist/index.html no encontrado. Intentando conectar a http://localhost:5173...");
+      mainWindow.loadURL("http://localhost:5173").catch((err) => {
+        console.error("[Electron] Error conectando a frontend:", err.message);
+        mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
+          <!DOCTYPE html>
+          <html lang="es">
+          <head><meta charset="UTF-8"><title>Cajero ATM - Frontend no Compilado</title></head>
+          <body style="background:#202225;color:#dcddde;font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;padding:24px;box-sizing:border-box;text-align:center;">
+            <div style="background:#2f3136;border:1px solid #ed4245;border-radius:12px;padding:32px;max-width:600px;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+              <h2 style="color:#ed4245;margin-top:0;">⚠️ Frontend no Compilado</h2>
+              <p style="font-size:15px;line-height:1.6;">No se encontró el paquete de producción <code>frontend/dist/index.html</code> ni un servidor dev activo en <code>http://localhost:5173</code>.</p>
+              <p style="font-size:14px;color:#96989d;">Por favor ejecute en la terminal:</p>
+              <pre style="background:#202225;color:#57f287;padding:12px 16px;border-radius:6px;font-size:14px;overflow-x:auto;">cd frontend && npm install --include=dev && npm run build</pre>
+              <p style="font-size:13px;color:#72767d;margin-bottom:0;">Luego vuelva a ejecutar <code>./instalacion/run_debian.sh</code>.</p>
+            </div>
+          </body>
+          </html>
+        `)}`);
+      });
     }
   }
 
