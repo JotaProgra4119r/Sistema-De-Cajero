@@ -89,6 +89,22 @@ flowchart TD
   - En esquemas SQL (`database/schema.sql` y `data/schema.sql`):
     - Columna `pin_hash` actualizada a `VARCHAR(255)` para concordar con los modelos SQLAlchemy.
 
+### Incidencia 7: Error de conexión en Electron o Navegador (`ERR_CONNECTION_REFUSED` en 5173)
+* **Síntoma:** `electron: Failed to load URL: http://localhost:5173/ with error: ERR_CONNECTION_REFUSED`.
+* **Causa Raíz:**
+  1. En clones limpios de Git o descargas de release, la carpeta `frontend/dist/` se encuentra omitida por `.gitignore`.
+  2. Si `frontend/dist/index.html` no se había compilado previamente (o si `NODE_ENV=production` en Linux omitió la instalación de herramientas dev como `vite` y `typescript`), Electron intentaba cargar `http://localhost:5173`.
+  3. En `run_debian.sh`, el script solo iniciaba el servidor Uvicorn en el puerto 8000, pero ningún proceso levantaba el servidor web del frontend en el puerto 5173, provocando el rechazo de conexión tanto en Electron como en los fallbacks de Chromium y Google Chrome.
+* **Solución Aplicada:**
+  - En `frontend/electron/main.cjs`:
+    - Búsqueda recursiva multi-ruta de `dist/index.html` en las rutas candidatas del proceso y del paquete.
+    - Manejo elegante de error con pantalla HTML diagnóstica en la ventana de Electron en caso de no hallar el build ni el dev server.
+  - En `instalacion/run_debian.sh`:
+    - Auto-detección y compilación reactiva automática: si `frontend/dist/index.html` no existe al iniciar, ejecuta `npm install --include=dev && npm run build` antes de lanzar la interfaz.
+    - Levantamiento de servidor estático en segundo plano (`python3 -m http.server 5173 --directory frontend/dist`) para garantizar disponibilidad inmediata ante los fallbacks de Chromium, Chrome y navegadores web.
+  - En `instalacion/install_debian.sh`:
+    - Forzado de dependencias con `npm install --include=dev` y validación de existencia de `dist/index.html`.
+
 ---
 
 ## 3. Matriz de Archivos Modificados y Creados
