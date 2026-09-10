@@ -1,15 +1,16 @@
 import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
-from backend.app.core.security import generate_totp_token, _consumed_totp_tokens
+from backend.app.core.security import generate_totp_token, _consumed_totp_tokens, _blacklisted_totp_tokens
 from backend.app.hardware.serial_controller import serial_controller
 
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_vault_stock():
-    # Clear consumed TOTP token cache between test cases
+    # Clear consumed and blacklisted TOTP token caches between test cases
     _consumed_totp_tokens.clear()
+    _blacklisted_totp_tokens.clear()
     tok = generate_totp_token()
     login_res = client.post("/api/auth/login", json={
         "card_number": "9999888877776666",
@@ -22,6 +23,7 @@ def setup_vault_stock():
         "bills": {"200": 20, "100": 25, "50": 20, "20": 50, "10": 50, "5": 50, "1": 100} # Total Q9,350 <= Q10,000
     })
     _consumed_totp_tokens.clear()
+    _blacklisted_totp_tokens.clear()
 
 def test_login_user_success():
     tok = generate_totp_token()
@@ -211,6 +213,55 @@ def test_totp_anti_replay_protection():
     })
     assert res2.status_code == 401
     assert "ya consumido" in res2.json()["detail"].lower() or "inválido" in res2.json()["detail"].lower()
+
+def test_totp_immediate_invalidation_on_logout():
+    """Verifies that invoking logout immediately purges and blacklists the TOTP token against replay attacks."""
+    _consumed_totp_tokens.clear()
+    _blacklisted_totp_tokens.clear()
+    tok = generate_totp_token()
+    
+    # 1. Login exitoso
+    res1 = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "1234",
+        "token": tok,
+        "is_admin": False
+    })
+    assert res1.status_code == 200
+    access_token = res1.json()["access_token"]
+    
+    # 2. Cierre de sesión (logout) pasando token y Bearer JWT
+    logout_res = client.post("/api/auth/logout", headers={"Authorization": f"Bearer {access_token}"}, json={
+        "token": tok
+    })
+    assert logout_res.status_code == 200
+    assert logout_res.json()["status"] == "SUCCESS"
+    assert tok in logout_res.json()["purged_tokens"]
+
+    # 3. Intento inmediato de re-login con el mismo token en su ventana temporal de 60s
+    res_replay = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "1234",
+        "token": tok,
+        "is_admin": False
+    })
+    assert res_replay.status_code == 401
+    assert "inválido" in res_replay.json()["detail"].lower() or "expirado" in res_replay.json()["detail"].lower()
+
+    # 4. Probar invalidación de token demo explícitamente revocado
+    demo_tok = "123456"
+    logout_demo = client.post("/api/auth/logout", json={"token": demo_tok})
+    assert logout_demo.status_code == 200
+    assert demo_tok in logout_demo.json()["purged_tokens"]
+
+    res_demo_relogin = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "1234",
+        "token": demo_tok,
+        "is_admin": False
+    })
+    assert res_demo_relogin.status_code == 401
+
 
 def test_soft_delete_and_transparency_audit():
     """Verifies non-destructive soft deletion, immutable archiving, and user-facing visibility."""

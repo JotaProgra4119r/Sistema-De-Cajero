@@ -103,12 +103,13 @@ class BankingService:
         user.fecha_ultimo_acceso = datetime.now(timezone.utc)
         db.commit()
 
-        # Generate JWT
+        # Generate JWT with embedded TOTP reference for immediate invalidation on logout
         access_token = create_access_token({
             "sub": str(user.id_usuario),
             "role": user.rol.nombre_rol,
             "card": clean_card,
-            "name": user.nombre_completo
+            "name": user.nombre_completo,
+            "totp": str(token).strip()
         })
 
         return {

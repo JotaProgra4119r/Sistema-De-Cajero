@@ -9,6 +9,48 @@ from backend.app.core.config import settings
 # In-memory replay attack cache for TOTP tokens: {token_string: expiration_timestamp}
 _consumed_totp_tokens: Dict[str, float] = {}
 
+# Immediate revocation blacklist for TOTP tokens (logout / 60s inactivity timeout)
+_blacklisted_totp_tokens: Dict[str, float] = {}
+
+# Blacklist for revoked JWT access tokens upon logout
+_blacklisted_jwt_tokens: Dict[str, float] = {}
+
+def invalidate_totp_token(token: str, duration_seconds: float = 180.0) -> bool:
+    """
+    Invalidates a TOTP token immediately upon logout or inactivity timeout.
+    Prevents replay attacks during its remaining natural 60s time-step window.
+    Applies unconditionally to all tokens (including demo tokens when explicitly logged out).
+    """
+    if not token or not str(token).strip():
+        return False
+    token_str = str(token).strip()
+    now = time.time()
+    _blacklisted_totp_tokens[token_str] = now + duration_seconds
+    _consumed_totp_tokens[token_str] = now + duration_seconds
+    return True
+
+def is_totp_token_blacklisted(token: str) -> bool:
+    """Checks if a TOTP token has been explicitly purged/blacklisted."""
+    if not token:
+        return False
+    token_str = str(token).strip()
+    now = time.time()
+    exp = _blacklisted_totp_tokens.get(token_str)
+    if exp is not None:
+        if exp < now:
+            _blacklisted_totp_tokens.pop(token_str, None)
+            return False
+        return True
+    return False
+
+def invalidate_jwt_token(jwt_token: str, duration_seconds: float = 3600.0) -> bool:
+    """Blacklists a JWT token on logout to prevent any subsequent usage."""
+    if not jwt_token or not str(jwt_token).strip():
+        return False
+    now = time.time()
+    _blacklisted_jwt_tokens[str(jwt_token).strip()] = now + duration_seconds
+    return True
+
 def get_pin_hash(pin: str) -> str:
     """Generates deterministic salted SHA-256 hash for 4-digit PIN."""
     salt = "ATM_SALT_2026"
@@ -50,7 +92,7 @@ def verify_totp_token(token: str, secret: str = "ATM_TOTP_KEY") -> bool:
     """
     Verifies TOTP token with clock-drift window (current and previous step)
     and enforces strictly single-use consumption to prevent replay attacks.
-    Demo tokens (123456, 456789) are exempt from replay locking if ALLOW_DEMO_MFA is True.
+    Tokens purged on logout/inactivity timeout are immediately and permanently rejected.
     """
     if not token or len(str(token).strip()) == 0:
         return False
@@ -58,14 +100,24 @@ def verify_totp_token(token: str, secret: str = "ATM_TOTP_KEY") -> bool:
     token_str = str(token).strip()
     now = time.time()
 
+    # Evict expired blacklist entries
+    expired_bl = [k for k, exp in _blacklisted_totp_tokens.items() if exp < now]
+    for k in expired_bl:
+        _blacklisted_totp_tokens.pop(k, None)
+
     # Evict expired replay tokens (> 180 seconds old)
     expired_keys = [k for k, exp in _consumed_totp_tokens.items() if exp < now]
     for k in expired_keys:
         _consumed_totp_tokens.pop(k, None)
 
+    # Explicitly purged / blacklisted token check (overrides demo exemption)
+    if token_str in _blacklisted_totp_tokens:
+        print(f"[SECURITY ALERT] Token TOTP revocado/purgado por cierre de sesión o inactividad: {token_str}")
+        return False
+
     is_demo_token = settings.ALLOW_DEMO_MFA and token_str in ["123456", "456789"]
 
-    # Check replay cache (demo tokens are exempt from replay blocking)
+    # Check replay cache (demo tokens are exempt from replay blocking unless revoked)
     if not is_demo_token and token_str in _consumed_totp_tokens:
         print(f"[SECURITY ALERT] Intento de ataque de repetición (Replay Attack) detectado para token TOTP: {token_str}")
         return False
@@ -99,9 +151,19 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     return jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
-    """Decodes and validates JWT token signature and expiration."""
+    """Decodes and validates JWT token signature, expiration, and blacklist status."""
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        token_str = str(token).strip()
+        now = time.time()
+        # Evict expired blacklisted JWTs
+        exp_jwt = [k for k, exp in _blacklisted_jwt_tokens.items() if exp < now]
+        for k in exp_jwt:
+            _blacklisted_jwt_tokens.pop(k, None)
+
+        if token_str in _blacklisted_jwt_tokens:
+            return None
+
+        payload = jwt.decode(token_str, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return payload
     except Exception:
         return None
