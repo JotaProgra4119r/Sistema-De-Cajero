@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Sistema Bancario y Cajero Automático Embebido API",
     description="API Gateway y Motor Transaccional para Kiosco ATM y Hardware Embebido (Arduino/ESP32)",
-    version="1.0.0",
+    version="1.0.2",
     lifespan=lifespan
 )
 
