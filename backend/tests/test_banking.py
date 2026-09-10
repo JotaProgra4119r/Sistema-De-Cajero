@@ -248,6 +248,22 @@ def test_totp_immediate_invalidation_on_logout():
     assert res_replay.status_code == 401
     assert "inválido" in res_replay.json()["detail"].lower() or "expirado" in res_replay.json()["detail"].lower()
 
+    # 4. El token activo se rotó inmediatamente a uno nuevo
+    preview_res = client.get("/api/auth/token-preview")
+    assert preview_res.status_code == 200
+    new_active_tok = preview_res.json()["token"]
+    assert new_active_tok != tok
+
+    # 5. Re-login inmediato con el nuevo token rotado es 100% exitoso sin esperar 60s
+    res_relogin = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "1234",
+        "token": new_active_tok,
+        "is_admin": False
+    })
+    assert res_relogin.status_code == 200
+    assert "access_token" in res_relogin.json()
+
     # 4. Probar invalidación de token demo explícitamente revocado
     demo_tok = "123456"
     logout_demo = client.post("/api/auth/logout", json={"token": demo_tok})

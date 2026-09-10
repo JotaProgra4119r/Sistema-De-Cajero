@@ -34,14 +34,8 @@ $mode = 1
 if ($Web) {
     $mode = 2
 } else {
-    Write-Host "Seleccione el modo de ejecución:" -ForegroundColor Yellow
-    Write-Host "  [1] Modo Kiosco Electron (Escritorio / Pantalla Táctil)" -ForegroundColor White
-    Write-Host "  [2] Modo Servidor Web (FastAPI + Frontend Web en Navegador)" -ForegroundColor White
-    Write-Host ""
-    $choice = Read-Host "Ingrese opción [1-2] (predeterminado 1)"
-    if ($choice -eq "2") {
-        $mode = 2
-    }
+    Write-Host "[*] Iniciando Modo Kiosco Electron (predeterminado)..." -ForegroundColor Yellow
+    Write-Host "    (Para ejecutar en navegador web, use .\run_web.ps1 o el parametro -Web)" -ForegroundColor Gray
 }
 
 # 1. Verificar compilación del frontend

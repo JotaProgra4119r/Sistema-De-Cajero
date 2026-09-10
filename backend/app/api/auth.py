@@ -55,10 +55,12 @@ def logout(payload: Optional[LogoutRequest] = None, authorization: Optional[str]
         invalidate_totp_token(current_token)
         purged_tokens.append(current_token)
 
+    new_active_token = generate_totp_token()
     return {
         "status": "SUCCESS",
-        "message": "Sesión finalizada. Token dinámico invalidado de inmediato en lista negra anti-replay.",
-        "purged_tokens": list(set(purged_tokens))
+        "message": "Sesión finalizada. Token dinámico invalidado y rotado de inmediato.",
+        "purged_tokens": list(set(purged_tokens)),
+        "new_token": new_active_token
     }
 
 @router.get("/token-preview")

@@ -25,14 +25,9 @@ echo "  Sistema de Cajero Automático Bancario Embebido"
 echo "==================================================================="
 echo ""
 
-if [ "$WEB_MODE" = false ] && [ -t 0 ]; then
-    echo "Seleccione el modo de ejecución:"
-    echo "  [1] Modo Kiosco Electron (Escritorio / Pantalla Táctil)"
-    echo "  [2] Modo Servidor Web (FastAPI + Frontend Web en Navegador)"
-    read -r -p "Opción [1-2] (predeterminado 1): " choice
-    if [ "$choice" = "2" ]; then
-        WEB_MODE=true
-    fi
+if [ "$WEB_MODE" = false ]; then
+    echo "[*] Iniciando Modo Kiosco Electron (predeterminado)..."
+    echo "    (Para ejecutar en modo web en el navegador, use ./run_web.sh o --web)"
     echo ""
 fi
 

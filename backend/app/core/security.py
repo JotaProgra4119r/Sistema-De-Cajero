@@ -15,19 +15,127 @@ _blacklisted_totp_tokens: Dict[str, float] = {}
 # Blacklist for revoked JWT access tokens upon logout
 _blacklisted_jwt_tokens: Dict[str, float] = {}
 
+_totp_rotation_offset: int = 0
+
+def get_totp_rotation_offset() -> int:
+    global _totp_rotation_offset
+    return _totp_rotation_offset
+
+def generate_totp_token(secret: str = "ATM_TOTP_KEY") -> str:
+    """
+    Generates an active 6-digit TOTP token.
+    Automatically advances the rotation offset if the generated token has been
+    blacklisted, consumed, or invalidated (e.g. upon logout).
+    Ensures the returned token is always fresh, unique, and valid immediately.
+    """
+    global _totp_rotation_offset
+    now = time.time()
+
+    # Evict expired blacklist entries
+    expired_bl = [k for k, exp in _blacklisted_totp_tokens.items() if exp < now]
+    for k in expired_bl:
+        _blacklisted_totp_tokens.pop(k, None)
+
+    # Evict expired replay tokens
+    expired_keys = [k for k, exp in _consumed_totp_tokens.items() if exp < now]
+    for k in expired_keys:
+        _consumed_totp_tokens.pop(k, None)
+
+    base_step = int(now // 60)
+    for _ in range(500):  # safety bound to find next clean candidate
+        step = base_step + _totp_rotation_offset
+        msg = f"{secret}:{step}"
+        digest = hashlib.sha256(msg.encode("utf-8")).hexdigest()
+        candidate = f"{int(digest[:8], 16) % 1000000:06d}"
+        if candidate in _blacklisted_totp_tokens or candidate in _consumed_totp_tokens:
+            _totp_rotation_offset += 1
+            continue
+        return candidate
+
+    return candidate
+
 def invalidate_totp_token(token: str, duration_seconds: float = 180.0) -> bool:
     """
     Invalidates a TOTP token immediately upon logout or inactivity timeout.
     Prevents replay attacks during its remaining natural 60s time-step window.
-    Applies unconditionally to all tokens (including demo tokens when explicitly logged out).
+    Applies unconditionally to all tokens.
+    Immediately increments rotation offset to generate a fresh, usable token.
     """
+    global _totp_rotation_offset
     if not token or not str(token).strip():
         return False
     token_str = str(token).strip()
     now = time.time()
     _blacklisted_totp_tokens[token_str] = now + duration_seconds
     _consumed_totp_tokens[token_str] = now + duration_seconds
+    
+    # Increment rotation offset and rotate active token immediately
+    _totp_rotation_offset += 1
+    generate_totp_token()
     return True
+
+def verify_totp_token(token: str, secret: str = "ATM_TOTP_KEY") -> bool:
+    """
+    Verifies TOTP token with clock-drift / rotation offset window
+    and enforces strictly single-use consumption to prevent replay attacks.
+    Tokens purged on logout/inactivity timeout are immediately and permanently rejected.
+    """
+    global _totp_rotation_offset
+    if not token or len(str(token).strip()) == 0:
+        return False
+    
+    token_str = str(token).strip()
+    now = time.time()
+
+    # Evict expired blacklist entries
+    expired_bl = [k for k, exp in _blacklisted_totp_tokens.items() if exp < now]
+    for k in expired_bl:
+        _blacklisted_totp_tokens.pop(k, None)
+
+    # Evict expired replay tokens (> 180 seconds old)
+    expired_keys = [k for k, exp in _consumed_totp_tokens.items() if exp < now]
+    for k in expired_keys:
+        _consumed_totp_tokens.pop(k, None)
+
+    # Explicitly purged / blacklisted token check (overrides demo exemption)
+    if token_str in _blacklisted_totp_tokens:
+        print(f"[SECURITY ALERT] Token TOTP revocado/purgado por cierre de sesión o inactividad: {token_str}")
+        return False
+
+    is_demo_token = settings.ALLOW_DEMO_MFA and token_str in ["123456", "456789"]
+
+    # Check replay cache (demo tokens are exempt from replay blocking unless revoked)
+    if not is_demo_token and token_str in _consumed_totp_tokens:
+        print(f"[SECURITY ALERT] Intento de ataque de repetición (Replay Attack) detectado para token TOTP: {token_str}")
+        return False
+
+    # Current active token is always primary candidate
+    current_token = generate_totp_token(secret)
+    candidates = {current_token}
+
+    # Also allow valid steps within recent rotation / drift window that aren't blacklisted
+    base_step = int(now // 60)
+    for offset in range(-1, _totp_rotation_offset + 2):
+        step = base_step + offset
+        msg = f"{secret}:{step}"
+        dig = hashlib.sha256(msg.encode("utf-8")).hexdigest()
+        cand = f"{int(dig[:8], 16) % 1000000:06d}"
+        if cand not in _blacklisted_totp_tokens and cand not in _consumed_totp_tokens:
+            candidates.add(cand)
+
+    valid = token_str in candidates
+
+    # Only if configured in demo mode for isolated development
+    if not valid and is_demo_token:
+        valid = True
+
+    if valid:
+        # Mark as consumed for next 120 seconds to prevent replay (except demo tokens)
+        if not is_demo_token:
+            _consumed_totp_tokens[token_str] = now + 120.0
+        return True
+
+    return False
 
 def is_totp_token_blacklisted(token: str) -> bool:
     """Checks if a TOTP token has been explicitly purged/blacklisted."""
@@ -78,68 +186,6 @@ def verify_pin(plain_pin: str, hashed_pin: str) -> bool:
     raw_sha = hashlib.sha256(str(plain_pin).strip().encode("utf-8")).hexdigest()
     if hmac.compare_digest(raw_sha, target) or hmac.compare_digest(raw_sha[:60], target):
         return True
-    return False
-
-def generate_totp_token(secret: str = "ATM_TOTP_KEY") -> str:
-    """Generates 6-digit TOTP token for current 60s timestep."""
-    timestep = int(time.time() // 60)
-    msg = f"{secret}:{timestep}"
-    digest = hashlib.sha256(msg.encode("utf-8")).hexdigest()
-    code = int(digest[:8], 16) % 1000000
-    return f"{code:06d}"
-
-def verify_totp_token(token: str, secret: str = "ATM_TOTP_KEY") -> bool:
-    """
-    Verifies TOTP token with clock-drift window (current and previous step)
-    and enforces strictly single-use consumption to prevent replay attacks.
-    Tokens purged on logout/inactivity timeout are immediately and permanently rejected.
-    """
-    if not token or len(str(token).strip()) == 0:
-        return False
-    
-    token_str = str(token).strip()
-    now = time.time()
-
-    # Evict expired blacklist entries
-    expired_bl = [k for k, exp in _blacklisted_totp_tokens.items() if exp < now]
-    for k in expired_bl:
-        _blacklisted_totp_tokens.pop(k, None)
-
-    # Evict expired replay tokens (> 180 seconds old)
-    expired_keys = [k for k, exp in _consumed_totp_tokens.items() if exp < now]
-    for k in expired_keys:
-        _consumed_totp_tokens.pop(k, None)
-
-    # Explicitly purged / blacklisted token check (overrides demo exemption)
-    if token_str in _blacklisted_totp_tokens:
-        print(f"[SECURITY ALERT] Token TOTP revocado/purgado por cierre de sesión o inactividad: {token_str}")
-        return False
-
-    is_demo_token = settings.ALLOW_DEMO_MFA and token_str in ["123456", "456789"]
-
-    # Check replay cache (demo tokens are exempt from replay blocking unless revoked)
-    if not is_demo_token and token_str in _consumed_totp_tokens:
-        print(f"[SECURITY ALERT] Intento de ataque de repetición (Replay Attack) detectado para token TOTP: {token_str}")
-        return False
-
-    current_token = generate_totp_token(secret)
-    prev_step = int(now // 60) - 1
-    prev_msg = f"{secret}:{prev_step}"
-    prev_digest = hashlib.sha256(prev_msg.encode("utf-8")).hexdigest()
-    prev_token = f"{int(prev_digest[:8], 16) % 1000000:06d}"
-
-    valid = token_str in [current_token, prev_token]
-
-    # Only if configured in demo mode for isolated development
-    if not valid and is_demo_token:
-        valid = True
-
-    if valid:
-        # Mark as consumed for next 120 seconds to prevent replay (except demo tokens)
-        if not is_demo_token:
-            _consumed_totp_tokens[token_str] = now + 120.0
-        return True
-
     return False
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
