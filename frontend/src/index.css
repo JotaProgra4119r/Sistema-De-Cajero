@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -10,17 +10,73 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Default Light Mode tokens (WCAG AAA compliant) */
+  --atm-bg-base: #f0f2f5;
+  --atm-bg-surface: #ffffff;
+  --atm-bg-sidebar: #e9eaec;
+  --atm-bg-hover: #dadde1;
+  --atm-text-normal: #2e3338;
+  --atm-text-muted: #5c6068;
+  --atm-text-pure: #111214;
+  --atm-border: #d4d7dc;
+  --atm-header-bg: #e3e5e8;
+}
+
+html.dark, :root.dark {
+  /* Discord Dark Mode tokens */
+  --atm-bg-base: #202225;
+  --atm-bg-surface: #2F3136;
+  --atm-bg-sidebar: #36393F;
+  --atm-bg-hover: #40444B;
+  --atm-text-normal: #DCDDDE;
+  --atm-text-muted: #B9BBBE;
+  --atm-text-pure: #FFFFFF;
+  --atm-border: #40444B;
+  --atm-header-bg: #1e1f22;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: #202225;
-  color: #FFFFFF;
+  background-color: var(--atm-bg-base);
+  color: var(--atm-text-pure);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Light mode contrast adjustments */
+html.light .text-white {
+  color: var(--atm-text-pure);
+}
+
+/* Keep pure white on colored solid brand buttons */
+html.light .bg-discord-blurple,
+html.light .bg-discord-blurpleHover,
+html.light .bg-discord-red,
+html.light .bg-purple-600,
+html.light .bg-discord-blurple *,
+html.light .bg-discord-blurpleHover *,
+html.light .bg-discord-red *,
+html.light .bg-purple-600 * {
+  color: #FFFFFF !important;
+}
+
+/* Keep dark text on bright mint and amber badges/buttons */
+html.light .bg-discord-green *,
+html.light .bg-discord-amber *,
+html.dark .bg-discord-green *,
+html.dark .bg-discord-amber * {
+  color: #060607;
+}
+
+html.light input {
+  color: var(--atm-text-pure);
 }
 
 ::-webkit-scrollbar {

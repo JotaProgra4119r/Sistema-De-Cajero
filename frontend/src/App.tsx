@@ -3,6 +3,7 @@ import { WelcomeAuthView } from "./views/WelcomeAuthView";
 import { UserDashboardView } from "./views/UserDashboardView";
 import { AdminConsoleView } from "./views/AdminConsoleView";
 import { WindowBar } from "./components/WindowBar";
+import { authService } from "./services/api";
 
 export function App() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
@@ -45,7 +46,12 @@ export function App() {
     setIsAdminSession(isAdmin);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // ignore
+    }
     localStorage.removeItem("atm_token");
     setCurrentUser(null);
     setIsAdminSession(false);

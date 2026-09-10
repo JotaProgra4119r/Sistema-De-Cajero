@@ -131,32 +131,32 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-6 text-discord-textNormal select-none overflow-hidden">
+    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-4 lg:p-6 text-discord-textNormal select-none overflow-y-auto lg:overflow-hidden">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between pb-4 border-b border-discord-surface">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-discord-surface flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-discord-blurple flex items-center justify-center shadow-glow">
-            <CreditCard className="w-7 h-7 text-white" />
+          <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-discord-blurple flex items-center justify-center shadow-glow flex-shrink-0">
+            <CreditCard className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-wider text-discord-textPure uppercase">
+            <h1 className="text-xl lg:text-2xl font-black tracking-wider text-discord-textPure uppercase">
               Banco Nacional de Guatemala
             </h1>
-            <p className="text-xs text-discord-textMuted tracking-widest uppercase">
+            <p className="text-[11px] lg:text-xs text-discord-textMuted tracking-widest uppercase">
               Terminal Kiosco de Autoservicio Bancario Embebido
             </p>
           </div>
         </div>
 
         {/* Dual Mode Switcher */}
-        <div className="flex items-center gap-3 bg-discord-surface p-1.5 rounded-2xl border border-discord-hover">
+        <div className="flex items-center gap-2 lg:gap-3 bg-discord-surface p-1.5 rounded-2xl border border-discord-hover">
           <button
             type="button"
             onClick={() => {
               setIsAdminMode(false);
               setErrorMessage(null);
             }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
               !isAdminMode
                 ? "bg-discord-blurple text-white shadow-md"
                 : "text-discord-textMuted hover:text-white"
@@ -172,7 +172,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
               setIsAdminMode(true);
               setErrorMessage(null);
             }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
               isAdminMode
                 ? "bg-discord-amber text-black shadow-md font-extrabold"
                 : "text-discord-textMuted hover:text-white"
@@ -185,9 +185,9 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
       </div>
 
       {/* Main Split-Screen Container */}
-      <div className="grid grid-cols-12 gap-8 my-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 my-auto py-4">
         {/* Left Column: Brand Identity, Hardware Badges, Clock & Quick Presets */}
-        <div className="col-span-5 flex flex-col justify-between p-8 bg-discord-surface/60 rounded-3xl border border-discord-hover shadow-kiosk">
+        <div className="col-span-1 lg:col-span-5 flex flex-col justify-between p-5 lg:p-8 bg-discord-surface/60 rounded-3xl border border-discord-hover shadow-kiosk">
           <div>
             <div className="flex items-center gap-2.5 text-discord-textMuted text-sm font-semibold mb-3">
               <Clock className="w-5 h-5 text-discord-blurple" />
@@ -265,7 +265,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
         </div>
 
         {/* Right Column: Authentication Container & Virtual Keypad */}
-        <div className="col-span-7 flex flex-col justify-center p-8 bg-discord-surface rounded-3xl border border-discord-hover shadow-kiosk">
+        <div className="col-span-1 lg:col-span-7 flex flex-col justify-center p-5 lg:p-8 bg-discord-surface rounded-3xl border border-discord-hover shadow-kiosk">
           <div className="max-w-[480px] mx-auto w-full">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-black text-discord-textPure">

@@ -1,4 +1,4 @@
-﻿/** @type {import('tailwindcss').Config} */
+/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -9,18 +9,19 @@ export default {
     extend: {
       colors: {
         discord: {
-          base: "#202225",      // Deep Charcoal
-          surface: "#2F3136",   // Elevated Slate
-          sidebar: "#36393F",   // Muted Slate
-          hover: "#40444B",     // Interactive Hover
-          blurple: "#5865F2",   // Primary Trigger / Confirm
+          base: "var(--atm-bg-base)",
+          surface: "var(--atm-bg-surface)",
+          sidebar: "var(--atm-bg-sidebar)",
+          hover: "var(--atm-bg-hover)",
+          blurple: "#5865F2",
           blurpleHover: "#4752C4",
-          green: "#57F287",     // Success / Enter / Mint
-          amber: "#FEE75C",     // Warning / Limit Approaching
-          red: "#ED4245",       // Danger / Cancel / Clear
-          textNormal: "#DCDDDE",
-          textMuted: "#B9BBBE",
-          textPure: "#FFFFFF",
+          green: "#57F287",
+          amber: "#FEE75C",
+          red: "#ED4245",
+          textNormal: "var(--atm-text-normal)",
+          textMuted: "var(--atm-text-muted)",
+          textPure: "var(--atm-text-pure)",
+          border: "var(--atm-border)",
         }
       },
       fontFamily: {
