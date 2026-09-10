@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Maximize2, Minimize2, Monitor, Square, Minus, X, Tv } from "lucide-react";
+import { Maximize2, Minimize2, Monitor, Square, Minus, X, Tv, Sun, Moon } from "lucide-react";
 
 declare global {
   interface Window {
@@ -18,6 +18,26 @@ declare global {
 
 export const WindowBar: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const saved = localStorage.getItem("atm_theme");
+    return saved === "light" ? "light" : "dark";
+  });
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+    }
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("atm_theme", next);
+  };
 
   useEffect(() => {
     // Listen to Electron state changes
@@ -85,7 +105,7 @@ export const WindowBar: React.FC = () => {
   return (
     <header
       style={{ WebkitAppRegion: "drag" } as any}
-      className="w-full bg-[#1e1f22] border-b border-[#2b2d31] px-4 py-2 flex items-center justify-between text-xs select-none z-50 h-9"
+      className="w-full bg-[var(--atm-header-bg)] border-b border-discord-hover px-4 py-2 flex items-center justify-between text-xs select-none z-50 h-9 transition-colors"
     >
       {/* Brand / Mode info */}
       <div className="flex items-center gap-3">
@@ -99,13 +119,13 @@ export const WindowBar: React.FC = () => {
         <span className="text-discord-muted flex items-center gap-1.5">
           {isFullscreen ? (
             <>
-              <Tv className="w-3.5 h-3.5 text-discord-yellow" />
-              <span className="text-discord-yellow font-medium">Pantalla Completa (F11 / Esc)</span>
+              <Tv className="w-3.5 h-3.5 text-discord-amber" />
+              <span className="text-discord-amber font-medium">Pantalla Completa (F11 / Esc)</span>
             </>
           ) : (
             <>
               <Monitor className="w-3.5 h-3.5 text-discord-blurple" />
-              <span className="text-gray-300 font-medium">Modo Ventana (1400x900)</span>
+              <span className="text-discord-textNormal font-medium">Modo Ventana (1400x900)</span>
             </>
           )}
         </span>
@@ -113,6 +133,26 @@ export const WindowBar: React.FC = () => {
 
       {/* Mode Switchers and Window Controls (no-drag) */}
       <div style={{ WebkitAppRegion: "no-drag" } as any} className="flex items-center gap-2">
+        {/* Toggle Modo Claro / Modo Oscuro */}
+        <button
+          type="button"
+          onClick={handleToggleTheme}
+          title={theme === "dark" ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-discord-sidebar hover:bg-discord-hover text-discord-textNormal border border-discord-hover transition-all"
+        >
+          {theme === "dark" ? (
+            <>
+              <Sun className="w-3.5 h-3.5 text-discord-amber" />
+              <span className="hidden sm:inline">Modo Claro</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-3.5 h-3.5 text-discord-blurple" />
+              <span className="hidden sm:inline">Modo Oscuro</span>
+            </>
+          )}
+        </button>
+
         {/* Switch to Windowed Mode */}
         <button
           type="button"
@@ -121,7 +161,7 @@ export const WindowBar: React.FC = () => {
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
             !isFullscreen
               ? "bg-discord-blurple text-white"
-              : "bg-[#2b2d31] text-gray-300 hover:bg-[#35373c] hover:text-white"
+              : "bg-discord-sidebar text-discord-textNormal hover:bg-discord-hover border border-discord-hover"
           }`}
         >
           <Monitor className="w-3 h-3" />

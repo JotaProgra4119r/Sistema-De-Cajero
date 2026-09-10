@@ -29,6 +29,14 @@ export const authService = {
     const res = await apiClient.get("/api/auth/token-preview");
     return res.data;
   },
+  logout: async (token?: string) => {
+    try {
+      const res = await apiClient.post("/api/auth/logout", { token: token || undefined });
+      return res.data;
+    } catch {
+      return null;
+    }
+  },
 };
 
 export const userService = {

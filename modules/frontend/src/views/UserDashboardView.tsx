@@ -20,7 +20,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   const [loadingAudit, setLoadingAudit] = useState<boolean>(false);
   
   // Custom withdrawal state
-  const [requestedAmount, setRequestedAmount] = useState<string>("123");
+  const [requestedAmount, setRequestedAmount] = useState<string>("100");
   const [selectedBills, setSelectedBills] = useState<Record<number, number>>({
     200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0
   });
@@ -265,25 +265,25 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   const strokeDashoffset = 251.2 * (1 - usedRatio);
 
   return (
-    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-4 lg:p-5 text-discord-textNormal select-none overflow-hidden">
+    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-3 lg:p-5 text-discord-textNormal select-none overflow-y-auto lg:overflow-hidden">
       {/* Top Bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-discord-surface flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-discord-blurple flex items-center justify-center shadow-glow">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-discord-surface flex-shrink-0">
+        <div className="flex items-center gap-3 lg:gap-4">
+          <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-discord-blurple flex items-center justify-center shadow-glow flex-shrink-0">
             <Wallet className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-black text-discord-textPure tracking-wide">
+            <h1 className="text-base lg:text-lg font-black text-discord-textPure tracking-wide">
               Área de Autoservicio Bancario
             </h1>
-            <p className="text-xs text-discord-textMuted">
+            <p className="text-[11px] lg:text-xs text-discord-textMuted">
               Usuario: <span className="text-white font-bold">{userSummary.nombre_completo}</span> | Tarjeta: <span className="font-mono text-discord-green">{userSummary.tarjeta}</span>
             </p>
           </div>
         </div>
 
         {/* Inactivity & Logout */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 lg:gap-3">
           <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-discord-surface border border-discord-hover text-xs font-mono">
             <span className="text-discord-textMuted">Inactividad:</span>
             <span className={`font-bold ${secondsRemaining <= 15 ? "text-discord-red animate-pulse" : "text-discord-amber"}`}>
@@ -303,9 +303,9 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
       </div>
 
       {/* Main 3-Column Grid */}
-      <div className="grid grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-hidden my-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-y-auto lg:overflow-hidden my-2">
         {/* COLUMN 1 (Left, 3 cols) */}
-        <div className="col-span-3 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
+        <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
               Saldo Contable Disponible
@@ -420,7 +420,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         </div>
 
         {/* COLUMN 2 (Center, 6 cols) */}
-        <div className="col-span-6 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-hidden">
+        <div className="col-span-1 lg:col-span-6 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
           {feedbackMessage && (
             <div
               className={`p-2.5 mb-2.5 rounded-xl border flex items-center gap-2 text-xs font-medium animate-shake flex-shrink-0 ${
@@ -445,7 +445,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 </div>
 
                 <div className="grid grid-cols-12 gap-2 mb-2 flex-shrink-0">
-                  <div className="col-span-6 flex items-center bg-discord-sidebar px-3 py-2 rounded-xl border border-discord-hover">
+                  <div className="col-span-12 sm:col-span-5 flex items-center bg-discord-sidebar px-3 py-2 rounded-xl border border-discord-hover">
                     <span className="text-xl font-black text-discord-green mr-1.5">Q.</span>
                     <input
                       type="number"
@@ -458,32 +458,39 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                       placeholder="0.00"
                     />
                   </div>
-                  <div className="col-span-6 grid grid-cols-4 gap-1">
+                  <div className="col-span-12 sm:col-span-7 grid grid-cols-5 gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setPresetAmount(123, true)}
-                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-cyan-300 border border-cyan-800 transition-all text-center"
+                      onClick={() => setPresetAmount(50, true)}
+                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-emerald-400 border border-emerald-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
                     >
-                      ⚡ Q123
+                      Q50
                     </button>
                     <button
                       type="button"
-                      onClick={() => setPresetAmount(239, true)}
-                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-amber-300 border border-amber-800 transition-all text-center"
+                      onClick={() => setPresetAmount(100, true)}
+                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-cyan-400 border border-cyan-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
                     >
-                      ⚡ Q239
+                      Q100
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPresetAmount(200, true)}
+                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-amber-400 border border-amber-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
+                    >
+                      Q200
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(500, true)}
-                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-white border border-discord-hover transition-all text-center"
+                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-purple-400 border border-purple-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
                     >
                       Q500
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(1000, true)}
-                      className="px-1 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-white border border-discord-hover transition-all text-center"
+                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-discord-blurple border border-discord-blurple/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
                     >
                       Q1000
                     </button>
@@ -727,7 +734,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         </div>
 
         {/* COLUMN 3 (Right, 3 cols) */}
-        <div className="col-span-3 flex flex-col justify-between p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk">
+        <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 lg:p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
               Validación Reactiva de Retiro
