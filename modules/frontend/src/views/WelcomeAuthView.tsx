@@ -122,12 +122,20 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   };
 
   // Quick preset test helpers for touch evaluation
-  const setPresetUser = (card: string, p: string, tok: string, admin: boolean) => {
+  const setPresetUser = async (card: string, p: string, tok: string, admin: boolean) => {
     setIsAdminMode(admin);
     setCardNumber(formatCard(card));
     setPin(p);
-    setToken(tok);
     setErrorMessage(null);
+    let activeTok = tok;
+    try {
+      const res = await authService.getTokenPreview();
+      activeTok = res.token;
+      setDynamicTokenPreview(res.token);
+    } catch {
+      // fallback to current preview
+    }
+    setToken(activeTok);
   };
 
   return (
@@ -217,7 +225,15 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 </div>
                 <button
                   type="button"
-                  onClick={() => setToken(dynamicTokenPreview)}
+                  onClick={async () => {
+                    try {
+                      const res = await authService.getTokenPreview();
+                      setDynamicTokenPreview(res.token);
+                      setToken(res.token);
+                    } catch {
+                      setToken(dynamicTokenPreview);
+                    }
+                  }}
                   className="px-3 py-1.5 text-xs font-bold rounded-lg bg-discord-surface hover:bg-discord-hover text-white border border-discord-hover transition-all"
                 >
                   Usar Token
