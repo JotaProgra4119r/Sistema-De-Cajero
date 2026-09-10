@@ -147,3 +147,25 @@ run_windows.bat
 ### Credenciales Demo Verificadas:
 * **Usuario (Kiosco):** Tarjeta `1234-5678-1234-5678` | PIN `1234` | Token `456789` (o botón rápido Carlos Gómez).
 * **Administrador (Bóveda):** Tarjeta `9999-8888-7777-6666` | PIN `1234` | Token `123456` (o botón Admin Bóveda).
+
+---
+
+## 5. Mejoras de Compatibilidad en la Versión 1.0.2
+
+### 5.1 Desacoplamiento de Scripts Web vs Kiosco
+En la versión 1.0.2 se separó la ejecución del servidor web en scripts independientes para evitar dependencias con Electron y eliminar menús interactivos bloqueantes:
+* **Windows:**
+  * Modo Kiosco Electron: `instalacion\run_windows.bat` o `instalacion\run_windows.ps1`
+  * Modo Servidor Web: `instalacion\run_web.bat` o `instalacion\run_web.ps1` (abre automáticamente en navegador)
+* **Linux:**
+  * Modo Kiosco Electron: `./instalacion/run_debian.sh` o `./instalacion/linux/run_linux.sh`
+  * Modo Servidor Web: `./instalacion/run_web.sh` o `./instalacion/linux/run_web.sh`
+
+### 5.2 Dependencia de Pruebas `httpx2` en Entornos CI / Linux
+Las versiones recientes de Starlette exigen el paquete `httpx2` para `TestClient`. Se integró en:
+* `requirements.txt` y `backend/requirements.txt`: `httpx>=0.27.0`, `httpx2>=2.12.0`, `pytest>=8.0.0`.
+* Flujo de CI `.github/workflows/ci.yml`.
+
+### 5.3 Rotación Dinámica de Token TOTP (Prevención de Bloqueo tras Logout)
+Se implementó un offset dinámico de rotación en `backend/app/core/security.py` (`_totp_rotation_offset`), asegurando que al cerrar sesión o agotarse el tiempo de inactividad, el token anterior se añade a la lista negra anti-replay y se genera inmediatamente un nuevo token utilizable, evitando que el usuario deba esperar a que termine el intervalo natural de 60 segundos.
+

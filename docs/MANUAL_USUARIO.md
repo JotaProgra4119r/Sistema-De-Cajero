@@ -17,30 +17,41 @@ Bienvenido a la guía operativa de la terminal de autoservicio bancario. La inte
 
 > [!TIP]
 > Si comete un error, presione el botón **"Limpiar"** (color rojo `#ED4245`) para vaciar el campo activo.
-> En la esquina inferior izquierda se encuentran botones de acceso rápido para iniciar sesión con usuarios de prueba con un solo toque (ej. *Carlos Gómez*, *María López*, *Juan Pérez*).
+> En la esquina inferior izquierda se encuentran botones de acceso rápido para iniciar sesión con usuarios de prueba con un solo toque (ej. *Carlos Gómez*, *María López*, *Juan Pérez*), los cuales consultan dinámicamente el token activo generado por el backend.
 
 ---
 
-### 2. Retiro Personalizado con Desglose de Billetes (Vista 2)
-Una de las características distintivas de este cajero es la capacidad de dispensar montos arbitrarios no estandarizados (como **Q123.00** o **Q239.00**):
+### 2. Retiro de Efectivo: Accesos Directos y Montos Personalizados (Vista 2)
+La terminal ofrece máxima flexibilidad transaccional combinando accesos directos estándar con la capacidad de dispensar cualquier monto arbitrario:
 
 1. **Definir Monto:**
-   - En la columna central, introduzca el monto exacto deseado en el campo numérico (ej. `123`).
-   - También puede tocar los botones de acceso rápido como `⚡ Q123.00` o `⚡ Q239.00`.
+   - **Accesos Directos Estándar:** Toque cualquiera de los botones rápidos preconfigurados: **`Q50`**, **`Q100`**, **`Q200`**, **`Q500`** o **`Q1000`**.
+   - **Monto Arbitrario Personalizado:** Puede introducir manualmente cualquier monto entero que desee (por ejemplo **Q123.00**, **Q239.00**, etc.) en el campo numérico táctil.
 2. **Seleccionar Desglose de Billetes:**
-   - En la cuadrícula de 7 denominaciones oficiales en Quetzales (**Q200, Q100, Q50, Q20, Q10, Q5, Q1**), use los botones táctiles **`+`** y **`-`** para armar el lote de billetes.
+   - En la cuadrícula táctil de 7 denominaciones oficiales en Quetzales (**Q200, Q100, Q50, Q20, Q10, Q5, Q1**), distinguidas con la coloración identitaria de cada billete nacional, use los botones táctiles **`+`** y **`-`** para armar el lote de billetes.
    - *Ejemplo para Q123.00:*
      - 1 billete de Q100
      - 1 billete de Q20
      - 3 billetes de Q1
      - $\text{Total}: (1 \times 100) + (1 \times 20) + (3 \times 1) = \text{Q123.00}$.
+   - O bien, presione el botón **"⚡ Desglose Automático"** para que el algoritmo de programación dinámica del cajero seleccione el conteo óptimo de piezas minimizando el volumen de billetes entregados.
 3. **Validación Reactiva:**
-   - En la columna derecha, observe la tarjeta de cálculo:
+   - En la columna derecha, observe la tarjeta de cálculo reactivo:
      - Si la suma coincide exactamente, el recuadro se iluminará en **verde** mostrando *"Suma Exacta: Válido"*.
      - Si no coincide, se mostrará en **rojo** con la diferencia en Quetzales.
 4. **Dispensación:**
    - Una vez la suma sea exacta, el botón **"Dispensar Efectivo"** se habilitará en verde brillante.
    - Presione el botón: los motores paso a paso del cajero extraerán físicamente las piezas, los sensores ópticos comprobarán la salida del papel moneda y el saldo contable se actualizará en tiempo real.
+
+---
+
+### 2.1 Barra Superior de Control y Modos de Visualización (Novedad v1.0.2)
+En la parte superior de la terminal se encuentra la barra de herramientas interactiva:
+* **Conmutador de Tema (Modo Claro / Modo Oscuro):** Presione el botón con icono de Sol / Luna para alternar instantáneamente entre el tema oscuro profundo y el tema claro de alto contraste. Su preferencia se guardará en memoria local.
+* **Control de Ventana / Pantalla Completa:**
+  * **Modo Ventana:** Permite redimensionar la interfaz o trabajar en resolución contenida (1400x900 o 1024x600).
+  * **Pantalla Completa:** Bloquea la interfaz en modo Kiosco bancario inmersivo (atajo: tecla `F11`).
+* **Ejecución Web Desacoplada:** Si prefiere utilizar la terminal desde cualquier navegador web en su red local o dispositivo móvil sin instalar Electron, puede iniciar directamente `run_web.bat` (Windows) o `./run_web.sh` (Linux), accesible en `http://localhost:5173`.
 
 ---
 

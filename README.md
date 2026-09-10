@@ -85,31 +85,43 @@ cd instalacion && docker compose down
 
 ---
 
-### 🖥️ Modalidad 2: Ejecución Nativa Directa (Scripts Automatizados)
+### 🖥️ Modalidad 2: Ejecución Nativa Directa (Scripts Automatizados v1.0.2)
 
-Si prefiere ejecutar sin Docker, se proporcionan instaladores y lanzadores automáticos de un solo clic dentro de `instalacion/`:
+Si prefiere ejecutar sin Docker, se proporcionan lanzadores automáticos de un solo clic dentro de `instalacion/`:
 
 #### En Windows:
 1. **Instalación de dependencias (solo la primera vez):**
    ```cmd
    instalacion\install_windows.bat
    ```
-2. **Lanzamiento de aplicación y servidor:**
+2. **Modo Kiosco de Escritorio (Electron):**
+   Haga doble clic en:
    ```cmd
    instalacion\run_windows.bat
    ```
-   *(Inicia FastAPI en segundo plano y despliega la ventana Kiosco en Electron).*
+   *(O en PowerShell: `.\instalacion\run_windows.ps1`)*.
+3. **Modo Servidor Web (Navegador):**
+   Para ejecutar de forma desacoplada en el navegador web sin Electron:
+   ```cmd
+   instalacion\run_web.bat
+   ```
+   *(O en PowerShell: `.\instalacion\run_web.ps1`)*.
 
-#### En Linux Debian:
+#### En Linux Debian / Ubuntu:
 1. **Instalación de paquetes del sistema y entornos:**
    ```bash
-   chmod +x instalacion/install_debian.sh instalacion/run_debian.sh
+   chmod +x instalacion/*.sh
    ./instalacion/install_debian.sh
    ```
-2. **Lanzamiento:**
+2. **Modo Kiosco de Escritorio (Electron):**
    ```bash
    ./instalacion/run_debian.sh
    ```
+3. **Modo Servidor Web (Navegador):**
+   ```bash
+   ./instalacion/run_web.sh
+   ```
+   *(Abre automáticamente la interfaz en `http://localhost:5173` conectada al backend FastAPI en `http://localhost:8000`)*.
 
 ---
 

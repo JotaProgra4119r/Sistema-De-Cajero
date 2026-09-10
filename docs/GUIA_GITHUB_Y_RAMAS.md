@@ -1,4 +1,4 @@
-﻿# Guía de Arquitectura de Ramas y Flujo de Trabajo en GitHub
+# Guía de Arquitectura de Ramas y Flujo de Trabajo en GitHub
 ### Sistema Bancario y Cajero Automático Embebido (ATM Kiosk)
 
 Esta guía documenta la estructura de control de versiones, el propósito de cada rama y el protocolo estricto que deben seguir todos los desarrolladores y agentes de inteligencia artificial para contribuir al proyecto sin romper el nodo principal (`main`).
@@ -19,11 +19,11 @@ El objetivo fundamental es **aislar el código en producción de cualquier cambi
 3. Ningún agente interfiera con el trabajo de los otros ni comprometa la integridad del cajero físico.
 
 ```
-                    TAG v1.0.0-release
+                    TAG v1.0.2
 main ----------------------------------------*-------------------------- (PRODUCCIÓN PROTEGIDA)
-       \                                    / ^ (Pull Request Validado)
-        +-- feature/frontend-kiosk --------+ (Agente Frontend / React / Electron)
-        +-- feature/backend-core ----------+ (Agente Backend / API / Reglas de Negocio)
+       \                                    / ^ (CI Validado: Pytest + Vite Build)
+        +-- feature/frontend-kiosk --------+ (Agente Frontend / React / Electron / Temas)
+        +-- feature/backend-core ----------+ (Agente Backend / API / TOTP Dinámico / Reglas)
         +-- feature/database-dualwrite ----+ (Agente Base de Datos / Dual-Write / Migraciones)
         +-- feature/sensors-firmware ------+ (Agente Sensores / Hardware / Firmware)
 ```

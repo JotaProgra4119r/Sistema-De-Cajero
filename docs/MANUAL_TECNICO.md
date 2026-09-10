@@ -1,6 +1,17 @@
 # Manual Técnico de Arquitectura y Hardware Embebido
 
-## Sistema Bancario y Cajero Automático Embebido (ATM Kiosk)
+## Sistema Bancario y Cajero Automático Embebido (ATM Kiosk) - Versión 1.0.2
+
+---
+
+### Registro de Versión y Novedades (Release v1.0.2)
+* **Contenedor Responsivo y Redimensionable:** Soporte de ventana en Electron (`resizable: true`, límites mínimos `1024x600`, modo ventana `1400x900` y pantalla completa `F11`).
+* **Motor Dual de Temas (Modo Claro / Modo Oscuro):** Variables CSS dinámicas, persistencia en `localStorage`, conmutador táctil superior y contraste accesible WCAG AAA.
+* **Cromática Realista de Billetes en Quetzales:** Estilos identitarios para cada denominación (Q200, Q100, Q50, Q20, Q10, Q5, Q1) con degradados suaves en modo claro y tonos profundos en modo oscuro.
+* **Rotación Inmediata de Token TOTP en Logout:** Offset dinámico `_totp_rotation_offset` que elimina el bloqueo de 60 segundos tras el cierre de sesión, garantizando reingreso instantáneo con nuevo token válido.
+* **Scripts de Ejecución Web Desacoplados:** Creación de scripts independientes (`run_web.bat`, `run_web.ps1`, `run_web.sh`) para correr el sistema sin Electron.
+* **Estandarización de Retiros Rápidos:** Botones de acceso directo estándar (Q50, Q100, Q200, Q500, Q1000) preservando la capacidad de retiros arbitrarios manuales.
+* **Integración Continua con Clientes HTTP:** Inclusión de `httpx` y `httpx2` para Starlette TestClient en GitHub Actions CI.
 
 ---
 
@@ -10,12 +21,12 @@ El sistema opera bajo un modelo de arquitectura distribuida en tres capas princi
 
 ```mermaid
 graph TD
-    subgraph "Capa de Presentación (Kiosco Táctil)"
-        UI["Electron Desktop Container\nReact 18 + TypeScript + Tailwind CSS\nModo Kiosco 1920x1080 (Discord Dark Theme)"]
+    subgraph "Capa de Presentación (Kiosco Táctil & Web)"
+        UI["Electron Desktop Container & Navegador Web\nReact 18 + TypeScript + Tailwind CSS\nModo Kiosco / Modo Ventana (Dark & Light Theme)"]
     end
 
     subgraph "Capa de Lógica Bancaria y API Gateway (Host PC)"
-        FastAPI["Python 3.14 (FastAPI + asyncio + Uvicorn)\nMotor Transaccional & Control de Concurrencia"]
+        FastAPI["Python 3.14 (FastAPI + asyncio + Uvicorn)\nMotor Transaccional & TOTP con Rotación Dinámica"]
         WS["WebSocket Server (Eventos Reactivos de Hardware)"]
         TxtManager["TxtStorageManager\nDual-Write Concurrente con asyncio.Lock"]
     end
