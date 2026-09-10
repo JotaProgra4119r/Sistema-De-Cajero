@@ -42,6 +42,7 @@ cd ..
 
 echo ""
 echo "==================================================================="
-echo "  INSTALACIÓN COMPLETADA CON ÉXITO EN DEBIAN"
-echo "  Para iniciar el cajero en modo nativo ejecute: ./instalacion/run_debian.sh"
+echo "  INSTALACIÓN COMPLETADA CON ÉXITO EN DEBIAN / LINUX"
+echo "  Modo Kiosco Electron:   ./instalacion/run_debian.sh"
+echo "  Modo Servidor Web:      ./instalacion/run_debian.sh --web"
 echo "==================================================================="

@@ -3,11 +3,38 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/../.."
 
+WEB_MODE=false
+PORT="${PORT:-5173}"
+
+for arg in "$@"; do
+    case $arg in
+        --web|-w|--server)
+            WEB_MODE=true
+            shift
+            ;;
+        --port=*)
+            PORT="${arg#*=}"
+            shift
+            ;;
+    esac
+done
+
 echo "==================================================================="
-echo "  EJECUTOR NATIVO PARA LINUX (DEBIAN / UBUNTU / LINUX MINT)"
+echo "  EJECUTOR MULTIPLATAFORMA LINUX (DEBIAN / UBUNTU / LINUX MINT)"
 echo "  Sistema de Cajero Automático Bancario Embebido"
 echo "==================================================================="
 echo ""
+
+if [ "$WEB_MODE" = false ] && [ -t 0 ]; then
+    echo "Seleccione el modo de ejecución:"
+    echo "  [1] Modo Kiosco Electron (Escritorio / Pantalla Táctil)"
+    echo "  [2] Modo Servidor Web (FastAPI + Frontend Web en Navegador)"
+    read -r -p "Opción [1-2] (predeterminado 1): " choice
+    if [ "$choice" = "2" ]; then
+        WEB_MODE=true
+    fi
+    echo ""
+fi
 
 # Activar entorno virtual
 if [ -d "venv" ]; then
@@ -15,15 +42,15 @@ if [ -d "venv" ]; then
 fi
 
 # 1. Arrancar Backend en segundo plano
-echo "[1/3] Arrancando Backend Core API en http://127.0.0.1:8000..."
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 &
+echo "[1/2] Arrancando Backend Core API en http://0.0.0.0:8000..."
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 trap "kill $BACKEND_PID 2>/dev/null || true" EXIT
-sleep 3
+sleep 2
 
 # 2. Verificar y compilar Frontend si no existe el bundle de producción
-echo "[2/3] Verificando paquete de distribución web..."
+echo "[2/2] Verificando paquete de distribución web..."
 if [ ! -f "frontend/dist/index.html" ]; then
     echo "[!] Compilación de frontend no detectada. Compilando bundle de producción..."
     if [ ! -d "frontend/node_modules" ]; then
@@ -32,30 +59,54 @@ if [ ! -f "frontend/dist/index.html" ]; then
     (cd frontend && npm run build)
 fi
 
-# 3. Iniciar Terminal Kiosco
-echo "[3/3] Lanzando terminal de Kiosco táctil..."
-if [ -f "frontend/node_modules/.bin/electron" ]; then
-    cd frontend && npm run electron
-elif command -v chromium &> /dev/null; then
-    python3 -m http.server 5173 --directory frontend/dist &
+# 3. Iniciar según el modo seleccionado
+if [ "$WEB_MODE" = true ]; then
+    python3 -m http.server "$PORT" --directory frontend/dist &
     STATIC_PID=$!
     trap "kill $BACKEND_PID $STATIC_PID 2>/dev/null || true" EXIT
-    sleep 1
-    chromium --kiosk --noerrdialogs --disable-infobars http://localhost:5173
-elif command -v google-chrome &> /dev/null; then
-    python3 -m http.server 5173 --directory frontend/dist &
-    STATIC_PID=$!
-    trap "kill $BACKEND_PID $STATIC_PID 2>/dev/null || true" EXIT
-    sleep 1
-    google-chrome --kiosk http://localhost:5173
-else
-    python3 -m http.server 5173 --directory frontend/dist &
-    STATIC_PID=$!
-    trap "kill $BACKEND_PID $STATIC_PID 2>/dev/null || true" EXIT
+
+    LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "127.0.0.1")
     echo ""
     echo "==================================================================="
-    echo "  Kiosco web en ejecucion. Abra en su navegador:"
-    echo "  -> http://localhost:5173"
+    echo "  MODO SERVIDOR WEB ACTIVO (SISTEMA DE CAJERO)"
+    echo "  - URL Local (Host):     http://localhost:$PORT"
+    echo "  - URL Red Local (LAN):  http://$LOCAL_IP:$PORT"
+    echo "  - Backend Swagger Docs: http://localhost:8000/docs"
+    echo ""
+    echo "  Listo para abrir desde cualquier navegador web en la red."
+    echo "  Presione Ctrl+C para detener el servicio."
     echo "==================================================================="
+
+    if command -v xdg-open &> /dev/null; then
+        xdg-open "http://localhost:$PORT" 2>/dev/null || true
+    fi
+
     wait $BACKEND_PID
+else
+    echo "Lanzando terminal de Kiosco táctil (Electron)..."
+    if [ -f "frontend/node_modules/.bin/electron" ]; then
+        cd frontend && npm run electron
+    elif command -v chromium &> /dev/null; then
+        python3 -m http.server "$PORT" --directory frontend/dist &
+        STATIC_PID=$!
+        trap "kill $BACKEND_PID $STATIC_PID 2>/dev/null || true" EXIT
+        sleep 1
+        chromium --kiosk --noerrdialogs --disable-infobars "http://localhost:$PORT"
+    elif command -v google-chrome &> /dev/null; then
+        python3 -m http.server "$PORT" --directory frontend/dist &
+        STATIC_PID=$!
+        trap "kill $BACKEND_PID $STATIC_PID 2>/dev/null || true" EXIT
+        sleep 1
+        google-chrome --kiosk "http://localhost:$PORT"
+    else
+        python3 -m http.server "$PORT" --directory frontend/dist &
+        STATIC_PID=$!
+        trap "kill $BACKEND_PID $STATIC_PID 2>/dev/null || true" EXIT
+        echo ""
+        echo "==================================================================="
+        echo "  Kiosco web en ejecución. Abra en su navegador:"
+        echo "  -> http://localhost:$PORT"
+        echo "==================================================================="
+        wait $BACKEND_PID
+    fi
 fi
