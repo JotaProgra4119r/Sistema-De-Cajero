@@ -1,17 +1,29 @@
-CREATE DATABASE IF NOT EXISTS atm_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- =============================================================================
+-- SISTEMA BANCARIO Y CAJERO AUTOMÁTICO EMBEBIDO (ATM KIOSK) v1.0.2
+-- Script DDL y DML de Creación y Semillado de Base de Datos Relacional
+-- Motor Oficial: MySQL 8.0+ / 8.4 InnoDB
+-- Codificación: UTF-8 (utf8mb4)
+-- =============================================================================
+
+DROP DATABASE IF EXISTS atm_system;
+CREATE DATABASE atm_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE atm_system;
 
--- Catálogo de roles de acceso (RBAC)
+-- -----------------------------------------------------------------------------
+-- 1. TABLA: roles (Control de Acceso Basado en Roles - RBAC)
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS roles (
     id_rol INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_rol VARCHAR(20) NOT NULL UNIQUE
+    nombre_rol VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
 
-INSERT IGNORE INTO roles (id_rol, nombre_rol) VALUES 
+INSERT INTO roles (id_rol, nombre_rol) VALUES 
 (1, 'ADMINISTRADOR'), 
 (2, 'USUARIO');
 
--- Entidad de usuarios corporativos (5 trabajadores + 1 admin)
+-- -----------------------------------------------------------------------------
+-- 2. TABLA: usuarios (Cuentas Corporativas Bancarias con Soft Delete)
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
@@ -21,56 +33,116 @@ CREATE TABLE IF NOT EXISTS usuarios (
     saldo_actual DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     monto_max_diario DECIMAL(12,2) NOT NULL DEFAULT 2000.00,
     total_retirado_hoy DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-    fecha_ultimo_acceso DATETIME NULL,
     cambio_pin_realizado BOOLEAN NOT NULL DEFAULT FALSE,
+    fecha_ultimo_acceso DATETIME NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at DATETIME NULL,
+    deleted_by_id INT NULL,
+    FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Histórico de tarjetas (permite conservar consumos diarios al cambiar tarjeta)
+INSERT INTO usuarios (id_usuario, id_rol, nombre_completo, pin_hash, token_temporal, saldo_actual, monto_max_diario, total_retirado_hoy, cambio_pin_realizado, fecha_ultimo_acceso, activo) VALUES
+(1, 1, 'Administrador de Bóveda', 'c439ac33bf281432082c9a8afc3b1d8e0c551e0589c3e5bae9e96fb6dce193d4', '123456', 0.00, 999999.00, 0.00, FALSE, CURRENT_TIMESTAMP, TRUE),
+(2, 2, 'Carlos Roberto Gómez',    'c439ac33bf281432082c9a8afc3b1d8e0c551e0589c3e5bae9e96fb6dce193d4', '456789', 3500.00, 2000.00, 0.00, FALSE, CURRENT_TIMESTAMP, TRUE),
+(3, 2, 'María Andrea López',      'c439ac33bf281432082c9a8afc3b1d8e0c551e0589c3e5bae9e96fb6dce193d4', '456789', 4800.00, 2500.00, 0.00, FALSE, CURRENT_TIMESTAMP, TRUE),
+(4, 2, 'Juan Fernando Pérez',     'c439ac33bf281432082c9a8afc3b1d8e0c551e0589c3e5bae9e96fb6dce193d4', '456789', 1500.00, 1500.00, 0.00, FALSE, CURRENT_TIMESTAMP, TRUE),
+(5, 2, 'Sofía Isabel Morales',    'c439ac33bf281432082c9a8afc3b1d8e0c551e0589c3e5bae9e96fb6dce193d4', '456789', 6200.00, 3000.00, 0.00, FALSE, CURRENT_TIMESTAMP, TRUE),
+(6, 2, 'Diego Alejandro Ruiz',    'c439ac33bf281432082c9a8afc3b1d8e0c551e0589c3e5bae9e96fb6dce193d4', '456789', 2100.00, 2000.00, 0.00, FALSE, CURRENT_TIMESTAMP, TRUE);
+
+-- -----------------------------------------------------------------------------
+-- 3. TABLA: tarjetas (Plásticos Asignados de 16 Dígitos con Soft Delete)
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tarjetas (
     id_tarjeta INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
-    numero_tarjeta CHAR(16) NOT NULL UNIQUE,
+    numero_tarjeta VARCHAR(16) NOT NULL UNIQUE,
     activa BOOLEAN NOT NULL DEFAULT TRUE,
-    fecha_emision DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+    fecha_asignacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at DATETIME NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Inventario de billetes en bóveda
+INSERT INTO tarjetas (id_tarjeta, id_usuario, numero_tarjeta, activa, fecha_asignacion) VALUES
+(1, 1, '9999888877776666', TRUE, CURRENT_TIMESTAMP),
+(2, 2, '1234567812345678', TRUE, CURRENT_TIMESTAMP),
+(3, 3, '2345678923456789', TRUE, CURRENT_TIMESTAMP),
+(4, 4, '3456789034567890', TRUE, CURRENT_TIMESTAMP),
+(5, 5, '4567890145678901', TRUE, CURRENT_TIMESTAMP),
+(6, 6, '5678901256789012', TRUE, CURRENT_TIMESTAMP);
+
+-- -----------------------------------------------------------------------------
+-- 4. TABLA: denominaciones_cajero (Inventario Físico de Billetes en Bóveda)
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS denominaciones_cajero (
-    denominacion INT PRIMARY KEY,
+    id_denominacion INT AUTO_INCREMENT PRIMARY KEY,
+    denominacion INT UNIQUE NOT NULL,
     cantidad_billetes INT NOT NULL DEFAULT 0,
-    CHECK (denominacion IN (200, 100, 50, 20, 10, 5, 1))
+    CONSTRAINT chk_denominacion CHECK (denominacion IN (200, 100, 50, 20, 10, 5, 1))
 ) ENGINE=InnoDB;
 
-INSERT IGNORE INTO denominaciones_cajero (denominacion, cantidad_billetes) VALUES   
-(200, 20), (100, 30), (50, 20), (20, 50), (10, 50), (5, 50), (1, 100);
+INSERT INTO denominaciones_cajero (denominacion, cantidad_billetes) VALUES   
+(200, 20),
+(100, 30),
+(50,  30),
+(20,  40),
+(10,  35),
+(5,   30),
+(1,   50);
 
--- Registro de arqueos e inicializaciones
+-- -----------------------------------------------------------------------------
+-- 5. TABLA: arqueos_cajero (Auditoría de Cargas e Inicializaciones de Bóveda)
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS arqueos_cajero (
     id_arqueo INT AUTO_INCREMENT PRIMARY KEY,
-    tipo_evento ENUM('INICIALIZACION', 'RECARGA') NOT NULL,
+    tipo_evento VARCHAR(20) NOT NULL,
     monto_total DECIMAL(12,2) NOT NULL,
     fecha_evento DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- Histórico general de transacciones
+INSERT INTO arqueos_cajero (id_arqueo, tipo_evento, monto_total, fecha_evento) VALUES
+(1, 'INICIALIZACION', 9850.00, CURRENT_TIMESTAMP);
+
+-- -----------------------------------------------------------------------------
+-- 6. TABLA: transacciones (Histórico Financiero: Retiros y Depósitos)
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS transacciones (
-    id_transaccion BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_transaccion INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
-    tipo_transaccion ENUM('RETIRO', 'DEPOSITO') NOT NULL,
+    tipo_transaccion VARCHAR(20) NOT NULL,
     monto DECIMAL(12,2) NOT NULL,
     fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     desglose_billetes JSON NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Bitácora de auditoría
+-- -----------------------------------------------------------------------------
+-- 7. TABLA: logs_auditoria (Bitácora de Eventos de Seguridad y Accesos)
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS logs_auditoria (
-    id_log BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_log INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NULL,
     accion VARCHAR(100) NOT NULL,
     detalles TEXT NULL,
     fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+INSERT INTO logs_auditoria (id_usuario, accion, detalles, fecha_hora) VALUES
+(1, 'INICIALIZACION_SISTEMA', 'Semillado inicial de tablas, 6 usuarios corporativos y Q9,850.00 en bóveda.', CURRENT_TIMESTAMP);
+
+-- -----------------------------------------------------------------------------
+-- 8. TABLA: registros_eliminados (Bitácora Inmutable de Bajas Lógicas Soft-Delete)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS registros_eliminados (
+    id_eliminacion INT AUTO_INCREMENT PRIMARY KEY,
+    tabla_origen VARCHAR(50) NOT NULL,
+    id_registro_origen INT NOT NULL,
+    datos_eliminados_json JSON NOT NULL,
+    motivo VARCHAR(255) NULL,
+    eliminado_por_id INT NULL,
+    eliminado_por_nombre VARCHAR(100) NULL,
+    id_usuario_afectado INT NULL,
+    visible_para_usuario BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_eliminacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

@@ -5,13 +5,17 @@
 ---
 
 ### Registro de Versión y Novedades (Release v1.0.2)
+* **Migración Relacional a MySQL 8.4 InnoDB con Fallback a SQLite:** Persistencia completa en 8 tablas relacionales con transacciones ACID, conmutación automática e instantánea a SQLite local (`database/atm_system.db`) y sincronización simultánea con archivos de texto plano (`Dual-Write`).
+* **Bloqueo Preventivo de Bóveda en Q0.00 (Clean Install):** Política de seguridad que arranca el cajero en cero fondos e impide el ingreso a clientes hasta que el Administrador efectúe la carga inicial y arqueo.
+* **Barra de Menú Clásica de Ventana Desktop:** Menús desplegables integrados `Manejo de archivos` (Retiro, Depósito, Cambio de PIN, Bajas lógicas de cuentas, Cerrar Sesión) y `Ayuda` (Guía Rápida de Operaciones; inventario de bóveda restringido a consola administrativa) en la terminal de Autoservicio.
+* **Despliegue de Fondos de la Tienda / Bóveda:** Visualización en tiempo real del saldo disponible en la bóveda física (`total_boveda`) en la tarjeta principal de saldos del usuario.
+* **Depósito Rápido Asistido y Validación Reactiva:** Botones de carga rápida (+Q50, +Q100, +Q200, +Q500, +Q1000) con desglose físico exacto y validación de piezas en vivo.
+* **Bitácora de Auditoría Filtrable con Detalle de Retiros:** Vista administrativa con pestañas para aislar transacciones de `RETIRO`, mostrando usuario, tarjeta, monto, desglose de denominaciones y marca de tiempo.
 * **Contenedor Responsivo y Redimensionable:** Soporte de ventana en Electron (`resizable: true`, límites mínimos `1024x600`, modo ventana `1400x900` y pantalla completa `F11`).
 * **Motor Dual de Temas (Modo Claro / Modo Oscuro):** Variables CSS dinámicas, persistencia en `localStorage`, conmutador táctil superior y contraste accesible WCAG AAA.
 * **Cromática Realista de Billetes en Quetzales:** Estilos identitarios para cada denominación (Q200, Q100, Q50, Q20, Q10, Q5, Q1) con degradados suaves en modo claro y tonos profundos en modo oscuro.
 * **Rotación Inmediata de Token TOTP en Logout:** Offset dinámico `_totp_rotation_offset` que elimina el bloqueo de 60 segundos tras el cierre de sesión, garantizando reingreso instantáneo con nuevo token válido.
 * **Scripts de Ejecución Web Desacoplados:** Creación de scripts independientes (`run_web.bat`, `run_web.ps1`, `run_web.sh`) para correr el sistema sin Electron.
-* **Estandarización de Retiros Rápidos:** Botones de acceso directo estándar (Q50, Q100, Q200, Q500, Q1000) preservando la capacidad de retiros arbitrarios manuales.
-* **Integración Continua con Clientes HTTP:** Inclusión de `httpx` y `httpx2` para Starlette TestClient en GitHub Actions CI.
 
 ---
 

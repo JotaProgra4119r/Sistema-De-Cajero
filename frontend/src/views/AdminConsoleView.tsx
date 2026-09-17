@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
   Shield, Users, BarChart3, FileText, LogOut, Database,
-  AlertCircle, CheckCircle2, RefreshCw, Plus, Radio, Video
+  AlertCircle, CheckCircle2, RefreshCw, Plus, Radio, Video,
+  ArrowDownRight, ArrowUpRight
 } from "lucide-react";
 import { adminService, hardwareService } from "../services/api";
 
@@ -14,6 +15,7 @@ const DENOMINATIONS = [200, 100, 50, 20, 10, 5, 1];
 
 export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, onLogout }) => {
   const [activeSection, setActiveSection] = useState<"vault" | "users" | "analytics" | "audit" | "hardware">("vault");
+  const [auditFilter, setAuditFilter] = useState<"all" | "withdrawals" | "deposits" | "system">("all");
   const [metrics, setMetrics] = useState<any>(null);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -61,14 +63,14 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
     return () => clearInterval(interval);
   }, []);
 
-  const totalInit = Object.entries(initBills).reduce((acc, [d, c]) => acc + Number(d) * c, 0);
-  const totalAdd = Object.entries(addBills).reduce((acc, [d, c]) => acc + Number(d) * c, 0);
+  const totalInit = Object.entries(initBills).reduce((acc, [d, c]) => acc + Number(d) * Number(c), 0);
+  const totalAdd = Object.entries(addBills).reduce((acc, [d, c]) => acc + Number(d) * Number(c), 0);
 
   const handleInitializeVault = async () => {
     setFeedbackMsg(null);
     try {
       const payload: Record<string, number> = {};
-      for (const [d, c] of Object.entries(initBills)) payload[d] = c;
+      for (const [d, c] of Object.entries(initBills)) payload[d] = Number(c);
       const res = await adminService.initializeVault(payload);
       setFeedbackMsg({ type: "success", text: res.mensaje });
       await fetchMetrics();
@@ -82,7 +84,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
     try {
       const payload: Record<string, number> = {};
       for (const [d, c] of Object.entries(addBills)) {
-        if (c > 0) payload[d] = c;
+        if (Number(c) > 0) payload[d] = Number(c);
       }
       const res = await adminService.addCashVault(payload);
       setFeedbackMsg({ type: "success", text: res.mensaje });
@@ -624,40 +626,221 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
           </div>
         )}
 
-        {/* SECTION 4: AUDITORIA */}
+        {/* SECTION 4: AUDITORIA CON VISUALIZACION DE RETIROS Y TRANSACCIONES */}
         {activeSection === "audit" && (
-          <div className="p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-md">
-            <h2 className="text-lg font-black text-white mb-2 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-discord-blurple" />
-              <span>Bitácora de Auditoría del Sistema (auditoria_eventos.txt)</span>
-            </h2>
-            <p className="text-xs text-discord-textMuted mb-4">
-              Registro inmutable de todas las acciones operativas, administrativas y de dispensación física
-            </p>
+          <div className="p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-md space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-discord-hover">
+              <div>
+                <h2 className="text-lg font-black text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-discord-blurple" />
+                  <span>Bitácora de Auditoría y Transacciones Financieras</span>
+                </h2>
+                <p className="text-xs text-discord-textMuted mt-0.5">
+                  Registro inmutable de retiros en efectivo, depósitos, accesos de seguridad y dispensación física
+                </p>
+              </div>
 
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
-              {metrics?.auditoria?.map((log: any) => (
-                <div
-                  key={log.id_log}
-                  className="p-3 rounded-xl bg-discord-sidebar/70 border border-discord-hover flex items-start justify-between text-xs"
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-discord-sidebar border border-discord-hover text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setAuditFilter("all")}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                    auditFilter === "all" ? "bg-discord-blurple text-white shadow-sm" : "text-discord-textMuted hover:text-white"
+                  }`}
                 >
-                  <div>
-                    <div className="flex items-center gap-2 font-bold text-white">
-                      <span className="px-2 py-0.5 rounded bg-discord-surface text-discord-blurple border border-discord-hover font-mono">
-                        #{log.id_log}
-                      </span>
-                      <span>{log.accion}</span>
-                      {log.id_usuario && (
-                        <span className="text-discord-textMuted font-normal">(Usuario ID {log.id_usuario})</span>
-                      )}
+                  <span>Todos los Eventos</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuditFilter("withdrawals")}
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                    auditFilter === "withdrawals" ? "bg-discord-amber text-black shadow-sm font-extrabold" : "text-discord-amber/80 hover:text-discord-amber"
+                  }`}
+                >
+                  <ArrowDownRight className="w-3.5 h-3.5" />
+                  <span>💸 Retiros</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuditFilter("deposits")}
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                    auditFilter === "deposits" ? "bg-discord-green text-black shadow-sm font-extrabold" : "text-discord-green/80 hover:text-discord-green"
+                  }`}
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>📥 Depósitos</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuditFilter("system")}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                    auditFilter === "system" ? "bg-purple-600 text-white shadow-sm" : "text-discord-textMuted hover:text-white"
+                  }`}
+                >
+                  <span>⚙️ Eventos de Sistema</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Content Display based on filter */}
+            <div className="space-y-2.5 max-h-[540px] overflow-y-auto pr-1">
+              {/* RETIROS VIEW */}
+              {(auditFilter === "withdrawals" || auditFilter === "all") && (
+                <div className="space-y-2">
+                  <div className="text-xs font-bold uppercase tracking-wider text-discord-amber flex items-center gap-1.5 pt-1">
+                    <ArrowDownRight className="w-4 h-4" />
+                    <span>Retiros de Efectivo Registrados</span>
+                  </div>
+
+                  {(!metrics?.transacciones || metrics.transacciones.filter((t: any) => t.tipo === "RETIRO").length === 0) ? (
+                    <div className="p-4 text-center text-xs text-discord-textMuted bg-discord-sidebar/50 rounded-xl border border-discord-hover">
+                      Sin retiros registrados hasta el momento.
                     </div>
-                    <p className="text-discord-textNormal mt-1">{log.detalles}</p>
-                  </div>
-                  <div className="font-mono text-[11px] text-discord-textMuted flex-shrink-0 ml-4">
-                    {log.fecha_hora}
-                  </div>
+                  ) : (
+                    metrics.transacciones
+                      .filter((t: any) => t.tipo === "RETIRO")
+                      .map((tx: any) => (
+                        <div
+                          key={`tx-${tx.id_transaccion}`}
+                          className="p-3.5 rounded-xl bg-discord-sidebar border border-amber-900/40 hover:border-amber-600/60 transition-all flex items-start justify-between text-xs"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono font-bold text-[10px]">
+                                RETIRO #{tx.id_transaccion}
+                              </span>
+                              <span className="font-extrabold text-white text-sm">
+                                {tx.nombre_usuario}
+                              </span>
+                              <span className="font-mono text-[11px] text-discord-textMuted">
+                                (Tarjeta: {tx.tarjeta})
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-1 text-[11px]">
+                              <span className="text-discord-textMuted">Desglose físico dispensado:</span>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(tx.desglose || {}).map(([d, c]: [string, any]) => (
+                                  <span
+                                    key={d}
+                                    className="px-1.5 py-0.5 rounded bg-discord-surface border border-discord-hover font-mono font-semibold text-amber-200 text-[10px]"
+                                  >
+                                    Q{d} x {c}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right flex-shrink-0 ml-4">
+                            <div className="text-base font-black font-mono text-discord-amber">
+                              Q{tx.monto?.toFixed(2)}
+                            </div>
+                            <div className="text-[10px] font-mono text-discord-textMuted mt-0.5">
+                              {tx.fecha_hora}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                  )}
                 </div>
-              ))}
+              )}
+
+              {/* DEPOSITOS VIEW */}
+              {(auditFilter === "deposits" || auditFilter === "all") && (
+                <div className="space-y-2 mt-3">
+                  <div className="text-xs font-bold uppercase tracking-wider text-discord-green flex items-center gap-1.5 pt-2 border-t border-discord-hover/60">
+                    <ArrowUpRight className="w-4 h-4" />
+                    <span>Depósitos de Efectivo Registrados</span>
+                  </div>
+
+                  {(!metrics?.transacciones || metrics.transacciones.filter((t: any) => t.tipo === "DEPOSITO").length === 0) ? (
+                    <div className="p-4 text-center text-xs text-discord-textMuted bg-discord-sidebar/50 rounded-xl border border-discord-hover">
+                      Sin depósitos registrados hasta el momento.
+                    </div>
+                  ) : (
+                    metrics.transacciones
+                      .filter((t: any) => t.tipo === "DEPOSITO")
+                      .map((tx: any) => (
+                        <div
+                          key={`tx-${tx.id_transaccion}`}
+                          className="p-3.5 rounded-xl bg-discord-sidebar border border-emerald-900/40 hover:border-emerald-600/60 transition-all flex items-start justify-between text-xs"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono font-bold text-[10px]">
+                                DEPÓSITO #{tx.id_transaccion}
+                              </span>
+                              <span className="font-extrabold text-white text-sm">
+                                {tx.nombre_usuario}
+                              </span>
+                              <span className="font-mono text-[11px] text-discord-textMuted">
+                                (Tarjeta: {tx.tarjeta})
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-1 text-[11px]">
+                              <span className="text-discord-textMuted">Piezas introducidas:</span>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(tx.desglose || {}).map(([d, c]: [string, any]) => (
+                                  <span
+                                    key={d}
+                                    className="px-1.5 py-0.5 rounded bg-discord-surface border border-discord-hover font-mono font-semibold text-emerald-200 text-[10px]"
+                                  >
+                                    Q{d} x {c}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right flex-shrink-0 ml-4">
+                            <div className="text-base font-black font-mono text-discord-green">
+                              +Q{tx.monto?.toFixed(2)}
+                            </div>
+                            <div className="text-[10px] font-mono text-discord-textMuted mt-0.5">
+                              {tx.fecha_hora}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+              )}
+
+              {/* SYSTEM AUDIT LOGS VIEW */}
+              {(auditFilter === "system" || auditFilter === "all") && (
+                <div className="space-y-2 mt-3">
+                  <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted flex items-center gap-1.5 pt-2 border-t border-discord-hover/60">
+                    <FileText className="w-4 h-4 text-discord-blurple" />
+                    <span>Eventos de Seguridad & Bitácora de Auditoría (auditoria_eventos.txt)</span>
+                  </div>
+
+                  {metrics?.auditoria?.map((log: any) => (
+                    <div
+                      key={`log-${log.id_log}`}
+                      className="p-3 rounded-xl bg-discord-sidebar/70 border border-discord-hover flex items-start justify-between text-xs"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 font-bold text-white">
+                          <span className="px-2 py-0.5 rounded bg-discord-surface text-discord-blurple border border-discord-hover font-mono text-[10px]">
+                            #{log.id_log}
+                          </span>
+                          <span className="text-discord-blurple font-mono">{log.accion}</span>
+                          {log.id_usuario && (
+                            <span className="text-discord-textMuted font-normal">(Usuario ID {log.id_usuario})</span>
+                          )}
+                        </div>
+                        <p className="text-discord-textNormal mt-1 leading-relaxed">{log.detalles}</p>
+                      </div>
+                      <div className="font-mono text-[11px] text-discord-textMuted flex-shrink-0 ml-4">
+                        {log.fecha_hora}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

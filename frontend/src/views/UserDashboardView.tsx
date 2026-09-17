@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Wallet, LogOut, CheckCircle2, AlertTriangle, ArrowDownRight,
-  ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote, Archive
+  ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote, Archive,
+  HelpCircle, X, ChevronDown
 } from "lucide-react";
 import { QuetzalBillCard } from "../components/QuetzalBillCard";
 import { userService } from "../services/api";
@@ -19,6 +20,10 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   const [deletedRecords, setDeletedRecords] = useState<any[]>([]);
   const [loadingAudit, setLoadingAudit] = useState<boolean>(false);
   
+  // Classic top desktop menu & modals state (Manejo de archivos | Ayuda)
+  const [openMenu, setOpenMenu] = useState<"archivos" | "ayuda" | null>(null);
+  const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
+
   // Custom withdrawal state
   const [requestedAmount, setRequestedAmount] = useState<string>("100");
   const [selectedBills, setSelectedBills] = useState<Record<number, number>>({
@@ -102,17 +107,41 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
   // Compute withdrawal sum
   const totalSelectedWithdraw = Object.entries(selectedBills).reduce(
-    (acc, [denom, count]) => acc + Number(denom) * count,
+    (acc, [denom, count]) => acc + Number(denom) * Number(count),
     0
   );
   const parsedRequestedAmount = parseFloat(requestedAmount) || 0;
   const amountsMatch = totalSelectedWithdraw > 0 && totalSelectedWithdraw === parsedRequestedAmount;
 
-  // Compute deposit sum
+  // Compute deposit sum & total pieces
   const totalSelectedDeposit = Object.entries(depositBills).reduce(
-    (acc, [denom, count]) => acc + Number(denom) * count,
+    (acc, [denom, count]) => acc + Number(denom) * Number(count),
     0
   );
+  const totalDepositPieces = Object.values(depositBills).reduce((acc: number, c: number) => acc + Number(c), 0);
+
+  // Quick preset deposit helper
+  const addPresetDeposit = (amt: number) => {
+    resetInactivity();
+    let rem = amt;
+    setDepositBills((prev) => {
+      const next = { ...prev };
+      for (const d of DENOMINATIONS) {
+        if (rem >= d) {
+          const count = Math.floor(rem / d);
+          next[d] = (next[d] || 0) + count;
+          rem -= count * d;
+        }
+      }
+      return next;
+    });
+  };
+
+  const clearDeposit = () => {
+    resetInactivity();
+    setDepositBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
+    setFeedbackMessage(null);
+  };
 
   // Steppers for withdrawal
   const handleWithdrawBillChange = (denom: number, delta: number) => {
@@ -196,7 +225,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     try {
       const billsPayload: Record<string, number> = {};
       for (const [k, v] of Object.entries(selectedBills)) {
-        if (v > 0) billsPayload[k] = v;
+        if (Number(v) > 0) billsPayload[k] = Number(v);
       }
       const res = await userService.withdraw(parsedRequestedAmount, billsPayload);
       setFeedbackMessage({ type: "success", text: res.mensaje || "Dispensación exitosa de efectivo." });
@@ -219,7 +248,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     try {
       const billsPayload: Record<string, number> = {};
       for (const [k, v] of Object.entries(depositBills)) {
-        if (v > 0) billsPayload[k] = v;
+        if (Number(v) > 0) billsPayload[k] = Number(v);
       }
       const res = await userService.deposit(billsPayload);
       setFeedbackMessage({ type: "success", text: res.mensaje || "Depósito completado con éxito." });
@@ -302,18 +331,141 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         </div>
       </div>
 
+      {/* Classic Menu Bar (Estilo Ventana de Escritorio: Manejo de archivos | Ayuda) */}
+      <div className="relative flex items-center gap-1.5 px-3 py-1 bg-discord-surface/90 rounded-xl border border-discord-hover text-xs font-semibold my-2 z-30 shadow-sm flex-shrink-0">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setOpenMenu(openMenu === "archivos" ? null : "archivos")}
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+              openMenu === "archivos"
+                ? "bg-discord-blurple text-white shadow-sm"
+                : "text-discord-textMuted hover:text-white hover:bg-discord-sidebar"
+            }`}
+          >
+            <span>Manejo de archivos</span>
+            <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+          </button>
+
+          {openMenu === "archivos" && (
+            <div className="absolute left-0 top-full mt-1.5 w-64 bg-discord-sidebar rounded-xl border border-discord-hover shadow-2xl p-1.5 z-50 animate-fadeIn space-y-1">
+              <button
+                type="button"
+                onClick={() => { setActiveTab("withdraw"); setOpenMenu(null); setFeedbackMessage(null); resetInactivity(); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                  activeTab === "withdraw" ? "bg-discord-blurple text-white" : "text-white hover:bg-discord-hover"
+                }`}
+              >
+                <ArrowDownRight className="w-4 h-4 text-discord-amber" />
+                <span>💸 Retiro de Efectivo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("deposit"); setOpenMenu(null); setFeedbackMessage(null); resetInactivity(); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                  activeTab === "deposit" ? "bg-discord-green text-black" : "text-white hover:bg-discord-hover"
+                }`}
+              >
+                <ArrowUpRight className="w-4 h-4 text-discord-green" />
+                <span>📥 Depósito de Efectivo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("pin"); setOpenMenu(null); setFeedbackMessage(null); resetInactivity(); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                  activeTab === "pin" ? "bg-discord-amber text-black" : "text-white hover:bg-discord-hover"
+                }`}
+              >
+                <KeyRound className="w-4 h-4 text-discord-amber" />
+                <span>🔑 Actualizar PIN Confidencial</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("audit"); setOpenMenu(null); loadDeletedRecords(); resetInactivity(); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                  activeTab === "audit" ? "bg-purple-600 text-white" : "text-white hover:bg-discord-hover"
+                }`}
+              >
+                <Archive className="w-4 h-4 text-purple-400" />
+                <span>📋 Mis Registros y Bajas</span>
+              </button>
+              <div className="border-t border-discord-hover my-1" />
+              <button
+                type="button"
+                onClick={() => { setOpenMenu(null); onLogout(); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs font-bold text-discord-red hover:bg-discord-red/20 transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>🚪 Cerrar Sesión</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setOpenMenu(openMenu === "ayuda" ? null : "ayuda")}
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+              openMenu === "ayuda"
+                ? "bg-discord-blurple text-white shadow-sm"
+                : "text-discord-textMuted hover:text-white hover:bg-discord-sidebar"
+            }`}
+          >
+            <span>Ayuda</span>
+            <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+          </button>
+
+          {openMenu === "ayuda" && (
+            <div className="absolute left-0 top-full mt-1.5 w-64 bg-discord-sidebar rounded-xl border border-discord-hover shadow-2xl p-1.5 z-50 animate-fadeIn space-y-1">
+              <button
+                type="button"
+                onClick={() => { setShowHelpModal(true); setOpenMenu(null); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs font-bold text-white hover:bg-discord-hover transition-all"
+              >
+                <HelpCircle className="w-4 h-4 text-discord-blurple" />
+                <span>📖 Guía Rápida de Operaciones</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="ml-auto text-[11px] text-discord-textMuted hidden sm:flex items-center gap-2">
+          <span>Modo Activo:</span>
+          <span className="text-white font-bold uppercase tracking-wider">
+            {activeTab === "withdraw" ? "Retiro de Efectivo" : activeTab === "deposit" ? "Depósito de Efectivo" : activeTab === "pin" ? "Cambio de PIN" : "Auditoría"}
+          </span>
+        </div>
+      </div>
+
       {/* Main 3-Column Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-y-auto lg:overflow-hidden my-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-y-auto lg:overflow-hidden my-1">
         {/* COLUMN 1 (Left, 3 cols) */}
         <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
               Saldo Contable Disponible
             </div>
-            <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover shadow-inner">
-              <div className="text-xs font-semibold text-discord-textMuted">Fondos en Cuenta (Q.):</div>
-              <div className="text-2xl font-black text-discord-green tracking-tight font-mono mt-1">
-                Q{userSummary.saldo_actual?.toFixed(2) || "0.00"}
+            {/* Card con Fondos en Cuenta y Fondos de la Tienda / Bóveda */}
+            <div className="p-3.5 rounded-xl bg-discord-sidebar border border-discord-hover shadow-inner space-y-2.5">
+              <div>
+                <div className="text-[11px] font-bold text-discord-textMuted flex items-center justify-between">
+                  <span>Fondos en Cuenta (Q.):</span>
+                  <span className="text-[10px] uppercase tracking-wider text-discord-green bg-discord-green/15 px-1.5 py-0.5 rounded font-bold">Personal</span>
+                </div>
+                <div className="text-2xl font-black text-discord-green tracking-tight font-mono mt-0.5">
+                  Q{userSummary.saldo_actual?.toFixed(2) || "0.00"}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-discord-hover/60">
+                <div className="text-[11px] font-bold text-discord-textMuted flex items-center justify-between">
+                  <span>Fondos de la Tienda / Bóveda (Q.):</span>
+                  <span className="text-[10px] uppercase tracking-wider text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded font-bold border border-cyan-800">Cajero</span>
+                </div>
+                <div className="text-xl font-black text-cyan-400 tracking-tight font-mono mt-0.5">
+                  Q{userSummary.total_boveda?.toFixed(2) || "0.00"}
+                </div>
               </div>
             </div>
 
@@ -554,16 +706,69 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
           {activeTab === "deposit" && (
             <div className="flex flex-col justify-between h-full">
-              <div>
-                <h2 className="text-lg font-black text-white mb-1 flex items-center gap-2">
-                  <ArrowUpRight className="w-5 h-5 text-discord-green" />
-                  <span>Depósito de Efectivo Desglosado por Denominación</span>
-                </h2>
-                <p className="text-xs text-discord-textMuted mb-4">
-                  Incremente la cantidad de piezas introducidas en el alimentador por denominación
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="flex items-center justify-between mb-1 flex-shrink-0">
+                  <h2 className="text-base lg:text-lg font-black text-white flex items-center gap-2">
+                    <ArrowUpRight className="w-5 h-5 text-discord-green" />
+                    <span>Depósito de Efectivo a Cuenta Bancaria</span>
+                  </h2>
+                </div>
+                <p className="text-xs text-discord-textMuted mb-3 flex-shrink-0">
+                  Introduzca los billetes por ranura receptora o seleccione piezas por denominación oficial
                 </p>
 
-                <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-1">
+                {/* Quick preset buttons for deposit */}
+                <div className="flex flex-wrap items-center gap-2 mb-2.5 p-2 rounded-xl bg-discord-sidebar/70 border border-discord-hover flex-shrink-0">
+                  <span className="text-xs font-bold text-discord-textMuted mr-1">Carga Rápida:</span>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(50)}
+                    className="px-2.5 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-emerald-400 border border-emerald-800/60 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                  >
+                    +Q50
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(100)}
+                    className="px-2.5 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-cyan-400 border border-cyan-800/60 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                  >
+                    +Q100
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(200)}
+                    className="px-2.5 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-amber-400 border border-amber-800/60 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                  >
+                    +Q200
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(500)}
+                    className="px-2.5 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-purple-400 border border-purple-800/60 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                  >
+                    +Q500
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(1000)}
+                    className="px-2.5 py-1.5 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-discord-blurple border border-discord-blurple/60 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                  >
+                    +Q1000
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearDeposit}
+                    className="ml-auto px-2.5 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-red/20 text-xs font-bold text-discord-red border border-discord-red/40 transition-all"
+                  >
+                    Limpiar
+                  </button>
+                </div>
+
+                <div className="text-[10px] font-bold text-discord-textMuted uppercase tracking-wider mb-1.5 flex-shrink-0">
+                  Alimentador de Billetes Oficiales (7 Denominaciones):
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 flex-1 min-h-0 overflow-y-auto pr-1 pb-1">
                   {DENOMINATIONS.map((d) => (
                     <QuetzalBillCard
                       key={d}
@@ -577,25 +782,30 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover mt-4 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-discord-sidebar border border-discord-hover mt-2 flex items-center justify-between flex-shrink-0">
                 <div>
-                  <div className="text-xs font-bold text-discord-textMuted">Total a Acreditar:</div>
+                  <div className="text-xs font-bold text-discord-textMuted">Subtotal a Acreditar:</div>
                   <div className="text-2xl font-black font-mono text-discord-green">
                     Q{totalSelectedDeposit.toFixed(2)}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleExecuteDeposit}
-                  disabled={totalSelectedDeposit <= 0 || loading}
-                  className={`px-6 py-3 rounded-xl font-extrabold text-sm transition-all shadow-md ${
-                    totalSelectedDeposit > 0 && !loading
-                      ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow"
-                      : "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  {loading ? "Procesando..." : "Confirmar Depósito"}
-                </button>
+                <div className="text-right">
+                  <div className="text-[11px] text-discord-textMuted font-mono">
+                    {totalDepositPieces} billete{totalDepositPieces !== 1 ? "s" : ""}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleExecuteDeposit}
+                    disabled={totalSelectedDeposit <= 0 || loading}
+                    className={`mt-1 px-5 py-2.5 rounded-xl font-extrabold text-xs transition-all shadow-md ${
+                      totalSelectedDeposit > 0 && !loading
+                        ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
+                        : "bg-gray-700 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    {loading ? "Acreditando..." : "Confirmar Depósito"}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -735,83 +945,146 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
         {/* COLUMN 3 (Right, 3 cols) */}
         <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 lg:p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
-              Validación Reactiva de Retiro
-            </div>
-            <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-discord-textMuted">Monto Solicitado:</span>
-                <span className="font-mono font-bold text-white text-base">
-                  Q{parsedRequestedAmount.toFixed(2)}
-                </span>
+          {activeTab === "deposit" ? (
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
+                Validación Reactiva de Depósito
               </div>
+              <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Piezas Introducidas:</span>
+                  <span className="font-mono font-bold text-white text-base">
+                    {totalDepositPieces} billete{totalDepositPieces !== 1 ? "s" : ""}
+                  </span>
+                </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-discord-textMuted">Total Seleccionado:</span>
-                <span
-                  className={`font-mono font-bold text-base ${
-                    amountsMatch
-                      ? "text-discord-green"
-                      : totalSelectedWithdraw > parsedRequestedAmount
-                      ? "text-discord-red"
-                      : "text-discord-amber"
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Total a Acreditar:</span>
+                  <span className="font-mono font-bold text-base text-discord-green">
+                    Q{totalSelectedDeposit.toFixed(2)}
+                  </span>
+                </div>
+
+                <div
+                  className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
+                    totalSelectedDeposit > 0
+                      ? "bg-discord-green/20 border-discord-green text-discord-green"
+                      : "bg-discord-sidebar border-discord-hover text-discord-textMuted"
                   }`}
                 >
-                  Q{totalSelectedWithdraw.toFixed(2)}
-                </span>
+                  {totalSelectedDeposit > 0 ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Listo para acreditación</span>
+                    </>
+                  ) : (
+                    <span>Inserte o seleccione billetes</span>
+                  )}
+                </div>
               </div>
 
-              <div
-                className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
-                  amountsMatch
-                    ? "bg-discord-green/20 border-discord-green text-discord-green"
-                    : "bg-discord-red/10 border-discord-red/40 text-discord-red"
-                }`}
-              >
-                {amountsMatch ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Suma Exacta: Válido</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>
-                      Diferencia: Q{Math.abs(totalSelectedWithdraw - parsedRequestedAmount).toFixed(2)}
-                    </span>
-                  </>
-                )}
+              <div className="mt-4 space-y-2">
+                <button
+                  type="button"
+                  onClick={handleExecuteDeposit}
+                  disabled={totalSelectedDeposit <= 0 || loading}
+                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
+                    totalSelectedDeposit > 0 && !loading
+                      ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
+                      : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
+                  }`}
+                >
+                  {loading ? "Acreditando..." : "Confirmar Depósito"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={clearDeposit}
+                  className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
+                >
+                  Limpiar Alimentador
+                </button>
               </div>
             </div>
+          ) : (
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
+                Validación Reactiva de Retiro
+              </div>
+              <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Monto Solicitado:</span>
+                  <span className="font-mono font-bold text-white text-base">
+                    Q{parsedRequestedAmount.toFixed(2)}
+                  </span>
+                </div>
 
-            <div className="mt-4 space-y-2">
-              <button
-                type="button"
-                onClick={handleExecuteWithdrawal}
-                disabled={!amountsMatch || loading}
-                className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
-                  amountsMatch && !loading
-                    ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
-                    : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
-                }`}
-              >
-                {loading ? "Dispensando..." : "Dispensar Efectivo"}
-              </button>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Total Seleccionado:</span>
+                  <span
+                    className={`font-mono font-bold text-base ${
+                      amountsMatch
+                        ? "text-discord-green"
+                        : totalSelectedWithdraw > parsedRequestedAmount
+                        ? "text-discord-red"
+                        : "text-discord-amber"
+                    }`}
+                  >
+                    Q{totalSelectedWithdraw.toFixed(2)}
+                  </span>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
-                  setFeedbackMessage(null);
-                  resetInactivity();
-                }}
-                className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
-              >
-                Cancelar Operación
-              </button>
+                <div
+                  className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
+                    amountsMatch
+                      ? "bg-discord-green/20 border-discord-green text-discord-green"
+                      : "bg-discord-red/10 border-discord-red/40 text-discord-red"
+                  }`}
+                >
+                  {amountsMatch ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Suma Exacta: Válido</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="w-4 h-4" />
+                      <span>
+                        Diferencia: Q{Math.abs(totalSelectedWithdraw - parsedRequestedAmount).toFixed(2)}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <button
+                  type="button"
+                  onClick={handleExecuteWithdrawal}
+                  disabled={!amountsMatch || loading}
+                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
+                    amountsMatch && !loading
+                      ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
+                      : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
+                  }`}
+                >
+                  {loading ? "Dispensando..." : "Dispensar Efectivo"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
+                    setFeedbackMessage(null);
+                    resetInactivity();
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
+                >
+                  Cancelar Operación
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mt-4 pt-3 border-t border-discord-hover">
             <div className="flex items-center justify-between mb-2">
@@ -861,9 +1134,55 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
       </div>
 
       <div className="flex items-center justify-between pt-3 border-t border-discord-surface text-xs text-discord-textMuted">
-        <div>Sesión activa: {userSummary.nombre_completo} | Retiros validados con Arduino Mega y Sensores IR</div>
+        <div>Sesión activa: {userSummary.nombre_completo} | Operaciones con Doble Escritura MySQL y Archivos Planos</div>
         <div className="text-discord-green font-semibold">● Terminal Segura Bancaria</div>
       </div>
+
+      {/* MODAL: GUIA RAPIDA DE AYUDA */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="max-w-lg w-full p-6 bg-discord-surface rounded-2xl border border-discord-hover shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-discord-hover pb-3">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-discord-blurple" />
+                <h3 className="text-lg font-black text-white">Guía Rápida de Autoservicio</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHelpModal(false)}
+                className="p-1 rounded-lg hover:bg-discord-sidebar text-discord-textMuted hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-discord-textNormal leading-relaxed">
+              <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <strong className="text-white block mb-1">💸 Retiros de Efectivo:</strong>
+                Indique el monto deseado o utilice los botones rápidos. Puede usar el botón <em>⚡ Desglose Automático</em> para calcular la combinación óptima según los billetes físicos disponibles en el cajero.
+              </div>
+
+              <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <strong className="text-white block mb-1">📥 Depósitos de Efectivo:</strong>
+                Seleccione la pestaña de depósito o el menú superior. Introduzca las piezas por denominación (Q200 hasta Q1) o utilice los botones de carga rápida. Al confirmar, su saldo en cuenta y los fondos de la tienda/bóveda se actualizan de inmediato.
+              </div>
+
+              <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <strong className="text-white block mb-1">🛡️ Seguridad y Auditoría:</strong>
+                Toda transacción queda firmada y registrada en la base de datos relacional y respaldada simultáneamente en archivos planos inmutables.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowHelpModal(false)}
+              className="w-full py-2.5 rounded-xl bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold text-xs shadow-md"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

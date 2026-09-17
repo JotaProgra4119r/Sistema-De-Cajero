@@ -29,6 +29,10 @@ export const authService = {
     const res = await apiClient.get("/api/auth/token-preview");
     return res.data;
   },
+  getAtmStatus: async () => {
+    const res = await apiClient.get("/api/auth/atm-status");
+    return res.data;
+  },
   logout: async (token?: string) => {
     try {
       const res = await apiClient.post("/api/auth/logout", { token: token || undefined });

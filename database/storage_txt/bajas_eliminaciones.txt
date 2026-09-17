@@ -1,12 +1,4 @@
-1|2026-09-07 23:32:55|usuarios|7|Administrador Bóveda|7|Fin de contrato laboral
-2|2026-09-07 23:36:27|usuarios|8|Administrador Bóveda|8|Fin de contrato laboral
-3|2026-09-07 23:47:47|usuarios|9|Administrador Bóveda|9|Fin de contrato laboral
-4|2026-09-07 23:56:25|usuarios|10|Administrador Bóveda|10|Fin de contrato laboral
-5|2026-09-07 23:56:46|usuarios|11|Administrador Bóveda|11|Fin de contrato laboral
-6|2026-09-07 23:56:46|usuarios|12|Administrador Bóveda|12|Auditoria de cumplimiento regulatorio
-7|2026-09-07 23:57:51|usuarios|13|Administrador Bóveda|13|Fin de contrato laboral
-8|2026-09-07 23:57:51|usuarios|14|Administrador Bóveda|14|Auditoria de cumplimiento regulatorio
-9|2026-09-07 23:58:08|usuarios|15|Administrador Bóveda|15|Fin de contrato laboral
-10|2026-09-07 23:58:08|usuarios|16|Administrador Bóveda|16|Auditoria de cumplimiento regulatorio
-11|2026-09-07 23:58:50|usuarios|17|Administrador Bóveda|17|Fin de contrato laboral
-12|2026-09-07 23:58:51|usuarios|18|Administrador Bóveda|18|Auditoria de cumplimiento regulatorio
+1|2026-09-17 03:17:26|usuarios|7|Administrador Bóveda|7|Fin de contrato laboral
+2|2026-09-17 03:17:27|usuarios|8|Administrador Bóveda|8|Auditoria de cumplimiento regulatorio
+3|2026-09-17 03:27:16|usuarios|9|Administrador Bóveda|9|Fin de contrato laboral
+4|2026-09-17 03:27:16|usuarios|10|Administrador Bóveda|10|Auditoria de cumplimiento regulatorio

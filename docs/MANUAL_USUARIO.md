@@ -55,22 +55,38 @@ En la parte superior de la terminal se encuentra la barra de herramientas intera
 
 ---
 
-### 3. Depósito de Efectivo Desglosado
-1. En el menú lateral izquierdo, seleccione la pestaña **"Depósito Desglosado"**.
-2. Introduzca el detalle de piezas por denominación utilizando los controles táctiles `+` y `-`.
-3. Verifique el monto total acumulado a acreditar en el panel inferior.
-4. Presione **"Confirmar Depósito"**: sus fondos se acreditarán de inmediato y los billetes se sumarán a la bóveda física del cajero.
+### 3. Depósito de Efectivo Desglosado y Carga Rápida
+1. En la barra de menú superior (`Manejo de archivos > Depósito`) o en las pestañas principales, seleccione **"Depósito Desglosado"**.
+2. **Carga Rápida de Efectivo:** Puede presionar los botones rápidos **`+Q50`**, **`+Q100`**, **`+Q200`**, **`+Q500`** o **`+Q1000`** para sumar paquetes estándar con un solo toque, o usar el botón **"Limpiar"** para reiniciar.
+3. **Desglose Físico por Denominación:** Utilice los botones táctiles **`+`** y **`-`** en cada una de las 7 denominaciones (Q200 a Q1) para armar el lote exacto de billetes a ingresar al cajero.
+4. **Validación Reactiva de Depósito:** En la columna derecha, el panel reactivo valida en vivo el monto a acreditar, mostrando las piezas contadas y el nuevo saldo proyectado en cuenta.
+5. Presione **"Confirmar Depósito"**: sus fondos se acreditarán de inmediato en la base de datos MySQL/SQLite y se incrementará simultáneamente el inventario físico en la bóveda del cajero (`total_boveda`).
 
 ---
 
-### 4. Consulta de Saldo y Cupo Remanente Diario
-* En la columna izquierda, visualice su **Saldo Contable Disponible** en Quetzales.
+### 4. Consulta de Saldo y Fondos de la Tienda / Bóveda
+* En la columna izquierda, la tarjeta principal de saldos exhibe dos métricas financieras cruciales:
+  1. **Fondos en Cuenta (Q.):** Saldo contable disponible y personal del usuario.
+  2. **Fondos de la Tienda / Bóveda (Q.):** Efectivo total físico disponible en el cajero en ese instante (`total_boveda`), permitiendo al usuario conocer con total transparencia la liquidez disponible de la terminal antes de solicitar un retiro.
 * El **Anillo Circular de Cupo Diario** le indicará visualmente qué porcentaje del límite diario permitido ha consumido durante la jornada, detallando el monto retirado hoy y el cupo disponible restante.
 
 ---
 
+### 4.1 Barra de Menú Estilo Ventana Clásica Desktop (`Manejo de archivos` y `Ayuda`)
+En el encabezado de la terminal de autoservicio se incorporó una barra de menús desplegables clásica:
+* **Manejo de archivos:**
+  - **💸 Retiro de Efectivo:** Conmuta directamente a la vista de dispensación de efectivo.
+  - **📥 Depósito a Cuenta:** Conmuta a la vista de ingreso y desglose de billetes.
+  - **🔑 Actualizar PIN:** Despliega el formulario de cambio de clave confidencial.
+  - **⚠️ Baja de Cuenta:** Muestra las políticas de desactivación de cuentas y soft-delete con respaldo JSON forense.
+  - **🚪 Cerrar Sesión:** Salida segura inmediata con rotación de token TOTP.
+* **Ayuda:**
+  - **📘 Guía Rápida:** Ventana modal interactiva con instrucciones sobre desglose de piezas, límites diarios y validación reactiva. *(Nota de seguridad: El estado y detalle de inventario de bóveda está restringido exclusivamente a la Consola Administrativa).*
+
+---
+
 ### 5. Historial de Transacciones
-* En la columna derecha, la tabla de auditoría personal despliega las **últimas 5 transacciones** efectuadas en el cajero (fecha, hora, tipo: Retiro o Depósito, y monto exacto), leídas directamente del archivo histórico `transacciones_historico.txt`.
+* En la columna derecha, la tabla de auditoría personal despliega las **últimas 5 transacciones** efectuadas en el cajero (fecha, hora, tipo: Retiro o Depósito, y monto exacto), leídas directamente de MySQL/SQLite y sincronizadas en el histórico plano.
 
 ---
 
@@ -125,8 +141,17 @@ En la parte superior de la terminal se encuentra la barra de herramientas intera
 
 ---
 
-### 5. Bitácora de Auditoría y Telemetría de Hardware
-* **Bitácora de Auditoría:** Lista secuencial e inmutable de eventos (`auditoria_eventos.txt`), incluyendo inicializaciones, recargas, retiros, depósitos y cambios de PIN.
+### 5. Bitácora de Auditoría y Auditoría de Retiros
+* **Pestañas de Filtrado Especializado:**
+  - **Todos los Eventos:** Muestra cronológicamente todas las operaciones del sistema (autenticaciones, arqueos, recargas, cambios de PIN).
+  - **💸 Retiros:** Filtra y destaca exclusivamente los retiros de efectivo realizados en el cajero. Cada entrada despliega una tarjeta de auditoría con:
+    - Identificador único de transacción (`ID #TX`).
+    - Nombre del usuario y número de tarjeta utilizada.
+    - Monto debitado en Quetzales.
+    - Desglose exacto de piezas dispensadas por denominación (ej. `Q100 x 5, Q50 x 2`).
+    - Fecha y hora exacta del retiro.
+  - **📥 Depósitos:** Filtra todas las recepciones de efectivo con el detalle de piezas ingresadas y nuevo saldo.
+  - **⚙️ Eventos de Sistema:** Muestra eventos de inicialización, bloqueos de seguridad y bajas lógicas.
 * **Telemetría Hardware:**
   - Estado del enlace serie con Arduino Mega 2560 (115200 baudios).
   - Estado de la cámara ESP32-CAM y sensor ultrasónico de presencia HC-SR04.

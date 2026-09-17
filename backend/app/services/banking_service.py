@@ -88,6 +88,18 @@ class BankingService:
         if is_admin_mode and user.rol.nombre_rol != "ADMINISTRADOR":
             raise HTTPException(status_code=403, detail="Acceso denegado: Se requieren credenciales de Administrador.")
         
+        # Validación de Bóveda Vacía (Q0.00):
+        # Si la bóveda está en Q0.00, ningún usuario bancario puede iniciar sesión hasta que
+        # un administrador ingrese en Modo Administrador e inicialice la bóveda con efectivo.
+        if not is_admin_mode:
+            vault_denoms = db.query(DenominacionCajero).all()
+            total_vault = sum(d.denominacion * d.cantidad_billetes for d in vault_denoms)
+            if total_vault <= 0:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Cajero fuera de servicio: Bóveda completamente vacía (Q0.00). Debe ser abastecido e inicializado por un administrador para permitir el acceso a usuarios."
+                )
+
         if not is_admin_mode and user.rol.nombre_rol == "ADMINISTRADOR":
             # Admin can also log in to user mode or view
             pass
@@ -135,9 +147,10 @@ class BankingService:
             raise HTTPException(status_code=404, detail="Usuario no encontrado o inactivo.")
         active_card = next((c.numero_tarjeta for c in user.tarjetas if c.activa and not c.is_deleted), "N/A")
         
-        # Fetch vault stock for user denomination selection
+        # Fetch vault stock and total for user denomination selection and store fund display
         vault_denoms = db.query(DenominacionCajero).all()
         stock_map = {d.denominacion: d.cantidad_billetes for d in vault_denoms}
+        total_vault = sum(d.denominacion * d.cantidad_billetes for d in vault_denoms)
         
         return {
             "id_usuario": user.id_usuario,
@@ -148,7 +161,8 @@ class BankingService:
             "total_retirado_hoy": float(user.total_retirado_hoy),
             "cupo_disponible": max(0.0, float(user.monto_max_diario) - float(user.total_retirado_hoy)),
             "cambio_pin_realizado": user.cambio_pin_realizado,
-            "stock_boveda": stock_map
+            "stock_boveda": stock_map,
+            "total_boveda": float(total_vault)
         }
 
     @staticmethod
@@ -423,6 +437,11 @@ class BankingService:
     @staticmethod
     async def vault_initialize(db: Session, admin_user_id: int, bills: Dict[str, int]) -> Dict[str, Any]:
         total_init = sum(int(d) * int(c) for d, c in bills.items() if int(d) in VALID_DENOMINATIONS)
+        if total_init <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="El monto de inicialización debe ser mayor a Q0.00. Ingrese piezas para al menos una denominación."
+            )
         if total_init > MAX_VAULT_INIT:
             raise HTTPException(
                 status_code=400,
@@ -824,8 +843,8 @@ class BankingService:
                 "deleted_at": u.deleted_at.strftime("%Y-%m-%d %H:%M:%S") if u.deleted_at else None
             })
 
-        # Recent audit logs
-        logs = db.query(LogAuditoria).order_by(LogAuditoria.fecha_hora.desc()).limit(15).all()
+        # Recent audit logs (ampliado a 100 eventos)
+        logs = db.query(LogAuditoria).order_by(LogAuditoria.fecha_hora.desc()).limit(100).all()
         audit_table = [{
             "id_log": l.id_log,
             "id_usuario": l.id_usuario,
@@ -833,6 +852,23 @@ class BankingService:
             "detalles": l.detalles,
             "fecha_hora": l.fecha_hora.strftime("%Y-%m-%d %H:%M:%S")
         } for l in logs]
+
+        # Histórico consolidado de transacciones (Retiros y Depósitos con desglose y usuario)
+        txs = db.query(Transaccion).order_by(Transaccion.fecha_hora.desc()).limit(100).all()
+        txs_table = []
+        for t in txs:
+            u = t.usuario
+            card = next((c.numero_tarjeta for c in u.tarjetas if c.activa and not c.is_deleted), "N/A") if u else "N/A"
+            txs_table.append({
+                "id_transaccion": t.id_transaccion,
+                "id_usuario": t.id_usuario,
+                "nombre_usuario": u.nombre_completo if u else "Usuario Desconocido",
+                "tarjeta": card,
+                "tipo": t.tipo_transaccion,
+                "monto": float(t.monto),
+                "desglose": t.desglose_billetes,
+                "fecha_hora": t.fecha_hora.strftime("%Y-%m-%d %H:%M:%S") if t.fecha_hora else ""
+            })
 
         return {
             "saldo_boveda": total_vault,
@@ -845,5 +881,6 @@ class BankingService:
             "ultimo_usuario": last_user_info,
             "denominaciones": denoms_map,
             "usuarios": users_table,
-            "auditoria": audit_table
+            "auditoria": audit_table,
+            "transacciones": txs_table
         }

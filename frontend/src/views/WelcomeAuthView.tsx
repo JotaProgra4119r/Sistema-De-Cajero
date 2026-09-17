@@ -22,6 +22,8 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   const [currentTime, setCurrentTime] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<string>("");
   const [dynamicTokenPreview, setDynamicTokenPreview] = useState<string>("------");
+  const [vaultEmpty, setVaultEmpty] = useState<boolean>(false);
+  const [vaultTotal, setVaultTotal] = useState<number>(0);
 
   // Clock updater & dynamic token preview
   useEffect(() => {
@@ -37,12 +39,16 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
       try {
         const res = await authService.getTokenPreview();
         setDynamicTokenPreview(res.token);
+        if (res.vault_total !== undefined) {
+          setVaultTotal(res.vault_total);
+          setVaultEmpty(res.vault_empty ?? res.vault_total <= 0);
+        }
       } catch {
         // ignore
       }
     };
     fetchToken();
-    const tokenInterval = setInterval(fetchToken, 5000);
+    const tokenInterval = setInterval(fetchToken, 4000);
 
     return () => {
       clearInterval(interval);
@@ -104,6 +110,11 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
     if (token.length < 6) {
       setErrorMessage("Por favor ingrese el token dinámico de 6 dígitos.");
       setActiveField("token");
+      return;
+    }
+
+    if (!isAdminMode && (vaultEmpty || vaultTotal <= 0)) {
+      setErrorMessage("⚠️ Cajero fuera de servicio: Bóveda completamente vacía (Q0.00). Debe ser inicializado con fondos por un administrador antes de permitir operaciones a usuarios.");
       return;
     }
 
@@ -291,6 +302,20 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 Introduzca sus credenciales táctiles de tres factores
               </p>
             </div>
+
+            {((vaultEmpty || vaultTotal <= 0) && !isAdminMode) && (
+              <div className="p-4 mb-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/80 text-amber-300 flex items-start gap-3 text-xs font-medium shadow-lg backdrop-blur-sm animate-pulse">
+                <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-black text-amber-200 uppercase tracking-wide text-xs">
+                    ⚠️ BÓVEDA VACÍA (Q0.00) - TERMINAL EN ESPERA
+                  </div>
+                  <div className="mt-1 text-amber-100/90 leading-relaxed text-[11px]">
+                    El cajero se encuentra en estado inicial sin efectivo cargado. El acceso de usuarios está restringido hasta que se inicialice. Ingrese con credenciales de <strong>Panel Administrador</strong> para configurar y cargar la bóveda.
+                  </div>
+                </div>
+              </div>
+            )}
 
             {errorMessage && (
               <div className="flex items-center gap-2 p-3.5 mb-4 bg-discord-red/20 border border-discord-red rounded-xl text-discord-red text-sm font-medium animate-shake">
