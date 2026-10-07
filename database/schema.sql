@@ -152,3 +152,30 @@ CREATE TABLE IF NOT EXISTS registros_eliminados (
     visible_para_usuario BOOLEAN NOT NULL DEFAULT TRUE,
     fecha_eliminacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
+-- -----------------------------------------------------------------------------
+-- 9. VISTAS SQL: retiros y depositos (Para Visualización en SQL Management Studio)
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE VIEW retiros AS
+SELECT 
+    t.id_transaccion,
+    t.id_usuario,
+    u.nombre_completo AS cliente,
+    t.monto,
+    t.fecha_hora,
+    t.desglose_billetes
+FROM transacciones t
+JOIN usuarios u ON t.id_usuario = u.id_usuario
+WHERE t.tipo_transaccion = 'RETIRO';
+
+CREATE OR REPLACE VIEW depositos AS
+SELECT 
+    t.id_transaccion,
+    t.id_usuario,
+    u.nombre_completo AS cliente,
+    t.monto,
+    t.fecha_hora,
+    t.desglose_billetes
+FROM transacciones t
+JOIN usuarios u ON t.id_usuario = u.id_usuario
+WHERE t.tipo_transaccion = 'DEPOSITO';

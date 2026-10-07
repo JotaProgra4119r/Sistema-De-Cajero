@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Wallet, LogOut, CheckCircle2, AlertTriangle, ArrowDownRight,
-  ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote, Archive
+  ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote, Archive,
+  HelpCircle, X, Printer
 } from "lucide-react";
 import { QuetzalBillCard } from "../components/QuetzalBillCard";
 import { userService } from "../services/api";
+import { VoucherModal, type VoucherData } from "../components/VoucherModal";
 
 interface UserDashboardViewProps {
   user: any;
@@ -18,9 +20,11 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   const [userSummary, setUserSummary] = useState<any>(user);
   const [deletedRecords, setDeletedRecords] = useState<any[]>([]);
   const [loadingAudit, setLoadingAudit] = useState<boolean>(false);
-  
+  const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
+  const [activeVoucher, setActiveVoucher] = useState<VoucherData | null>(null);
+
   // Custom withdrawal state
-  const [requestedAmount, setRequestedAmount] = useState<string>("100");
+  const [requestedAmount, setRequestedAmount] = useState<string>("0");
   const [selectedBills, setSelectedBills] = useState<Record<number, number>>({
     200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0
   });
@@ -30,10 +34,9 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0
   });
 
-  // PIN change state
+  // PIN change state (Sin token dinámico redundante)
   const [currentPin, setCurrentPin] = useState<string>("");
   const [newPin, setNewPin] = useState<string>("");
-  const [pinToken, setPinToken] = useState<string>("");
   const [pinSuccessMsg, setPinSuccessMsg] = useState<string | null>(null);
 
   // Transactions list
@@ -102,26 +105,52 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
   // Compute withdrawal sum
   const totalSelectedWithdraw = Object.entries(selectedBills).reduce(
-    (acc, [denom, count]) => acc + Number(denom) * count,
+    (acc, [denom, count]) => acc + Number(denom) * Number(count),
     0
   );
-  const parsedRequestedAmount = parseFloat(requestedAmount) || 0;
-  const amountsMatch = totalSelectedWithdraw > 0 && totalSelectedWithdraw === parsedRequestedAmount;
 
-  // Compute deposit sum
+  // Compute deposit sum & total pieces
   const totalSelectedDeposit = Object.entries(depositBills).reduce(
-    (acc, [denom, count]) => acc + Number(denom) * count,
+    (acc, [denom, count]) => acc + Number(denom) * Number(count),
     0
   );
+  const totalDepositPieces = Object.values(depositBills).reduce((acc: number, c: number) => acc + Number(c), 0);
 
-  // Steppers for withdrawal
+  // Quick preset deposit helper
+  const addPresetDeposit = (amt: number) => {
+    resetInactivity();
+    let rem = amt;
+    setDepositBills((prev) => {
+      const next = { ...prev };
+      for (const d of DENOMINATIONS) {
+        if (rem >= d) {
+          const count = Math.floor(rem / d);
+          next[d] = (next[d] || 0) + count;
+          rem -= count * d;
+        }
+      }
+      return next;
+    });
+  };
+
+  const clearDeposit = () => {
+    resetInactivity();
+    setDepositBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
+    setFeedbackMessage(null);
+  };
+
+  // Steppers for withdrawal (sincroniza en tiempo real el monto solicitado)
   const handleWithdrawBillChange = (denom: number, delta: number) => {
     resetInactivity();
     setSelectedBills((prev) => {
       const current = prev[denom] || 0;
       const next = Math.max(0, current + delta);
-      return { ...prev, [denom]: next };
+      const updated = { ...prev, [denom]: next };
+      const sum = Object.entries(updated).reduce((acc, [d, c]) => acc + Number(d) * Number(c), 0);
+      setRequestedAmount(sum.toString());
+      return updated;
     });
+    setFeedbackMessage(null);
   };
 
   // Steppers for deposit
@@ -134,10 +163,9 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     });
   };
 
-  // Preset withdrawal amounts
+  // Preset withdrawal amounts (acumula o auto-distribuye)
   const setPresetAmount = (amt: number, autoDistribute = false) => {
     resetInactivity();
-    setRequestedAmount(amt.toString());
     if (autoDistribute) {
       let rem = amt;
       const newBills: Record<number, number> = { 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 };
@@ -149,8 +177,22 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         }
       }
       setSelectedBills(newBills);
+      setRequestedAmount(amt.toString());
     } else {
-      setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
+      setSelectedBills((prev) => {
+        let rem = amt;
+        const next = { ...prev };
+        for (const d of DENOMINATIONS) {
+          if (rem >= d) {
+            const count = Math.floor(rem / d);
+            next[d] = (next[d] || 0) + count;
+            rem -= count * d;
+          }
+        }
+        const sum = Object.entries(next).reduce((acc, [d, c]) => acc + Number(d) * Number(c), 0);
+        setRequestedAmount(sum.toString());
+        return next;
+      });
     }
     setFeedbackMessage(null);
   };
@@ -187,20 +229,44 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     }
   };
 
-  // Execute Withdrawal
+  // Condiciones de retiro reactivo fluido
+  const userBalance = Number(userSummary.saldo_actual) || 0;
+  const userDailyQuota = userSummary.cupo_disponible !== undefined ? Number(userSummary.cupo_disponible) : 2000;
+  const canWithdraw = totalSelectedWithdraw > 0 &&
+    totalSelectedWithdraw <= userBalance &&
+    totalSelectedWithdraw <= userDailyQuota;
+
+  // Execute Withdrawal con Voucher
   const handleExecuteWithdrawal = async () => {
     resetInactivity();
-    if (!amountsMatch) return;
+    if (!canWithdraw) return;
     setLoading(true);
     setFeedbackMessage(null);
     try {
       const billsPayload: Record<string, number> = {};
       for (const [k, v] of Object.entries(selectedBills)) {
-        if (v > 0) billsPayload[k] = v;
+        if (Number(v) > 0) billsPayload[k] = Number(v);
       }
-      const res = await userService.withdraw(parsedRequestedAmount, billsPayload);
+      const prevBal = userSummary.saldo_actual || 0;
+      const res = await userService.withdraw(totalSelectedWithdraw, billsPayload);
       setFeedbackMessage({ type: "success", text: res.mensaje || "Dispensación exitosa de efectivo." });
+
+      const newBal = res.nuevo_saldo !== undefined ? res.nuevo_saldo : prevBal - totalSelectedWithdraw;
+      setActiveVoucher({
+        id: res.id_transaccion || Date.now(),
+        tipo: "RETIRO",
+        titulo: "COMPROBANTE DE RETIRO DE EFECTIVO",
+        cliente: userSummary.nombre_completo,
+        tarjeta: userSummary.tarjeta,
+        monto: totalSelectedWithdraw,
+        saldo_anterior: prevBal,
+        nuevo_saldo: newBal,
+        desglose: billsPayload,
+        fecha_hora: res.fecha_hora || new Date().toLocaleString()
+      });
+
       setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
+      setRequestedAmount("0");
       await reloadData();
     } catch (err: any) {
       const msg = err.response?.data?.detail || "Error al procesar el retiro.";
@@ -210,7 +276,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     }
   };
 
-  // Execute Deposit
+  // Execute Deposit con Voucher
   const handleExecuteDeposit = async () => {
     resetInactivity();
     if (totalSelectedDeposit <= 0) return;
@@ -219,10 +285,26 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     try {
       const billsPayload: Record<string, number> = {};
       for (const [k, v] of Object.entries(depositBills)) {
-        if (v > 0) billsPayload[k] = v;
+        if (Number(v) > 0) billsPayload[k] = Number(v);
       }
+      const prevBal = userSummary.saldo_actual || 0;
       const res = await userService.deposit(billsPayload);
       setFeedbackMessage({ type: "success", text: res.mensaje || "Depósito completado con éxito." });
+
+      const newBal = res.nuevo_saldo !== undefined ? res.nuevo_saldo : prevBal + totalSelectedDeposit;
+      setActiveVoucher({
+        id: res.id_transaccion || Date.now(),
+        tipo: "DEPOSITO",
+        titulo: "COMPROBANTE DE DEPÓSITO EN EFECTIVO",
+        cliente: userSummary.nombre_completo,
+        tarjeta: userSummary.tarjeta,
+        monto: totalSelectedDeposit,
+        saldo_anterior: prevBal,
+        nuevo_saldo: newBal,
+        desglose: billsPayload,
+        fecha_hora: res.fecha_hora || new Date().toLocaleString()
+      });
+
       setDepositBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
       await reloadData();
     } catch (err: any) {
@@ -233,7 +315,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     }
   };
 
-  // Execute PIN Change
+  // Execute PIN Change sin token dinámico
   const handleExecuteChangePin = async () => {
     resetInactivity();
     setPinSuccessMsg(null);
@@ -244,11 +326,10 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     }
     setLoading(true);
     try {
-      const res = await userService.changePin(userSummary.tarjeta, currentPin, pinToken, newPin);
+      const res = await userService.changePin(userSummary.tarjeta, currentPin, newPin);
       setPinSuccessMsg(res.mensaje);
       setCurrentPin("");
       setNewPin("");
-      setPinToken("");
       await reloadData();
     } catch (err: any) {
       const msg = err.response?.data?.detail || "Error al actualizar el PIN.";
@@ -282,8 +363,18 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           </div>
         </div>
 
-        {/* Inactivity & Logout */}
+        {/* Inactivity, Help & Logout */}
         <div className="flex items-center gap-2 lg:gap-3">
+          <button
+            type="button"
+            onClick={() => setShowHelpModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-discord-surface hover:bg-discord-hover text-discord-textMuted hover:text-white border border-discord-hover text-xs font-semibold transition-all active:scale-95"
+            title="Guía rápida de autoservicio"
+          >
+            <HelpCircle className="w-4 h-4 text-discord-blurple" />
+            <span className="hidden sm:inline">Ayuda</span>
+          </button>
+
           <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-discord-surface border border-discord-hover text-xs font-mono">
             <span className="text-discord-textMuted">Inactividad:</span>
             <span className={`font-bold ${secondsRemaining <= 15 ? "text-discord-red animate-pulse" : "text-discord-amber"}`}>
@@ -303,15 +394,19 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
       </div>
 
       {/* Main 3-Column Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-y-auto lg:overflow-hidden my-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-y-auto lg:overflow-hidden my-1">
         {/* COLUMN 1 (Left, 3 cols) */}
         <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
               Saldo Contable Disponible
             </div>
-            <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover shadow-inner">
-              <div className="text-xs font-semibold text-discord-textMuted">Fondos en Cuenta (Q.):</div>
+            {/* Card con Fondos en Cuenta Personal (Bóveda oculta para usuario final) */}
+            <div className="p-3.5 rounded-xl bg-discord-sidebar border border-discord-hover shadow-inner">
+              <div className="text-[11px] font-bold text-discord-textMuted flex items-center justify-between">
+                <span>Fondos en Cuenta (Q.):</span>
+                <span className="text-[10px] uppercase tracking-wider text-discord-green bg-discord-green/15 px-1.5 py-0.5 rounded font-bold">Personal</span>
+              </div>
               <div className="text-2xl font-black text-discord-green tracking-tight font-mono mt-1">
                 Q{userSummary.saldo_actual?.toFixed(2) || "0.00"}
               </div>
@@ -324,12 +419,12 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
               </div>
               <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" stroke="#2F3136" strokeWidth="10" fill="transparent" />
+                  <circle cx="50" cy="50" r="40" stroke="var(--atm-gauge-track)" strokeWidth="10" fill="transparent" />
                   <circle
                     cx="50"
                     cy="50"
                     r="40"
-                    stroke={usedRatio > 0.8 ? "#ED4245" : usedRatio > 0.5 ? "#FEE75C" : "#57F287"}
+                    stroke={usedRatio > 0.8 ? "var(--atm-color-red)" : usedRatio > 0.5 ? "var(--atm-color-amber)" : "var(--atm-color-green)"}
                     strokeWidth="10"
                     fill="transparent"
                     strokeDasharray="251.2"
@@ -339,7 +434,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg font-black text-white font-mono">
+                  <span className="text-lg font-black text-discord-textPure font-mono">
                     {Math.round(usedRatio * 100)}%
                   </span>
                   <span className="text-[9px] text-discord-textMuted uppercase font-bold">Consumido</span>
@@ -348,13 +443,13 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
               <div className="mt-3 grid grid-cols-2 gap-2 text-left pt-2 border-t border-discord-hover">
                 <div>
-                  <div className="text-[10px] text-discord-textMuted">Retirado hoy:</div>
+                  <div className="text-[10px] text-discord-textMuted font-medium">Retirado hoy:</div>
                   <div className="text-xs font-bold font-mono text-discord-amber">
                     Q{userSummary.total_retirado_hoy?.toFixed(2) || "0.00"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-discord-textMuted">Cupo restante:</div>
+                  <div className="text-[10px] text-discord-textMuted font-medium">Cupo restante:</div>
                   <div className="text-xs font-bold font-mono text-discord-green">
                     Q{userSummary.cupo_disponible?.toFixed(2) || "0.00"}
                   </div>
@@ -462,73 +557,53 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                     <button
                       type="button"
                       onClick={() => setPresetAmount(50, true)}
-                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-emerald-400 border border-emerald-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
+                      className="px-1 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-emerald-400 dark:border-emerald-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-xs font-black text-xs"
                     >
                       Q50
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(100, true)}
-                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-cyan-400 border border-cyan-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
+                      className="px-1 py-2 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-950 border border-sky-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-cyan-400 dark:border-cyan-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-xs font-black text-xs"
                     >
                       Q100
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(200, true)}
-                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-amber-400 border border-amber-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
+                      className="px-1 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-amber-400 dark:border-amber-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-xs font-black text-xs"
                     >
                       Q200
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(500, true)}
-                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-purple-400 border border-purple-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
+                      className="px-1 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-950 border border-purple-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-purple-400 dark:border-purple-800/60 transition-all text-center hover:scale-105 active:scale-95 shadow-xs font-black text-xs"
                     >
                       Q500
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetAmount(1000, true)}
-                      className="px-1 py-2 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-xs font-bold text-discord-blurple border border-discord-blurple/60 transition-all text-center hover:scale-105 active:scale-95 shadow-sm"
+                      className="px-1 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-950 border border-blue-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-discord-blurple dark:border-discord-blurple/60 transition-all text-center hover:scale-105 active:scale-95 shadow-xs font-black text-xs"
                     >
                       Q1000
                     </button>
                   </div>
                 </div>
 
-                {/* Intelligent Auto-Breakdown & Status bar */}
+                {/* Intelligent Auto-Breakdown (Sin duplicar montos que ya están en el panel de validación derecho) */}
                 <div className="flex items-center justify-between gap-2 p-2 mb-2 rounded-xl bg-discord-sidebar/80 border border-discord-hover text-xs flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleAutoDistribute}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold transition-all shadow-sm active:scale-95"
-                    >
-                      <span>⚡ Desglose Automático</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
-                        setFeedbackMessage(null);
-                        resetInactivity();
-                      }}
-                      className="px-2.5 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-hover text-gray-300 font-semibold border border-discord-hover transition-all"
-                    >
-                      Limpiar
-                    </button>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-discord-textMuted mr-1">Seleccionado:</span>
-                    <span className={`font-mono font-bold ${amountsMatch ? "text-discord-green" : "text-discord-amber"}`}>
-                      Q{totalSelectedWithdraw.toFixed(2)}
-                    </span>
-                    <span className="text-discord-textMuted mx-1">/</span>
-                    <span className="font-mono text-white font-bold">
-                      Q{parsedRequestedAmount.toFixed(2)}
-                    </span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAutoDistribute}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold transition-all shadow-sm active:scale-95"
+                  >
+                    <span>⚡ Desglosar en Billetes Disponibles</span>
+                  </button>
+                  <span className="text-[11px] text-discord-textMuted font-medium pr-1">
+                    Optimiza denominaciones según inventario
+                  </span>
                 </div>
 
                 <div className="text-[10px] font-bold text-discord-textMuted uppercase tracking-wider mb-1.5 flex-shrink-0">
@@ -554,16 +629,69 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
           {activeTab === "deposit" && (
             <div className="flex flex-col justify-between h-full">
-              <div>
-                <h2 className="text-lg font-black text-white mb-1 flex items-center gap-2">
-                  <ArrowUpRight className="w-5 h-5 text-discord-green" />
-                  <span>Depósito de Efectivo Desglosado por Denominación</span>
-                </h2>
-                <p className="text-xs text-discord-textMuted mb-4">
-                  Incremente la cantidad de piezas introducidas en el alimentador por denominación
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="flex items-center justify-between mb-1 flex-shrink-0">
+                  <h2 className="text-base lg:text-lg font-black text-white flex items-center gap-2">
+                    <ArrowUpRight className="w-5 h-5 text-discord-green" />
+                    <span>Depósito de Efectivo a Cuenta Bancaria</span>
+                  </h2>
+                </div>
+                <p className="text-xs text-discord-textMuted mb-3 flex-shrink-0">
+                  Introduzca los billetes por ranura receptora o seleccione piezas por denominación oficial
                 </p>
 
-                <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-1">
+                {/* Quick preset buttons for deposit */}
+                <div className="flex flex-wrap items-center gap-2 mb-2.5 p-2 rounded-xl bg-discord-sidebar/70 border border-discord-hover flex-shrink-0">
+                  <span className="text-xs font-bold text-discord-textMuted mr-1">Carga Rápida:</span>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(50)}
+                    className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-emerald-400 dark:border-emerald-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                  >
+                    +Q50
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(100)}
+                    className="px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-950 border border-sky-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-cyan-400 dark:border-cyan-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                  >
+                    +Q100
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(200)}
+                    className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-amber-400 dark:border-amber-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                  >
+                    +Q200
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(500)}
+                    className="px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-950 border border-purple-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-purple-400 dark:border-purple-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                  >
+                    +Q500
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addPresetDeposit(1000)}
+                    className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-950 border border-blue-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-discord-blurple dark:border-discord-blurple/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                  >
+                    +Q1000
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearDeposit}
+                    className="ml-auto px-2.5 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-red/20 text-xs font-bold text-discord-red border border-discord-red/40 transition-all"
+                  >
+                    Limpiar
+                  </button>
+                </div>
+
+                <div className="text-[10px] font-bold text-discord-textMuted uppercase tracking-wider mb-1.5 flex-shrink-0">
+                  Alimentador de Billetes Oficiales (7 Denominaciones):
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 flex-1 min-h-0 overflow-y-auto pr-1 pb-1">
                   {DENOMINATIONS.map((d) => (
                     <QuetzalBillCard
                       key={d}
@@ -575,27 +703,6 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                     />
                   ))}
                 </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover mt-4 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-discord-textMuted">Total a Acreditar:</div>
-                  <div className="text-2xl font-black font-mono text-discord-green">
-                    Q{totalSelectedDeposit.toFixed(2)}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleExecuteDeposit}
-                  disabled={totalSelectedDeposit <= 0 || loading}
-                  className={`px-6 py-3 rounded-xl font-extrabold text-sm transition-all shadow-md ${
-                    totalSelectedDeposit > 0 && !loading
-                      ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow"
-                      : "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  {loading ? "Procesando..." : "Confirmar Depósito"}
-                </button>
               </div>
             </div>
           )}
@@ -629,20 +736,6 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                     onChange={(e) => setCurrentPin(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl bg-discord-surface border border-discord-hover font-mono text-xl tracking-widest text-white focus:outline-none focus:border-discord-blurple"
                     placeholder="••••"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-discord-textMuted block mb-1">
-                    Token Dinámico de Seguridad (6 dígitos)
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={pinToken}
-                    onChange={(e) => setPinToken(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-discord-surface border border-discord-hover font-mono text-xl tracking-widest text-discord-green focus:outline-none focus:border-discord-blurple"
-                    placeholder="000000"
                   />
                 </div>
 
@@ -735,83 +828,156 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
         {/* COLUMN 3 (Right, 3 cols) */}
         <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 lg:p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
-              Validación Reactiva de Retiro
-            </div>
-            <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-discord-textMuted">Monto Solicitado:</span>
-                <span className="font-mono font-bold text-white text-base">
-                  Q{parsedRequestedAmount.toFixed(2)}
-                </span>
+          {activeTab === "deposit" ? (
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
+                Validación Reactiva de Depósito
               </div>
+              <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Piezas Introducidas:</span>
+                  <span className="font-mono font-bold text-white text-base">
+                    {totalDepositPieces} billete{totalDepositPieces !== 1 ? "s" : ""}
+                  </span>
+                </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-discord-textMuted">Total Seleccionado:</span>
-                <span
-                  className={`font-mono font-bold text-base ${
-                    amountsMatch
-                      ? "text-discord-green"
-                      : totalSelectedWithdraw > parsedRequestedAmount
-                      ? "text-discord-red"
-                      : "text-discord-amber"
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Total a Acreditar:</span>
+                  <span className="font-mono font-bold text-base text-discord-green">
+                    Q{totalSelectedDeposit.toFixed(2)}
+                  </span>
+                </div>
+
+                <div
+                  className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
+                    totalSelectedDeposit > 0
+                      ? "bg-discord-green/20 border-discord-green text-discord-green"
+                      : "bg-discord-sidebar border-discord-hover text-discord-textMuted"
                   }`}
                 >
-                  Q{totalSelectedWithdraw.toFixed(2)}
-                </span>
+                  {totalSelectedDeposit > 0 ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Listo para acreditación</span>
+                    </>
+                  ) : (
+                    <span>Inserte o seleccione billetes</span>
+                  )}
+                </div>
               </div>
 
-              <div
-                className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
-                  amountsMatch
-                    ? "bg-discord-green/20 border-discord-green text-discord-green"
-                    : "bg-discord-red/10 border-discord-red/40 text-discord-red"
-                }`}
-              >
-                {amountsMatch ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Suma Exacta: Válido</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>
-                      Diferencia: Q{Math.abs(totalSelectedWithdraw - parsedRequestedAmount).toFixed(2)}
-                    </span>
-                  </>
-                )}
+              <div className="mt-4 space-y-2">
+                <button
+                  type="button"
+                  onClick={handleExecuteDeposit}
+                  disabled={totalSelectedDeposit <= 0 || loading}
+                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
+                    totalSelectedDeposit > 0 && !loading
+                      ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
+                      : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
+                  }`}
+                >
+                  {loading ? "Acreditando..." : "Confirmar Depósito"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={clearDeposit}
+                  className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
+                >
+                  Limpiar Alimentador
+                </button>
               </div>
             </div>
+          ) : (
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
+                Validación Reactiva de Retiro
+              </div>
+              <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Piezas Seleccionadas:</span>
+                  <span className="font-mono font-bold text-white text-base">
+                    {Object.values(selectedBills).reduce((a, b) => a + Number(b), 0)} billetes
+                  </span>
+                </div>
 
-            <div className="mt-4 space-y-2">
-              <button
-                type="button"
-                onClick={handleExecuteWithdrawal}
-                disabled={!amountsMatch || loading}
-                className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
-                  amountsMatch && !loading
-                    ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
-                    : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
-                }`}
-              >
-                {loading ? "Dispensando..." : "Dispensar Efectivo"}
-              </button>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-discord-textMuted">Total a Dispensar:</span>
+                  <span
+                    className={`font-mono font-bold text-base ${
+                      canWithdraw
+                        ? "text-discord-green"
+                        : totalSelectedWithdraw > userBalance
+                        ? "text-discord-red"
+                        : "text-discord-amber"
+                    }`}
+                  >
+                    Q{totalSelectedWithdraw.toFixed(2)}
+                  </span>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
-                  setFeedbackMessage(null);
-                  resetInactivity();
-                }}
-                className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
-              >
-                Cancelar Operación
-              </button>
+                <div
+                  className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
+                    canWithdraw
+                      ? "bg-discord-green/20 border-discord-green text-discord-green"
+                      : totalSelectedWithdraw === 0
+                      ? "bg-discord-sidebar border-discord-hover text-discord-textMuted"
+                      : totalSelectedWithdraw > userBalance
+                      ? "bg-discord-red/20 border-discord-red text-discord-red"
+                      : "bg-discord-amber/20 border-discord-amber text-discord-amber"
+                  }`}
+                >
+                  {canWithdraw ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Listo para dispensar</span>
+                    </>
+                  ) : totalSelectedWithdraw === 0 ? (
+                    <span>Seleccione los billetes a retirar</span>
+                  ) : totalSelectedWithdraw > userBalance ? (
+                    <>
+                      <AlertTriangle className="w-4 h-4" />
+                      <span>Fondos insuficientes en cuenta</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="w-4 h-4" />
+                      <span>Excede el cupo diario disponible</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <button
+                  type="button"
+                  onClick={handleExecuteWithdrawal}
+                  disabled={!canWithdraw || loading}
+                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
+                    canWithdraw && !loading
+                      ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
+                      : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
+                  }`}
+                >
+                  {loading ? "Dispensando..." : "Dispensar Efectivo"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
+                    setRequestedAmount("0");
+                    setFeedbackMessage(null);
+                    resetInactivity();
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
+                >
+                  Limpiar Selección
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mt-4 pt-3 border-t border-discord-hover">
             <div className="flex items-center justify-between mb-2">
@@ -822,6 +988,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 type="button"
                 onClick={reloadData}
                 className="p-1 rounded hover:bg-discord-sidebar text-discord-textMuted hover:text-white"
+                title="Actualizar movimientos"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
@@ -849,8 +1016,29 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                       </div>
                       <div className="text-[10px] text-discord-textMuted">{tx.fecha_hora}</div>
                     </div>
-                    <div className="font-mono font-bold text-white">
-                      Q{tx.monto?.toFixed(2)}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-white">
+                        Q{tx.monto?.toFixed(2)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveVoucher({
+                            id: tx.id_transaccion || Date.now(),
+                            tipo: tx.tipo === "RETIRO" ? "RETIRO" : "DEPOSITO",
+                            titulo: tx.tipo === "RETIRO" ? "COMPROBANTE DE RETIRO DE EFECTIVO" : "COMPROBANTE DE DEPÓSITO EN EFECTIVO",
+                            cliente: userSummary.nombre_completo,
+                            tarjeta: userSummary.tarjeta,
+                            monto: Number(tx.monto) || 0,
+                            desglose: tx.desglose || {},
+                            fecha_hora: tx.fecha_hora || new Date().toLocaleString()
+                          });
+                        }}
+                        className="p-1.5 rounded-md bg-discord-surface hover:bg-discord-hover text-discord-textMuted hover:text-white border border-discord-hover transition-all"
+                        title="Imprimir Voucher PDF"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-blue-400" />
+                      </button>
                     </div>
                   </div>
                 ))
@@ -861,9 +1049,63 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
       </div>
 
       <div className="flex items-center justify-between pt-3 border-t border-discord-surface text-xs text-discord-textMuted">
-        <div>Sesión activa: {userSummary.nombre_completo} | Retiros validados con Arduino Mega y Sensores IR</div>
+        <div>Sesión activa: {userSummary.nombre_completo} | Operaciones con Doble Escritura MySQL y Archivos Planos</div>
         <div className="text-discord-green font-semibold">● Terminal Segura Bancaria</div>
       </div>
+
+      {/* MODAL: GUIA RAPIDA DE AYUDA */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="max-w-lg w-full p-6 bg-discord-surface rounded-2xl border border-discord-hover shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-discord-hover pb-3">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-discord-blurple" />
+                <h3 className="text-lg font-black text-white">Guía Rápida de Autoservicio</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHelpModal(false)}
+                className="p-1 rounded-lg hover:bg-discord-sidebar text-discord-textMuted hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-discord-textNormal leading-relaxed">
+              <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <strong className="text-white block mb-1">💸 Retiros de Efectivo:</strong>
+                Indique el monto deseado o utilice los botones rápidos. Puede usar el botón <em>⚡ Desglose Automático</em> para calcular la combinación óptima según los billetes físicos disponibles en el cajero.
+              </div>
+
+              <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <strong className="text-white block mb-1">📥 Depósitos de Efectivo:</strong>
+                Seleccione la pestaña de depósito o el menú superior. Introduzca las piezas por denominación (Q200 hasta Q1) o utilice los botones de carga rápida. Al confirmar, su saldo en cuenta y los fondos de la tienda/bóveda se actualizan de inmediato.
+              </div>
+
+              <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <strong className="text-white block mb-1">🛡️ Seguridad y Auditoría:</strong>
+                Toda transacción queda firmada y registrada en la base de datos relacional y respaldada simultáneamente en archivos planos inmutables.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowHelpModal(false)}
+              className="w-full py-2.5 rounded-xl bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold text-xs shadow-md"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE VOUCHER / COMPROBANTE OFICIAL IMPRIMIBLE */}
+      {activeVoucher && (
+        <VoucherModal
+          voucher={activeVoucher}
+          onClose={() => setActiveVoucher(null)}
+        />
+      )}
     </div>
   );
 };

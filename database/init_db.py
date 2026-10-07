@@ -115,6 +115,42 @@ def init_db():
             db.commit()
             print(f"[DATABASE] Bóveda semillada en estado inicial limpio: Q{total_vault:.2f} en 7 denominaciones (pendiente de inicialización por administrador).")
 
+        # 5. Crear o actualizar Vistas SQL 'retiros' y 'depositos' para visualización en SQL Management Studio
+        from sqlalchemy import text
+        is_sqlite = "sqlite" in engine.url.drivername
+        view_prefix = "CREATE VIEW IF NOT EXISTS" if is_sqlite else "CREATE OR REPLACE VIEW"
+        try:
+            db.execute(text(f"""
+                {view_prefix} retiros AS
+                SELECT 
+                    t.id_transaccion,
+                    t.id_usuario,
+                    u.nombre_completo AS cliente,
+                    t.monto,
+                    t.fecha_hora,
+                    t.desglose_billetes
+                FROM transacciones t
+                JOIN usuarios u ON t.id_usuario = u.id_usuario
+                WHERE t.tipo_transaccion = 'RETIRO'
+            """))
+            db.execute(text(f"""
+                {view_prefix} depositos AS
+                SELECT 
+                    t.id_transaccion,
+                    t.id_usuario,
+                    u.nombre_completo AS cliente,
+                    t.monto,
+                    t.fecha_hora,
+                    t.desglose_billetes
+                FROM transacciones t
+                JOIN usuarios u ON t.id_usuario = u.id_usuario
+                WHERE t.tipo_transaccion = 'DEPOSITO'
+            """))
+            db.commit()
+            print("[DATABASE] Vistas SQL 'retiros' y 'depositos' registradas exitosamente.")
+        except Exception as v_err:
+            print(f"[DATABASE] Nota sobre creación de vistas: {v_err}")
+
         print("[DATABASE] Base de datos relacional inicializada correctamente.")
     except Exception as e:
         db.rollback()

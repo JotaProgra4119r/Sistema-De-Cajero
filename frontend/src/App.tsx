@@ -9,6 +9,7 @@ export function App() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [isAdminSession, setIsAdminSession] = useState<boolean>(false);
   const [wsNotification, setWsNotification] = useState<string | null>(null);
+  const [lastRfidCard, setLastRfidCard] = useState<string | null>(null);
 
   // Connect to WebSocket for live hardware events
   useEffect(() => {
@@ -27,6 +28,10 @@ export function App() {
               setWsNotification(`Atasco mecánico detectado en cartuchos.`);
             }
             setTimeout(() => setWsNotification(null), 4000);
+          } else if (data.type === "RFID_CARD_DETECTED") {
+            setLastRfidCard(data.card_number);
+            setWsNotification(`💳 Tarjeta RFID Detectada: ${data.formatted_card || data.card_number} (UID: ${data.uid})`);
+            setTimeout(() => setWsNotification(null), 5000);
           }
         } catch {
           // ignore
@@ -73,7 +78,7 @@ export function App() {
         )}
 
         {!currentUser ? (
-          <WelcomeAuthView onLoginSuccess={handleLoginSuccess} />
+          <WelcomeAuthView onLoginSuccess={handleLoginSuccess} lastRfidCard={lastRfidCard} />
         ) : isAdminSession ? (
           <AdminConsoleView adminUser={currentUser} onLogout={handleLogout} />
         ) : (

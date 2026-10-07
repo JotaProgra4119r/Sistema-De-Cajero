@@ -17,71 +17,71 @@ export const BILL_CONFIGS: Record<number, BillConfig> = {
     denom: 200,
     label: "Q200",
     sublabel: "Bicentenario / Tikal",
-    badgeColor: "text-teal-900 bg-teal-100 border-teal-300 dark:text-cyan-300 dark:bg-cyan-950/80 dark:border-cyan-800",
-    cardBg: "bg-gradient-to-b from-teal-50 via-cyan-50/70 to-teal-100/50 dark:from-cyan-950/50 dark:to-slate-900",
-    borderColor: "border-teal-300 hover:border-teal-400 dark:border-cyan-500/40 dark:hover:border-cyan-400",
-    accentText: "text-teal-900 dark:text-cyan-300",
-    iconStyle: "bg-teal-100 text-teal-800 border-teal-200 dark:bg-cyan-950 dark:text-cyan-400 dark:border-cyan-800",
+    badgeColor: "text-teal-950 bg-teal-100 border-teal-400 dark:text-cyan-300 dark:bg-cyan-950/70 dark:border-cyan-700",
+    cardBg: "bg-teal-50/60 dark:bg-[#1a232b] dark:border-cyan-500/40",
+    borderColor: "border-teal-400/70 hover:border-teal-500 dark:border-cyan-500/40 dark:hover:border-cyan-400",
+    accentText: "text-teal-950 dark:text-cyan-300",
+    iconStyle: "bg-teal-100 text-teal-900 border-teal-300 dark:bg-cyan-950 dark:text-cyan-400 dark:border-cyan-800",
   },
   100: {
     denom: 100,
     label: "Q100",
     sublabel: "Obispo Marroquín",
-    badgeColor: "text-amber-900 bg-amber-100 border-amber-300 dark:text-amber-300 dark:bg-amber-950/80 dark:border-amber-800",
-    cardBg: "bg-gradient-to-b from-amber-50 via-yellow-50/70 to-amber-100/50 dark:from-amber-950/50 dark:to-slate-900",
-    borderColor: "border-amber-300 hover:border-amber-400 dark:border-amber-500/40 dark:hover:border-amber-400",
-    accentText: "text-amber-900 dark:text-amber-300",
-    iconStyle: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
+    badgeColor: "text-amber-950 bg-amber-100 border-amber-400 dark:text-amber-300 dark:bg-amber-950/70 dark:border-amber-700",
+    cardBg: "bg-amber-50/60 dark:bg-[#28221a] dark:border-amber-500/40",
+    borderColor: "border-amber-400/70 hover:border-amber-500 dark:border-amber-500/40 dark:hover:border-amber-400",
+    accentText: "text-amber-950 dark:text-amber-300",
+    iconStyle: "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
   },
   50: {
     denom: 50,
     label: "Q50",
     sublabel: "Carlos Zachrisson",
-    badgeColor: "text-orange-900 bg-orange-100 border-orange-300 dark:text-orange-300 dark:bg-orange-950/80 dark:border-orange-800",
-    cardBg: "bg-gradient-to-b from-orange-50 via-amber-50/70 to-orange-100/50 dark:from-orange-950/50 dark:to-slate-900",
-    borderColor: "border-orange-300 hover:border-orange-400 dark:border-orange-500/40 dark:hover:border-orange-400",
-    accentText: "text-orange-900 dark:text-orange-300",
-    iconStyle: "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-800",
+    badgeColor: "text-orange-950 bg-orange-100 border-orange-400 dark:text-orange-300 dark:bg-orange-950/70 dark:border-orange-700",
+    cardBg: "bg-orange-50/60 dark:bg-[#281e18] dark:border-orange-500/40",
+    borderColor: "border-orange-400/70 hover:border-orange-500 dark:border-orange-500/40 dark:hover:border-orange-400",
+    accentText: "text-orange-950 dark:text-orange-300",
+    iconStyle: "bg-orange-100 text-orange-900 border-orange-300 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-800",
   },
   20: {
     denom: 20,
     label: "Q20",
     sublabel: "Mariano Gálvez",
-    badgeColor: "text-blue-900 bg-blue-100 border-blue-300 dark:text-blue-300 dark:bg-blue-950/80 dark:border-blue-800",
-    cardBg: "bg-gradient-to-b from-blue-50 via-sky-50/70 to-blue-100/50 dark:from-blue-950/50 dark:to-slate-900",
-    borderColor: "border-blue-300 hover:border-blue-400 dark:border-blue-500/40 dark:hover:border-blue-400",
-    accentText: "text-blue-900 dark:text-blue-300",
-    iconStyle: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800",
+    badgeColor: "text-blue-950 bg-blue-100 border-blue-400 dark:text-blue-300 dark:bg-blue-950/70 dark:border-blue-700",
+    cardBg: "bg-blue-50/60 dark:bg-[#1a212d] dark:border-blue-500/40",
+    borderColor: "border-blue-400/70 hover:border-blue-500 dark:border-blue-500/40 dark:hover:border-blue-400",
+    accentText: "text-blue-950 dark:text-blue-300",
+    iconStyle: "bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800",
   },
   10: {
     denom: 10,
     label: "Q10",
     sublabel: "Miguel García Granados",
-    badgeColor: "text-purple-900 bg-purple-100 border-purple-300 dark:text-purple-300 dark:bg-purple-950/80 dark:border-purple-800",
-    cardBg: "bg-gradient-to-b from-purple-50 via-fuchsia-50/70 to-purple-100/50 dark:from-purple-950/50 dark:to-slate-900",
-    borderColor: "border-purple-300 hover:border-purple-400 dark:border-purple-500/40 dark:hover:border-purple-400",
-    accentText: "text-purple-900 dark:text-purple-300",
-    iconStyle: "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-800",
+    badgeColor: "text-purple-950 bg-purple-100 border-purple-400 dark:text-purple-300 dark:bg-purple-950/70 dark:border-purple-700",
+    cardBg: "bg-purple-50/60 dark:bg-[#231a29] dark:border-purple-500/40",
+    borderColor: "border-purple-400/70 hover:border-purple-500 dark:border-purple-500/40 dark:hover:border-purple-400",
+    accentText: "text-purple-950 dark:text-purple-300",
+    iconStyle: "bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-800",
   },
   5: {
     denom: 5,
     label: "Q5",
     sublabel: "Justo Rufino Barrios",
-    badgeColor: "text-violet-900 bg-violet-100 border-violet-300 dark:text-violet-300 dark:bg-violet-950/80 dark:border-violet-800",
-    cardBg: "bg-gradient-to-b from-violet-50 via-indigo-50/70 to-violet-100/50 dark:from-violet-950/50 dark:to-slate-900",
-    borderColor: "border-violet-300 hover:border-violet-400 dark:border-violet-500/40 dark:hover:border-violet-400",
-    accentText: "text-violet-900 dark:text-violet-300",
-    iconStyle: "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950 dark:text-violet-400 dark:border-violet-800",
+    badgeColor: "text-violet-950 bg-violet-100 border-violet-400 dark:text-violet-300 dark:bg-violet-950/70 dark:border-violet-700",
+    cardBg: "bg-violet-50/60 dark:bg-[#211a2b] dark:border-violet-500/40",
+    borderColor: "border-violet-400/70 hover:border-violet-500 dark:border-violet-500/40 dark:hover:border-violet-400",
+    accentText: "text-violet-950 dark:text-violet-300",
+    iconStyle: "bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-950 dark:text-violet-400 dark:border-violet-800",
   },
   1: {
     denom: 1,
     label: "Q1",
     sublabel: "José María Orellana",
-    badgeColor: "text-emerald-900 bg-emerald-100 border-emerald-300 dark:text-emerald-300 dark:bg-emerald-950/80 dark:border-emerald-800",
-    cardBg: "bg-gradient-to-b from-emerald-50 via-green-50/70 to-emerald-100/50 dark:from-emerald-950/50 dark:to-slate-900",
-    borderColor: "border-emerald-300 hover:border-emerald-400 dark:border-emerald-500/40 dark:hover:border-emerald-400",
-    accentText: "text-emerald-900 dark:text-emerald-300",
-    iconStyle: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800",
+    badgeColor: "text-emerald-950 bg-emerald-100 border-emerald-400 dark:text-emerald-300 dark:bg-emerald-950/70 dark:border-emerald-700",
+    cardBg: "bg-emerald-50/60 dark:bg-[#18261e] dark:border-emerald-500/40",
+    borderColor: "border-emerald-400/70 hover:border-emerald-500 dark:border-emerald-500/40 dark:hover:border-emerald-400",
+    accentText: "text-emerald-950 dark:text-emerald-300",
+    iconStyle: "bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800",
   },
 };
 
@@ -107,8 +107,8 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
     label: `Q${denom}`,
     sublabel: "Billete Oficial",
     badgeColor: "text-slate-800 bg-slate-100 border-slate-300 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700",
-    cardBg: "bg-slate-50 dark:bg-slate-900",
-    borderColor: "border-slate-300 dark:border-gray-700",
+    cardBg: "bg-slate-50 dark:bg-discord-surface",
+    borderColor: "border-slate-300 dark:border-discord-hover",
     accentText: "text-slate-900 dark:text-white",
     iconStyle: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
   };
@@ -158,7 +158,7 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
       </div>
 
       {/* Stepper controls */}
-      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/80 dark:border-discord-surface/80">
+      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/80 dark:border-discord-hover/60">
         <button
           type="button"
           onClick={onDecrement}
@@ -166,14 +166,14 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
           className={`w-9 h-9 flex items-center justify-center rounded-lg font-bold text-base transition-all active:scale-95 border ${
             count > 0
               ? "bg-white dark:bg-discord-surface hover:bg-slate-100 dark:hover:bg-discord-hover text-slate-900 dark:text-white border-slate-300 dark:border-discord-hover shadow-xs"
-              : "bg-slate-200/70 dark:bg-discord-surface/40 text-slate-400 dark:text-gray-600 border-transparent cursor-not-allowed"
+              : "bg-slate-100 dark:bg-[#18191c] text-slate-400 dark:text-gray-600 border-slate-200 dark:border-white/5 cursor-not-allowed"
           }`}
         >
           <Minus className="w-4 h-4" />
         </button>
 
         <div className="flex flex-col items-center">
-          <span className="text-xl font-black text-slate-900 dark:text-discord-textPure leading-none">{count}</span>
+          <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{count}</span>
           <span className="text-[9px] font-bold text-slate-500 dark:text-discord-textMuted uppercase tracking-wider">piezas</span>
         </div>
 
@@ -184,7 +184,7 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
           className={`w-9 h-9 flex items-center justify-center rounded-lg font-bold text-base transition-all active:scale-95 border ${
             canIncrement
               ? "bg-discord-blurple hover:bg-discord-blurpleHover text-white shadow-sm font-extrabold"
-              : "bg-slate-200/70 dark:bg-discord-surface/40 text-slate-400 dark:text-gray-600 border-transparent cursor-not-allowed"
+              : "bg-slate-100 dark:bg-[#18191c] text-slate-400 dark:text-gray-600 border-slate-200 dark:border-white/5 cursor-not-allowed"
           }`}
         >
           <Plus className="w-4 h-4" />

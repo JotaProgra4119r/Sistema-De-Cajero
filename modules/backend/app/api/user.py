@@ -24,7 +24,7 @@ class DepositRequest(BaseModel):
 class ChangePinRequest(BaseModel):
     card_number: str
     current_pin: str
-    token: str
+    token: str = ""
     new_pin: str
 
 @router.get("/summary")
@@ -65,7 +65,7 @@ async def get_transactions(current_user: Usuario = Depends(get_current_user)):
 @router.post("/change-pin")
 async def change_pin(payload: ChangePinRequest, current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
     return await BankingService.change_pin(
-        db, current_user.id_usuario, payload.card_number, payload.current_pin, payload.token, payload.new_pin
+        db, current_user.id_usuario, payload.card_number, payload.current_pin, payload.new_pin, payload.token
     )
 
 @router.get("/audit/deleted-records")

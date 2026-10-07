@@ -1,16 +1,16 @@
-﻿import React from "react";
-import { ShieldCheck, Eye, Video, Radio } from "lucide-react";
+import React from "react";
+import { ShieldCheck, Eye, Cpu, Radio } from "lucide-react";
 
 interface HardwareBadgesProps {
-  arduinoConnected?: boolean;
-  cameraStreaming?: boolean;
+  esp32Connected?: boolean;
+  rfidReady?: boolean;
   opticalReady?: boolean;
   vaultActive?: boolean;
 }
 
 export const HardwareBadges: React.FC<HardwareBadgesProps> = ({
-  arduinoConnected = true,
-  cameraStreaming = true,
+  esp32Connected = true,
+  rfidReady = true,
   opticalReady = true,
   vaultActive = true,
 }) => {
@@ -33,18 +33,18 @@ export const HardwareBadges: React.FC<HardwareBadgesProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-discord-surface/90 border border-discord-hover rounded-full text-xs font-medium">
-        <Video className={`w-4 h-4 ${cameraStreaming ? "text-discord-blurple animate-pulse" : "text-discord-red"}`} />
-        <span className="text-discord-textMuted">OV2640:</span>
-        <span className={cameraStreaming ? "text-discord-blurple font-semibold" : "text-discord-red font-semibold"}>
-          {cameraStreaming ? "En Vivo" : "Desconectada"}
+        <Cpu className={`w-4 h-4 ${esp32Connected ? "text-discord-green" : "text-discord-amber"}`} />
+        <span className="text-discord-textMuted">ESP32:</span>
+        <span className={esp32Connected ? "text-discord-green font-semibold" : "text-discord-amber font-semibold"}>
+          {esp32Connected ? "COM3 115200" : "Simulado"}
         </span>
       </div>
 
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-discord-surface/90 border border-discord-hover rounded-full text-xs font-medium">
-        <Radio className={`w-4 h-4 ${arduinoConnected ? "text-discord-green" : "text-discord-amber"}`} />
-        <span className="text-discord-textMuted">Arduino Mega:</span>
-        <span className={arduinoConnected ? "text-discord-green font-semibold" : "text-discord-amber font-semibold"}>
-          {arduinoConnected ? "COM3 115200" : "Simulado"}
+        <Radio className={`w-4 h-4 ${rfidReady ? "text-discord-blurple animate-pulse" : "text-discord-red"}`} />
+        <span className="text-discord-textMuted">RFID RC522:</span>
+        <span className={rfidReady ? "text-discord-blurple font-semibold" : "text-discord-red font-semibold"}>
+          {rfidReady ? "Listo / SPI" : "Inactivo"}
         </span>
       </div>
     </div>

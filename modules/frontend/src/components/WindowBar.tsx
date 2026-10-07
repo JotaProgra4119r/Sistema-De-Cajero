@@ -8,7 +8,8 @@ declare global {
       maximize: () => Promise<void>;
       toggleFullscreen: () => Promise<boolean>;
       setFullscreen: (flag: boolean) => Promise<boolean>;
-      setWindowed: () => Promise<boolean>;
+      setWindowed: (width?: number, height?: number) => Promise<boolean>;
+      setResolution?: (width: number, height: number) => Promise<any>;
       close: () => Promise<void>;
       isElectron: boolean;
       onWindowStateChange: (cb: (state: any) => void) => void;
@@ -18,6 +19,10 @@ declare global {
 
 export const WindowBar: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [windowDimensions, setWindowDimensions] = useState<{ w: number; h: number }>({
+    w: typeof window !== "undefined" ? window.innerWidth : 1280,
+    h: typeof window !== "undefined" ? window.innerHeight : 720,
+  });
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     const saved = localStorage.getItem("atm_theme");
     return saved === "light" ? "light" : "dark";
@@ -47,12 +52,20 @@ export const WindowBar: React.FC = () => {
       });
     }
 
-    // Also listen to browser fullscreen changes
+    // Also listen to browser fullscreen changes and resize
     const onFsChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement));
     };
+    const onResize = () => {
+      setWindowDimensions({ w: window.innerWidth, h: window.innerHeight });
+    };
+
     document.addEventListener("fullscreenchange", onFsChange);
-    return () => document.removeEventListener("fullscreenchange", onFsChange);
+    window.addEventListener("resize", onResize);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   const handleToggleFullscreen = async () => {
@@ -70,9 +83,9 @@ export const WindowBar: React.FC = () => {
     }
   };
 
-  const handleSetWindowed = async () => {
+  const handleSetWindowed = async (width: number = 1280, height: number = 720) => {
     if (window.electronAPI) {
-      await window.electronAPI.setWindowed();
+      await window.electronAPI.setWindowed(width, height);
       setIsFullscreen(false);
     } else {
       if (document.fullscreenElement) {
@@ -120,12 +133,16 @@ export const WindowBar: React.FC = () => {
           {isFullscreen ? (
             <>
               <Tv className="w-3.5 h-3.5 text-discord-amber" />
-              <span className="text-discord-amber font-medium">Pantalla Completa (F11 / Esc)</span>
+              <span className="text-discord-amber font-medium">
+                Pantalla Completa ({windowDimensions.w}x{windowDimensions.h})
+              </span>
             </>
           ) : (
             <>
               <Monitor className="w-3.5 h-3.5 text-discord-blurple" />
-              <span className="text-discord-textNormal font-medium">Modo Ventana (1400x900)</span>
+              <span className="text-discord-textNormal font-medium">
+                Modo Ventana ({windowDimensions.w}x{windowDimensions.h})
+              </span>
             </>
           )}
         </span>
@@ -153,11 +170,11 @@ export const WindowBar: React.FC = () => {
           )}
         </button>
 
-        {/* Switch to Windowed Mode */}
+        {/* Switch to Windowed Mode (720p) */}
         <button
           type="button"
-          onClick={handleSetWindowed}
-          title="Cambiar a Modo Ventana"
+          onClick={() => handleSetWindowed(1280, 720)}
+          title="Cambiar a Modo Ventana 720p (1280x720)"
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
             !isFullscreen
               ? "bg-discord-blurple text-white"
@@ -165,7 +182,7 @@ export const WindowBar: React.FC = () => {
           }`}
         >
           <Monitor className="w-3 h-3" />
-          <span>Modo Ventana</span>
+          <span>720p / Ventana</span>
         </button>
 
         {/* Switch to Fullscreen Mode */}
@@ -176,7 +193,7 @@ export const WindowBar: React.FC = () => {
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
             isFullscreen
               ? "bg-discord-blurple text-white"
-              : "bg-[#2b2d31] text-gray-300 hover:bg-[#35373c] hover:text-white"
+              : "bg-discord-sidebar text-discord-textNormal hover:bg-discord-hover border border-discord-hover"
           }`}
         >
           {isFullscreen ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
@@ -184,12 +201,12 @@ export const WindowBar: React.FC = () => {
         </button>
 
         {/* Window Actions */}
-        <div className="flex items-center ml-2 border-l border-[#35373c] pl-2 gap-1">
+        <div className="flex items-center ml-2 border-l border-discord-hover pl-2 gap-1">
           <button
             type="button"
             onClick={handleMinimize}
             title="Minimizar"
-            className="p-1.5 rounded hover:bg-[#35373c] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded hover:bg-discord-hover text-discord-textMuted hover:text-discord-textPure transition-colors"
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
@@ -197,7 +214,7 @@ export const WindowBar: React.FC = () => {
             type="button"
             onClick={handleMaximize}
             title="Maximizar / Restaurar"
-            className="p-1.5 rounded hover:bg-[#35373c] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded hover:bg-discord-hover text-discord-textMuted hover:text-discord-textPure transition-colors"
           >
             <Square className="w-3 h-3" />
           </button>
@@ -205,7 +222,7 @@ export const WindowBar: React.FC = () => {
             type="button"
             onClick={handleClose}
             title="Cerrar Aplicación"
-            className="p-1.5 rounded hover:bg-discord-red text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded hover:bg-discord-red text-discord-textMuted hover:text-white transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>

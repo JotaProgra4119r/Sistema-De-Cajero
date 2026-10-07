@@ -47,6 +47,11 @@ async def initialize_vault(payload: VaultInitRequest, current_admin: Usuario = D
 async def add_cash_vault(payload: VaultAddCashRequest, current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
     return await BankingService.vault_add_cash(db, current_admin.id_usuario, payload.bills)
 
+@router.post("/vault/reset")
+async def reset_vault(current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Restablece toda la bóveda y variables del cajero a cero (Q0.00)."""
+    return await BankingService.vault_reset(db, current_admin.id_usuario)
+
 @router.post("/users/register")
 async def register_employee(payload: RegisterEmployeeRequest, current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
     return await BankingService.admin_register_employee(

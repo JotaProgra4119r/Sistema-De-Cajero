@@ -64,9 +64,26 @@ def logout(payload: Optional[LogoutRequest] = None, authorization: Optional[str]
     }
 
 @router.get("/token-preview")
-def get_token_preview():
-    """Endpoint de conveniencia para visualizar el token dinámico de seguridad actual en el Kiosco."""
+def get_token_preview(db: Session = Depends(get_db)):
+    """Endpoint de conveniencia para visualizar el token dinámico de seguridad actual y estado de la bóveda."""
+    from backend.app.db.models import DenominacionCajero
+    vault_denoms = db.query(DenominacionCajero).all()
+    vault_total = sum(d.denominacion * d.cantidad_billetes for d in vault_denoms)
     return {
         "token": generate_totp_token(),
-        "expires_in_seconds": 60 - int(__import__("time").time() % 60)
+        "expires_in_seconds": 60 - int(__import__("time").time() % 60),
+        "vault_total": float(vault_total),
+        "vault_empty": vault_total <= 0
+    }
+
+@router.get("/atm-status")
+def get_atm_status(db: Session = Depends(get_db)):
+    """Retorna el estado operativo del cajero: si la bóveda está vacía o lista para operar."""
+    from backend.app.db.models import DenominacionCajero
+    vault_denoms = db.query(DenominacionCajero).all()
+    vault_total = sum(d.denominacion * d.cantidad_billetes for d in vault_denoms)
+    return {
+        "vault_total": float(vault_total),
+        "vault_empty": vault_total <= 0,
+        "operativo": vault_total > 0
     }

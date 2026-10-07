@@ -331,3 +331,64 @@ def test_soft_delete_and_transparency_audit():
     })
     assert login_blocked.status_code == 401
     assert "dada de baja" in login_blocked.json()["detail"].lower() or "inactiva" in login_blocked.json()["detail"].lower()
+
+def test_vault_reset_to_zero():
+    # 1. Admin logs in
+    _consumed_totp_tokens.clear()
+    _blacklisted_totp_tokens.clear()
+    tok = generate_totp_token()
+    login_res = client.post("/api/auth/login", json={
+        "card_number": "9999888877776666",
+        "pin": "1234",
+        "token": tok,
+        "is_admin": True
+    })
+    assert login_res.status_code == 200
+    admin_headers = {"Authorization": f"Bearer {login_res.json()['access_token']}"}
+
+    # 2. Reset vault to zero
+    reset_res = client.post("/api/admin/vault/reset", headers=admin_headers)
+    assert reset_res.status_code == 200
+    assert reset_res.json()["status"] == "SUCCESS"
+    assert reset_res.json()["total_boveda"] == 0.0
+
+    # 3. Check metrics reflect vault at zero
+    metrics_res = client.get("/api/admin/metrics", headers=admin_headers)
+    assert metrics_res.status_code == 200
+    m_data = metrics_res.json()
+    assert m_data["saldo_boveda"] == 0.0
+    assert m_data["porcentaje_boveda"] == 0.0
+    for denom, cnt in m_data["denominaciones"].items():
+        assert cnt == 0
+
+    # 4. Check token preview reflects empty vault
+    prev_res = client.get("/api/auth/token-preview")
+    assert prev_res.status_code == 200
+    assert prev_res.json()["vault_empty"] is True
+    assert prev_res.json()["vault_total"] == 0.0
+
+def test_rfid_tap_and_debug_mode():
+    # Test RFID card tap simulation
+    tap_res = client.post("/api/hardware/rfid/simulate-tap", json={
+        "card_number": "1234567812345678",
+        "uid": "B4:5A:21:8F"
+    })
+    assert tap_res.status_code == 200
+    tap_data = tap_res.json()
+    assert tap_data["status"] == "SUCCESS"
+    assert tap_data["uid"] == "B4:5A:21:8F"
+    assert tap_data["card_number"] == "1234567812345678"
+
+    # Test RFID debug mode toggle
+    debug_res = client.post("/api/hardware/rfid/debug-mode", json={"active": True})
+    assert debug_res.status_code == 200
+    assert debug_res.json()["debug_mode"] is True
+
+    # Test hardware status returns ESP32 & RFID
+    hw_res = client.get("/api/hardware/status")
+    assert hw_res.status_code == 200
+    hw_data = hw_res.json()
+    assert hw_data["controller_type"] == "ESP32"
+    assert hw_data["rfid_ready"] is True
+    assert "debug_logs" in hw_data
+

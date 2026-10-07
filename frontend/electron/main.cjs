@@ -2,14 +2,22 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
+// Optimizaciones de muy bajo nivel para minimizar consumo de memoria RAM y CPU en Kioscos/Tablets/VMs
+app.commandLine.appendSwitch("js-flags", "--max-old-space-size=256"); // Restringe memoria heap V8 a 256MB
+app.commandLine.appendSwitch("disable-http-cache"); // Evita acumulación innecesaria de caché en RAM/Disco
+app.commandLine.appendSwitch("disable-pinch"); // Desactiva zoom gestual innecesario
+app.commandLine.appendSwitch("disable-renderer-backgrounding"); // Prioridad suave sin sobrecargas
+app.commandLine.appendSwitch("disable-background-timer-throttling");
+app.commandLine.appendSwitch("force-color-profile", "srgb");
+
 let mainWindow = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 1024,
-    minHeight: 600,
+    width: 1280,
+    height: 720,
+    minWidth: 960,
+    minHeight: 540,
     resizable: true,
     center: true,
     fullscreen: false,
@@ -21,7 +29,9 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.cjs"),
-      devTools: process.argv.includes("--dev") || process.env.NODE_ENV === "development"
+      devTools: process.argv.includes("--dev") || process.env.NODE_ENV === "development",
+      spellcheck: false, // Ahorro de 30-50MB de RAM al desactivar motor de corrección ortográfica
+      backgroundThrottling: false
     }
   });
 
@@ -166,7 +176,7 @@ ipcMain.handle("window:setFullscreen", (_event, flag) => {
   return mainWindow.isFullScreen();
 });
 
-ipcMain.handle("window:setWindowed", () => {
+ipcMain.handle("window:setWindowed", (_event, width = 1280, height = 720) => {
   if (!mainWindow) return;
   if (mainWindow.isFullScreen()) {
     mainWindow.setFullScreen(false);
@@ -174,9 +184,22 @@ ipcMain.handle("window:setWindowed", () => {
   if (mainWindow.isMaximized()) {
     mainWindow.unmaximize();
   }
-  mainWindow.setSize(1400, 900);
+  mainWindow.setSize(Number(width) || 1280, Number(height) || 720);
   mainWindow.center();
   return false;
+});
+
+ipcMain.handle("window:setResolution", (_event, width, height) => {
+  if (!mainWindow) return;
+  if (mainWindow.isFullScreen()) {
+    mainWindow.setFullScreen(false);
+  }
+  if (mainWindow.isMaximized()) {
+    mainWindow.unmaximize();
+  }
+  mainWindow.setSize(Number(width) || 1280, Number(height) || 720);
+  mainWindow.center();
+  return { width: mainWindow.getBounds().width, height: mainWindow.getBounds().height };
 });
 
 ipcMain.handle("window:close", () => {

@@ -6,11 +6,12 @@ import { authService } from "../services/api";
 
 interface WelcomeAuthViewProps {
   onLoginSuccess: (userData: any, isAdmin: boolean) => void;
+  lastRfidCard?: string | null;
 }
 
 type ActiveField = "card" | "pin" | "token";
 
-export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess }) => {
+export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess, lastRfidCard }) => {
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
   const [cardNumber, setCardNumber] = useState<string>("");
   const [pin, setPin] = useState<string>("");
@@ -24,6 +25,19 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   const [dynamicTokenPreview, setDynamicTokenPreview] = useState<string>("------");
   const [vaultEmpty, setVaultEmpty] = useState<boolean>(false);
   const [vaultTotal, setVaultTotal] = useState<number>(0);
+  const [rfidScannedNotification, setRfidScannedNotification] = useState<string | null>(null);
+
+  // Auto-populate when physical RFID card is detected
+  useEffect(() => {
+    if (lastRfidCard) {
+      const clean = lastRfidCard.replace(/\D/g, "");
+      setCardNumber(formatCard(clean));
+      setActiveField("pin");
+      setErrorMessage(null);
+      setRfidScannedNotification(`Tarjeta física RFID acercada: ${formatCard(clean)}`);
+      setTimeout(() => setRfidScannedNotification(null), 4000);
+    }
+  }, [lastRfidCard]);
 
   // Clock updater & dynamic token preview
   useEffect(() => {
@@ -88,12 +102,68 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
     }
   };
 
+  const handleBackspace = () => {
+    setErrorMessage(null);
+    if (activeField === "card") {
+      const clean = cardNumber.replace(/\D/g, "");
+      if (clean.length > 0) {
+        setCardNumber(formatCard(clean.slice(0, -1)));
+      }
+    } else if (activeField === "pin") {
+      if (pin.length > 0) {
+        setPin((prev) => prev.slice(0, -1));
+      } else {
+        setActiveField("card");
+      }
+    } else if (activeField === "token") {
+      if (token.length > 0) {
+        setToken((prev) => prev.slice(0, -1));
+      } else {
+        setActiveField("pin");
+      }
+    }
+  };
+
   const handleClear = () => {
     setErrorMessage(null);
     if (activeField === "card") setCardNumber("");
     else if (activeField === "pin") setPin("");
     else if (activeField === "token") setToken("");
   };
+
+  // Keyboard navigation and typing listener for laptop / computer keyboards
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if an explicit input or textarea is focused
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key >= "0" && e.key <= "9") {
+        e.preventDefault();
+        handleKeypadPress(e.key);
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        handleBackspace();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        handleSubmit();
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        setActiveField((prev) => {
+          if (prev === "card") return "pin";
+          if (prev === "pin") return "token";
+          return "card";
+        });
+      } else if (e.key === "Escape" || e.key === "Delete") {
+        e.preventDefault();
+        handleClear();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeField, cardNumber, pin, token, isAdminMode, vaultEmpty, vaultTotal, loading]);
 
   const handleSubmit = async () => {
     const cleanCard = cardNumber.replace(/\D/g, "");
@@ -150,18 +220,26 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-4 lg:p-6 text-discord-textNormal select-none overflow-y-auto lg:overflow-hidden">
+    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-3 md:p-4 lg:p-5 text-discord-textNormal select-none overflow-y-auto">
+      {/* RFID Scan Toast Notification */}
+      {rfidScannedNotification && (
+        <div className="mb-2 p-2.5 rounded-xl bg-discord-green/20 border border-discord-green text-discord-green text-xs font-bold flex items-center justify-between animate-bounce">
+          <span>💳 {rfidScannedNotification}</span>
+          <span className="text-[10px] text-white bg-discord-green/40 px-2 py-0.5 rounded">RFID OK</span>
+        </div>
+      )}
+
       {/* Top Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-discord-surface flex-shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-discord-surface flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-discord-blurple flex items-center justify-center shadow-glow flex-shrink-0">
-            <CreditCard className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
+          <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-2xl bg-discord-blurple flex items-center justify-center shadow-glow flex-shrink-0">
+            <CreditCard className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl lg:text-2xl font-black tracking-wider text-discord-textPure uppercase">
+            <h1 className="text-lg lg:text-2xl font-black tracking-wider text-discord-textPure uppercase">
               Banco Nacional de Guatemala
             </h1>
-            <p className="text-[11px] lg:text-xs text-discord-textMuted tracking-widest uppercase">
+            <p className="text-[10px] lg:text-xs text-discord-textMuted tracking-widest uppercase">
               Terminal Kiosco de Autoservicio Bancario Embebido
             </p>
           </div>
@@ -178,7 +256,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
             className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
               !isAdminMode
                 ? "bg-discord-blurple text-white shadow-md"
-                : "text-discord-textMuted hover:text-white"
+                : "text-discord-textMuted hover:text-discord-textPure"
             }`}
           >
             <UserCheck className="w-4 h-4" />
@@ -193,8 +271,8 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
             }}
             className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
               isAdminMode
-                ? "bg-discord-amber text-black shadow-md font-extrabold"
-                : "text-discord-textMuted hover:text-white"
+                ? "bg-discord-amber shadow-md font-extrabold"
+                : "text-discord-textMuted hover:text-discord-textPure"
             }`}
           >
             <Lock className="w-4 h-4" />
@@ -394,12 +472,17 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
               onEnter={handleSubmit}
               enterDisabled={loading}
             />
+
+            <div className="mt-3 text-center text-[11px] text-discord-textMuted flex items-center justify-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-discord-green" />
+              <span>Soporte de teclado físico activo (0-9, Backspace, Enter, Tab) &amp; Lector RFID ESP32</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-discord-surface text-xs text-discord-textMuted">
-        <div>Terminal ID: ATM-GT-001 | Bóveda Central Quetzales | Resolución Kiosco: 1920x1080</div>
+      <div className="flex items-center justify-between pt-3 border-t border-discord-surface text-xs text-discord-textMuted flex-shrink-0">
+        <div>Terminal ID: ATM-GT-001 | Bóveda Central Quetzales | Resolución Kiosco: Adaptable (mínimo 720p)</div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-discord-green animate-ping" />
           <span>Sistema Seguro con Persistencia Dual Concurrente (.txt + DB)</span>

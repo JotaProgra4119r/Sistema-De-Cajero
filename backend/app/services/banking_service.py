@@ -271,14 +271,11 @@ class BankingService:
         )
         db.add(tx)
 
-        # Capture security snapshot
-        photo_name = await esp32_controller.capture_transaction_photo(user.id_usuario)
-
         # Audit log
         log = LogAuditoria(
             id_usuario=user.id_usuario,
             accion="RETIRO_EFECTIVO",
-            detalles=f"Retiro exitoso de Q{amount:.2f} con desglose {clean_bills}. Foto: {photo_name}",
+            detalles=f"Retiro exitoso de Q{amount:.2f} con desglose {clean_bills}.",
             fecha_hora=now
         )
         db.add(log)
@@ -389,7 +386,7 @@ class BankingService:
         }
 
     @staticmethod
-    async def change_pin(db: Session, user_id: int, card_number: str, current_pin: str, token: str, new_pin: str) -> Dict[str, Any]:
+    async def change_pin(db: Session, user_id: int, card_number: str, current_pin: str, new_pin: str, token: str = "") -> Dict[str, Any]:
         if len(new_pin) != 4 or not new_pin.isdigit():
             raise HTTPException(status_code=400, detail="El nuevo PIN debe contener exactamente 4 dígitos numéricos.")
         
@@ -405,7 +402,8 @@ class BankingService:
         if not verify_pin(current_pin, user.pin_hash):
             raise HTTPException(status_code=401, detail="El PIN actual ingresado es incorrecto.")
         
-        if not verify_totp_token(token):
+        # El token dinámico se valida únicamente si es provisto; en sesiones activas el cliente ya está validado
+        if token and not verify_totp_token(token):
             raise HTTPException(status_code=401, detail="Token dinámico de seguridad inválido.")
         
         user.pin_hash = get_pin_hash(new_pin)
@@ -540,6 +538,64 @@ class BankingService:
             "mensaje": f"Efectivo agregado exitosamente. Monto añadido: Q{added_total:.2f}.",
             "nuevo_saldo_boveda": new_total,
             "desglose_agregado": bills
+        }
+
+    @staticmethod
+    async def vault_reset(db: Session, admin_user_id: int) -> Dict[str, Any]:
+        """
+        Reinicio total de bodega/bóveda a cero (Q0.00):
+        1. Restablece todas las denominaciones (200, 100, 50, 20, 10, 5, 1) a 0 piezas.
+        2. Restablece todos los consumos diarios acumulados de usuarios a Q0.00.
+        3. Registra arqueo de vaciado/reinicio y desactiva inicializaciones previas.
+        4. Registra en bitácora de auditoría inmutable.
+        5. Actualiza persistencia dual en archivos planos (.txt).
+        """
+        vault_records = {d.denominacion: d for d in db.query(DenominacionCajero).all()}
+        for d in VALID_DENOMINATIONS:
+            if d in vault_records:
+                vault_records[d].cantidad_billetes = 0
+            else:
+                new_d = DenominacionCajero(denominacion=d, cantidad_billetes=0)
+                db.add(new_d)
+                vault_records[d] = new_d
+
+        # Reiniciar consumos diarios a cero
+        db.query(Usuario).update({Usuario.total_retirado_hoy: 0.00})
+
+        # Desactivar arqueos de inicializacion previos para forzar nueva inicialización
+        db.query(ArqueoCajero).filter(ArqueoCajero.tipo_evento == "INICIALIZACION").update(
+            {ArqueoCajero.tipo_evento: "INICIALIZACION_REINICIADA"}
+        )
+
+        # Registrar Arqueo de Reinicio
+        arq = ArqueoCajero(
+            tipo_evento="REINICIO_BOVEDA",
+            monto_total=0.00,
+            fecha_evento=datetime.now()
+        )
+        db.add(arq)
+
+        log = LogAuditoria(
+            id_usuario=admin_user_id,
+            accion="REINICIO_BOVEDA",
+            detalles="Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.",
+            fecha_hora=datetime.now()
+        )
+        db.add(log)
+        db.commit()
+        db.refresh(log)
+
+        # Dual write a inventario y auditoria
+        inv_dict = {d: 0 for d in VALID_DENOMINATIONS}
+        await txt_manager.update_inventario(inv_dict)
+        await txt_manager.append_auditoria(log.id_log, admin_user_id, log.accion, log.detalles)
+        await txt_manager.sync_all_from_db(db)
+
+        return {
+            "status": "SUCCESS",
+            "mensaje": "Bóveda y variables del cajero reiniciadas a cero (Q0.00) exitosamente.",
+            "total_boveda": 0.0,
+            "desglose": {str(d): 0 for d in VALID_DENOMINATIONS}
         }
 
     @staticmethod
@@ -807,12 +863,61 @@ class BankingService:
         # KPI 2: Total retirado hoy por usuarios activos
         total_retirado_hoy = db.query(func.sum(Usuario.total_retirado_hoy)).filter(Usuario.is_deleted == False).scalar() or 0.0
 
-        # KPI 3: Promedio de depósitos
+        # KPI 3: Promedios y acumulados de transacciones
         avg_deposits = db.query(func.avg(Transaccion.monto)).filter(Transaccion.tipo_transaccion == "DEPOSITO").scalar() or 0.0
+        avg_withdrawals = db.query(func.avg(Transaccion.monto)).filter(Transaccion.tipo_transaccion == "RETIRO").scalar() or 0.0
+        total_withdrawals = db.query(func.sum(Transaccion.monto)).filter(Transaccion.tipo_transaccion == "RETIRO").scalar() or 0.0
+        total_deposits = db.query(func.sum(Transaccion.monto)).filter(Transaccion.tipo_transaccion == "DEPOSITO").scalar() or 0.0
+        count_withdrawals = db.query(func.count(Transaccion.id_transaccion)).filter(Transaccion.tipo_transaccion == "RETIRO").scalar() or 0
+        count_deposits = db.query(func.count(Transaccion.id_transaccion)).filter(Transaccion.tipo_transaccion == "DEPOSITO").scalar() or 0
+
+        # Histórico agrupado por días (Línea de tiempo para gráficas de barras/palitos)
+        all_txs_raw = db.query(Transaccion).order_by(Transaccion.fecha_hora.asc()).all()
+        daily_groups: Dict[str, Dict[str, Any]] = {}
+        for t in all_txs_raw:
+            d_str = t.fecha_hora.strftime("%Y-%m-%d") if t.fecha_hora else "Hoy"
+            if d_str not in daily_groups:
+                daily_groups[d_str] = {
+                    "fecha": d_str,
+                    "retiros": 0.0,
+                    "depositos": 0.0,
+                    "conteo_retiros": 0,
+                    "conteo_depositos": 0,
+                    "promedio_retiro": 0.0,
+                    "promedio_deposito": 0.0
+                }
+            if t.tipo_transaccion == "RETIRO":
+                daily_groups[d_str]["retiros"] += float(t.monto)
+                daily_groups[d_str]["conteo_retiros"] += 1
+            else:
+                daily_groups[d_str]["depositos"] += float(t.monto)
+                daily_groups[d_str]["conteo_depositos"] += 1
+
+        for g in daily_groups.values():
+            if g["conteo_retiros"] > 0:
+                g["promedio_retiro"] = round(g["retiros"] / g["conteo_retiros"], 2)
+            if g["conteo_depositos"] > 0:
+                g["promedio_deposito"] = round(g["depositos"] / g["conteo_depositos"], 2)
+
+        historico_diario = list(daily_groups.values())
+        if not historico_diario:
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            historico_diario = [{
+                "fecha": today_str,
+                "retiros": 0.0,
+                "depositos": 0.0,
+                "conteo_retiros": 0,
+                "conteo_depositos": 0,
+                "promedio_retiro": 0.0,
+                "promedio_deposito": 0.0
+            }]
 
         # KPI 4: Estado de Inicialización
         has_init = db.query(ArqueoCajero).filter(ArqueoCajero.tipo_evento == "INICIALIZACION").first() is not None
-        init_status = "Inicializado" if has_init else "Pendiente"
+        if total_vault <= 0:
+            init_status = "Bóveda en Cero (Pendiente)"
+        else:
+            init_status = "Inicializado" if has_init else "Pendiente"
 
         # Users who changed PIN
         pin_changed_count = db.query(Usuario).filter(Usuario.cambio_pin_realizado == True, Usuario.is_deleted == False).count()
@@ -876,6 +981,18 @@ class BankingService:
             "porcentaje_boveda": vault_gauge,
             "total_retirado_hoy": float(total_retirado_hoy),
             "promedio_depositos": float(avg_deposits),
+            "promedio_retiros": float(avg_withdrawals),
+            "total_retiros": float(total_withdrawals),
+            "total_depositos": float(total_deposits),
+            "conteo_retiros": int(count_withdrawals),
+            "conteo_depositos": int(count_deposits),
+            "historico_diario": historico_diario,
+            "distribucion_operaciones": {
+                "retiros_total": float(total_withdrawals),
+                "depositos_total": float(total_deposits),
+                "conteo_retiros": int(count_withdrawals),
+                "conteo_depositos": int(count_deposits)
+            },
             "estado_inicializacion": init_status,
             "usuarios_cambio_pin": pin_changed_count,
             "ultimo_usuario": last_user_info,

@@ -11,20 +11,28 @@
 }
 
 :root {
-  /* Default Light Mode tokens (WCAG AAA compliant) */
-  --atm-bg-base: #f0f2f5;
+  /* Modo Claro Bancario: Tonalidades suaves, descansadas a la vista y colores sólidos no saturados */
+  --atm-bg-base: #edf2f7;
   --atm-bg-surface: #ffffff;
-  --atm-bg-sidebar: #e9eaec;
-  --atm-bg-hover: #dadde1;
-  --atm-text-normal: #2e3338;
-  --atm-text-muted: #5c6068;
-  --atm-text-pure: #111214;
-  --atm-border: #d4d7dc;
-  --atm-header-bg: #e3e5e8;
+  --atm-bg-sidebar: #f8fafc;
+  --atm-bg-hover: #e2e8f0;
+  --atm-text-normal: #334155;
+  --atm-text-muted: #64748b;
+  --atm-text-pure: #0f172a;
+  --atm-border: #cbd5e1;
+  --atm-header-bg: #e2e8f0;
+
+  /* Colores de acento sobrios y de alto contraste en claro (cero neón fosforescente) */
+  --atm-color-blurple: #2563eb;       /* Azul zafiro bancario */
+  --atm-color-blurple-hover: #1d4ed8;
+  --atm-color-green: #047857;         /* Verde bosque profundo (Emerald-700), ultra legible */
+  --atm-color-amber: #b45309;         /* Ocre/Ámbar cálido tostado (Amber-700), ultra legible */
+  --atm-color-red: #b91c1c;           /* Carmesí bancario (Red-700) */
+  --atm-gauge-track: #e2e8f0;
 }
 
 html.dark, :root.dark {
-  /* Discord Dark Mode tokens */
+  /* Modo Oscuro Discord */
   --atm-bg-base: #202225;
   --atm-bg-surface: #2F3136;
   --atm-bg-sidebar: #36393F;
@@ -34,6 +42,13 @@ html.dark, :root.dark {
   --atm-text-pure: #FFFFFF;
   --atm-border: #40444B;
   --atm-header-bg: #1e1f22;
+
+  --atm-color-blurple: #5865F2;
+  --atm-color-blurple-hover: #4752C4;
+  --atm-color-green: #57F287;
+  --atm-color-amber: #FEE75C;
+  --atm-color-red: #ED4245;
+  --atm-gauge-track: #2F3136;
 }
 
 html, body {
@@ -55,24 +70,36 @@ html.light .text-white {
   color: var(--atm-text-pure);
 }
 
-/* Keep pure white on colored solid brand buttons */
+/* Keep pure white on colored solid brand buttons in light mode */
 html.light .bg-discord-blurple,
 html.light .bg-discord-blurpleHover,
 html.light .bg-discord-red,
+html.light .bg-discord-green,
+html.light .bg-discord-amber,
 html.light .bg-purple-600,
+html.light .bg-blue-600,
 html.light .bg-discord-blurple *,
 html.light .bg-discord-blurpleHover *,
 html.light .bg-discord-red *,
-html.light .bg-purple-600 * {
+html.light .bg-discord-green *,
+html.light .bg-discord-amber *,
+html.light .bg-purple-600 *,
+html.light .bg-blue-600 * {
   color: #FFFFFF !important;
 }
 
-/* Keep dark text on bright mint and amber badges/buttons */
-html.light .bg-discord-green *,
-html.light .bg-discord-amber *,
+/* In dark mode, lime green and bright yellow buttons have dark text for contrast */
 html.dark .bg-discord-green *,
 html.dark .bg-discord-amber * {
   color: #060607;
+}
+
+html.light .text-discord-green {
+  color: var(--atm-color-green) !important;
+}
+
+html.light .text-discord-amber {
+  color: var(--atm-color-amber) !important;
 }
 
 html.light input {
@@ -83,7 +110,33 @@ html.light input {
   display: none;
 }
 
-/* Touch responsiveness */
+/* Touch responsiveness & GPU performance */
 button, input {
   touch-action: manipulation;
+  transform: translateZ(0); /* Aceleración por hardware ligera sin fugas de memoria */
+}
+
+/* Reglas de impresión para Vouchers y Certificados Bancarios */
+@media print {
+  /* Ocultar interfaz del cajero y barras */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #printable-voucher, #printable-voucher * {
+    visibility: visible;
+  }
+  #printable-voucher {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 12px;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
 }

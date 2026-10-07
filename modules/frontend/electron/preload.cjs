@@ -5,7 +5,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   maximize: () => ipcRenderer.invoke("window:maximize"),
   toggleFullscreen: () => ipcRenderer.invoke("window:toggleFullscreen"),
   setFullscreen: (flag) => ipcRenderer.invoke("window:setFullscreen", flag),
-  setWindowed: () => ipcRenderer.invoke("window:setWindowed"),
+  setWindowed: (width, height) => ipcRenderer.invoke("window:setWindowed", width, height),
+  setResolution: (width, height) => ipcRenderer.invoke("window:setResolution", width, height),
   close: () => ipcRenderer.invoke("window:close"),
   isElectron: true,
   onWindowStateChange: (callback) => {

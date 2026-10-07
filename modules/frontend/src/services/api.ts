@@ -29,6 +29,10 @@ export const authService = {
     const res = await apiClient.get("/api/auth/token-preview");
     return res.data;
   },
+  getAtmStatus: async () => {
+    const res = await apiClient.get("/api/auth/atm-status");
+    return res.data;
+  },
   logout: async (token?: string) => {
     try {
       const res = await apiClient.post("/api/auth/logout", { token: token || undefined });
@@ -56,7 +60,7 @@ export const userService = {
     const res = await apiClient.get("/api/user/transactions");
     return res.data;
   },
-  changePin: async (cardNumber: string, currentPin: string, token: string, newPin: string) => {
+  changePin: async (cardNumber: string, currentPin: string, newPin: string, token: string = "") => {
     const res = await apiClient.post("/api/user/change-pin", {
       card_number: cardNumber,
       current_pin: currentPin,
@@ -82,6 +86,10 @@ export const adminService = {
   },
   addCashVault: async (bills: Record<string, number>) => {
     const res = await apiClient.post("/api/admin/vault/add-cash", { bills });
+    return res.data;
+  },
+  resetVault: async () => {
+    const res = await apiClient.post("/api/admin/vault/reset");
     return res.data;
   },
   registerEmployee: async (data: {
@@ -128,6 +136,17 @@ export const hardwareService = {
   },
   toggleJam: async (enable: boolean) => {
     const res = await apiClient.post("/api/hardware/simulate-jam", { simulate_jam: enable });
+    return res.data;
+  },
+  simulateRfidTap: async (cardNumber: string, uid?: string) => {
+    const res = await apiClient.post("/api/hardware/rfid/simulate-tap", {
+      card_number: cardNumber,
+      uid,
+    });
+    return res.data;
+  },
+  toggleRfidDebug: async (active: boolean) => {
+    const res = await apiClient.post("/api/hardware/rfid/debug-mode", { active });
     return res.data;
   },
 };

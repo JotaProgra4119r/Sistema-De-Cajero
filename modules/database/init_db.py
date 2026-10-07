@@ -93,15 +93,15 @@ def init_db():
                 db.add(c)
         db.commit()
 
-        # 4. Seed Vault Initial Inventory (Total: Q9,850.00)
+        # 4. Seed Vault Initial Inventory: Instalación limpia con bóveda vacía (Total: Q0.00)
         vault_seed = {
-            200: 20, # Q4,000
-            100: 30, # Q3,000
-            50:  30, # Q1,500
-            20:  40, # Q800
-            10:  35, # Q350
-            5:   30, # Q150
-            1:   50  # Q50
+            200: 0,
+            100: 0,
+            50:  0,
+            20:  0,
+            10:  0,
+            5:   0,
+            1:   0
         }
         has_denoms = db.query(DenominacionCajero).first()
         if not has_denoms:
@@ -110,13 +110,46 @@ def init_db():
                 db.add(DenominacionCajero(denominacion=d, cantidad_billetes=qty))
                 total_vault += d * qty
             
-            db.add(ArqueoCajero(
-                tipo_evento="INICIALIZACION",
-                monto_total=total_vault,
-                fecha_evento=datetime.now(timezone.utc)
-            ))
+            # No se crea ArqueoCajero aquí: se deja pendiente para que el Administrador
+            # realice la primera inicialización manual desde la consola administrativa.
             db.commit()
-            print(f"[DATABASE] Bóveda semillada con Q{total_vault:.2f} en 7 denominaciones.")
+            print(f"[DATABASE] Bóveda semillada en estado inicial limpio: Q{total_vault:.2f} en 7 denominaciones (pendiente de inicialización por administrador).")
+
+        # 5. Crear o actualizar Vistas SQL 'retiros' y 'depositos' para visualización en SQL Management Studio
+        from sqlalchemy import text
+        is_sqlite = "sqlite" in engine.url.drivername
+        view_prefix = "CREATE VIEW IF NOT EXISTS" if is_sqlite else "CREATE OR REPLACE VIEW"
+        try:
+            db.execute(text(f"""
+                {view_prefix} retiros AS
+                SELECT 
+                    t.id_transaccion,
+                    t.id_usuario,
+                    u.nombre_completo AS cliente,
+                    t.monto,
+                    t.fecha_hora,
+                    t.desglose_billetes
+                FROM transacciones t
+                JOIN usuarios u ON t.id_usuario = u.id_usuario
+                WHERE t.tipo_transaccion = 'RETIRO'
+            """))
+            db.execute(text(f"""
+                {view_prefix} depositos AS
+                SELECT 
+                    t.id_transaccion,
+                    t.id_usuario,
+                    u.nombre_completo AS cliente,
+                    t.monto,
+                    t.fecha_hora,
+                    t.desglose_billetes
+                FROM transacciones t
+                JOIN usuarios u ON t.id_usuario = u.id_usuario
+                WHERE t.tipo_transaccion = 'DEPOSITO'
+            """))
+            db.commit()
+            print("[DATABASE] Vistas SQL 'retiros' y 'depositos' registradas exitosamente.")
+        except Exception as v_err:
+            print(f"[DATABASE] Nota sobre creación de vistas: {v_err}")
 
         print("[DATABASE] Base de datos relacional inicializada correctamente.")
     except Exception as e:
