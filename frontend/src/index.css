@@ -11,24 +11,24 @@
 }
 
 :root {
-  /* Modo Claro Bancario: Tonalidades suaves, descansadas a la vista y colores sólidos no saturados */
-  --atm-bg-base: #edf2f7;
-  --atm-bg-surface: #ffffff;
-  --atm-bg-sidebar: #f8fafc;
-  --atm-bg-hover: #e2e8f0;
-  --atm-text-normal: #334155;
-  --atm-text-muted: #64748b;
-  --atm-text-pure: #0f172a;
-  --atm-border: #cbd5e1;
+  /* Modo Claro Bancario: Alto Contraste y Relieve Ejecutivo */
+  --atm-bg-base: #cbd5e1;       /* Slate-300: Fondo de pizarra profundo para máximo contraste con tarjetas */
+  --atm-bg-surface: #ffffff;    /* Tarjetas blancas sólidas */
+  --atm-bg-sidebar: #f1f5f9;    /* Slate-100 para contenedores secundarios */
+  --atm-bg-hover: #334155;      /* Slate-700: Bordes densos y oscuros de 1.5px a 2px */
+  --atm-text-normal: #1e293b;   /* Slate-800: Texto oscuro definido y legible */
+  --atm-text-muted: #334155;    /* Slate-700: Subtítulos e indicadores con contraste perfecto */
+  --atm-text-pure: #0f172a;     /* Slate-900: Azul marino casi negro para títulos y cifras */
+  --atm-border: #334155;        /* Bordes contrastados */
   --atm-header-bg: #e2e8f0;
 
   /* Colores de acento sobrios y de alto contraste en claro (cero neón fosforescente) */
-  --atm-color-blurple: #2563eb;       /* Azul zafiro bancario */
-  --atm-color-blurple-hover: #1d4ed8;
-  --atm-color-green: #047857;         /* Verde bosque profundo (Emerald-700), ultra legible */
-  --atm-color-amber: #b45309;         /* Ocre/Ámbar cálido tostado (Amber-700), ultra legible */
+  --atm-color-blurple: #1d4ed8;       /* Azul rey bancario intenso */
+  --atm-color-blurple-hover: #1e40af;
+  --atm-color-green: #15803d;         /* Verde bosque profundo (Emerald-700/Green-700) */
+  --atm-color-amber: #b45309;         /* Ocre/Ámbar tostado (Amber-700) */
   --atm-color-red: #b91c1c;           /* Carmesí bancario (Red-700) */
-  --atm-gauge-track: #e2e8f0;
+  --atm-gauge-track: #94a3b8;
 }
 
 html.dark, :root.dark {
@@ -66,12 +66,34 @@ html, body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Light mode contrast adjustments */
+/* Light mode high contrast and depth rules */
 html.light .text-white {
   color: var(--atm-text-pure);
 }
 
-/* Keep pure white on colored solid brand buttons in light mode */
+/* Borde y sombras reforzadas para tarjetas y paneles en modo claro */
+html.light .bg-discord-surface,
+html.light .bg-discord-surface\/60,
+html.light .bg-discord-surface\/80,
+html.light .bg-discord-surface\/90 {
+  background-color: #ffffff !important;
+  border-color: #334155 !important;
+  box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.18), 0 4px 6px -4px rgba(15, 23, 42, 0.12) !important;
+}
+
+html.light .border-discord-hover,
+html.light .border-discord-surface {
+  border-color: #334155 !important;
+}
+
+html.light .bg-discord-sidebar,
+html.light .bg-discord-sidebar\/60,
+html.light .bg-discord-sidebar\/80 {
+  background-color: #f1f5f9 !important;
+  border-color: #475569 !important;
+}
+
+/* Keep pure white text on colored solid brand buttons in light mode */
 html.light .bg-discord-blurple,
 html.light .bg-discord-blurpleHover,
 html.light .bg-discord-red,
@@ -79,13 +101,17 @@ html.light .bg-discord-green,
 html.light .bg-discord-amber,
 html.light .bg-purple-600,
 html.light .bg-blue-600,
+html.light .bg-emerald-600,
+html.light .bg-amber-600,
 html.light .bg-discord-blurple *,
 html.light .bg-discord-blurpleHover *,
 html.light .bg-discord-red *,
 html.light .bg-discord-green *,
 html.light .bg-discord-amber *,
 html.light .bg-purple-600 *,
-html.light .bg-blue-600 * {
+html.light .bg-blue-600 *,
+html.light .bg-emerald-600 *,
+html.light .bg-amber-600 * {
   color: #FFFFFF !important;
 }
 
@@ -101,6 +127,10 @@ html.light .text-discord-green {
 
 html.light .text-discord-amber {
   color: var(--atm-color-amber) !important;
+}
+
+html.light .text-discord-textMuted {
+  color: #334155 !important;
 }
 
 html.light input {

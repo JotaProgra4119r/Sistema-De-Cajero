@@ -246,7 +246,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
         </div>
 
         {/* Dual Mode Switcher */}
-        <div className="flex items-center gap-2 lg:gap-3 bg-discord-surface p-1.5 rounded-2xl border border-discord-hover">
+        <div className="flex items-center gap-2 lg:gap-3 bg-discord-surface p-1.5 rounded-2xl border-2 border-slate-700 dark:border-discord-hover shadow-md">
           <button
             type="button"
             onClick={() => {
@@ -255,8 +255,8 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
             }}
             className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
               !isAdminMode
-                ? "bg-discord-blurple text-white shadow-md"
-                : "text-discord-textMuted hover:text-discord-textPure"
+                ? "bg-blue-700 dark:bg-discord-blurple text-white shadow-md font-extrabold"
+                : "text-slate-800 dark:text-discord-textMuted hover:text-discord-textPure"
             }`}
           >
             <UserCheck className="w-4 h-4" />
@@ -271,8 +271,8 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
             }}
             className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
               isAdminMode
-                ? "bg-discord-amber shadow-md font-extrabold"
-                : "text-discord-textMuted hover:text-discord-textPure"
+                ? "bg-amber-600 text-white shadow-md font-extrabold border border-amber-800"
+                : "text-slate-800 dark:text-discord-textMuted hover:text-discord-textPure"
             }`}
           >
             <Lock className="w-4 h-4" />
@@ -284,31 +284,31 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
       {/* Main Split-Screen Container */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 my-auto py-4">
         {/* Left Column: Brand Identity, Hardware Badges, Clock & Quick Presets */}
-        <div className="col-span-1 lg:col-span-5 flex flex-col justify-between p-5 lg:p-8 bg-discord-surface/60 rounded-3xl border border-discord-hover shadow-kiosk">
+        <div className="col-span-1 lg:col-span-5 flex flex-col justify-between p-5 lg:p-8 bg-discord-surface rounded-3xl border-2 border-slate-700 dark:border-discord-hover shadow-kiosk">
           <div>
-            <div className="flex items-center gap-2.5 text-discord-textMuted text-sm font-semibold mb-3">
-              <Clock className="w-5 h-5 text-discord-blurple" />
+            <div className="flex items-center gap-2.5 text-slate-800 dark:text-discord-textMuted text-sm font-bold mb-3">
+              <Clock className="w-5 h-5 text-blue-700 dark:text-discord-blurple" />
               <span className="capitalize">{currentDate}</span>
             </div>
-            <div className="text-5xl font-black text-discord-textPure tracking-tight font-mono">
+            <div className="text-5xl font-black text-slate-900 dark:text-discord-textPure tracking-tight font-mono">
               {currentTime}
             </div>
 
-            <div className="my-6 border-t border-discord-hover/60" />
+            <div className="my-6 border-t-2 border-slate-400 dark:border-discord-hover/60" />
 
             {/* Hardware badges */}
             <div className="space-y-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-discord-textMuted">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-discord-textMuted">
                 Estado Físico del Kiosco
               </h3>
               <HardwareBadges />
             </div>
 
-            <div className="mt-8 p-4 rounded-2xl bg-discord-sidebar/80 border border-discord-hover">
+            <div className="mt-8 p-4 rounded-2xl bg-slate-100 dark:bg-discord-sidebar/80 border-2 border-slate-600 dark:border-discord-hover shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-discord-textMuted">Token Dinámico Actual (TOTP):</div>
-                  <div className="text-2xl font-mono font-bold text-discord-green tracking-widest mt-1">
+                  <div className="text-xs font-bold text-slate-800 dark:text-discord-textMuted">Token Dinámico Actual (TOTP):</div>
+                  <div className="text-2xl font-mono font-black text-emerald-800 dark:text-discord-green tracking-widest mt-1">
                     {dynamicTokenPreview}
                   </div>
                 </div>
@@ -323,7 +323,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                       setToken(dynamicTokenPreview);
                     }
                   }}
-                  className="px-3 py-1.5 text-xs font-bold rounded-lg bg-discord-surface hover:bg-discord-hover text-white border border-discord-hover transition-all"
+                  className="px-3.5 py-2 text-xs font-black rounded-xl bg-white dark:bg-discord-surface hover:bg-slate-200 dark:hover:bg-discord-hover text-slate-900 dark:text-white border-2 border-slate-700 dark:border-discord-hover transition-all shadow-sm"
                 >
                   Usar Token
                 </button>
@@ -332,36 +332,36 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
           </div>
 
           {/* Quick evaluation shortcuts */}
-          <div className="mt-6 pt-4 border-t border-discord-hover/60">
-            <div className="text-xs font-bold text-discord-textMuted uppercase tracking-wider mb-2">
+          <div className="mt-6 pt-4 border-t-2 border-slate-400 dark:border-discord-hover/60">
+            <div className="text-xs font-black text-slate-800 dark:text-discord-textMuted uppercase tracking-wider mb-2">
               Cuentas Rápidas de Prueba:
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setPresetUser("1234567812345678", "1234", dynamicTokenPreview, false)}
-                className="px-3 py-2 text-xs font-semibold rounded-xl bg-discord-surface hover:bg-discord-hover text-left truncate text-white border border-discord-hover"
+                className="px-3 py-2 text-xs font-bold rounded-xl bg-white dark:bg-discord-surface hover:bg-slate-100 dark:hover:bg-discord-hover text-left truncate text-slate-900 dark:text-white border-2 border-slate-700 dark:border-discord-hover shadow-xs"
               >
                 👤 Carlos Gómez (Emp 1)
               </button>
               <button
                 type="button"
                 onClick={() => setPresetUser("2345678923456789", "1234", dynamicTokenPreview, false)}
-                className="px-3 py-2 text-xs font-semibold rounded-xl bg-discord-surface hover:bg-discord-hover text-left truncate text-white border border-discord-hover"
+                className="px-3 py-2 text-xs font-bold rounded-xl bg-white dark:bg-discord-surface hover:bg-slate-100 dark:hover:bg-discord-hover text-left truncate text-slate-900 dark:text-white border-2 border-slate-700 dark:border-discord-hover shadow-xs"
               >
                 👤 María López (Emp 2)
               </button>
               <button
                 type="button"
                 onClick={() => setPresetUser("3456789034567890", "1234", dynamicTokenPreview, false)}
-                className="px-3 py-2 text-xs font-semibold rounded-xl bg-discord-surface hover:bg-discord-hover text-left truncate text-white border border-discord-hover"
+                className="px-3 py-2 text-xs font-bold rounded-xl bg-white dark:bg-discord-surface hover:bg-slate-100 dark:hover:bg-discord-hover text-left truncate text-slate-900 dark:text-white border-2 border-slate-700 dark:border-discord-hover shadow-xs"
               >
                 👤 Juan Pérez (Lím Q1500)
               </button>
               <button
                 type="button"
                 onClick={() => setPresetUser("9999888877776666", "1234", dynamicTokenPreview, true)}
-                className="px-3 py-2 text-xs font-bold rounded-xl bg-amber-950/60 hover:bg-amber-900/80 text-left truncate text-amber-300 border border-amber-800"
+                className="px-3 py-2 text-xs font-black rounded-xl bg-amber-900 dark:bg-amber-950/60 hover:bg-amber-800 text-left truncate text-amber-100 border-2 border-amber-950 shadow-xs"
               >
                 🛡️ Admin Bóveda
               </button>
@@ -370,13 +370,13 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
         </div>
 
         {/* Right Column: Authentication Container & Virtual Keypad */}
-        <div className="col-span-1 lg:col-span-7 flex flex-col justify-center p-5 lg:p-8 bg-discord-surface rounded-3xl border border-discord-hover shadow-kiosk">
+        <div className="col-span-1 lg:col-span-7 flex flex-col justify-center p-5 lg:p-8 bg-discord-surface rounded-3xl border-2 border-slate-700 dark:border-discord-hover shadow-kiosk">
           <div className="max-w-[480px] mx-auto w-full">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-black text-discord-textPure">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-discord-textPure">
                 {isAdminMode ? "Acceso a Consola Administrativa" : "Autenticación de Autoservicio"}
               </h2>
-              <p className="text-sm text-discord-textMuted mt-1">
+              <p className="text-sm font-semibold text-slate-800 dark:text-discord-textMuted mt-1">
                 Introduzca sus credenciales táctiles de tres factores
               </p>
             </div>
@@ -396,7 +396,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
             )}
 
             {errorMessage && (
-              <div className="flex items-center gap-2 p-3.5 mb-4 bg-discord-red/20 border border-discord-red rounded-xl text-discord-red text-sm font-medium animate-shake">
+              <div className="flex items-center gap-2 p-3.5 mb-4 bg-red-100 dark:bg-discord-red/20 border-2 border-red-600 rounded-xl text-red-800 dark:text-discord-red text-sm font-bold animate-shake">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span>{errorMessage}</span>
               </div>
@@ -405,42 +405,42 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
             <div className="space-y-4 mb-6">
               <div
                 onClick={() => setActiveField("card")}
-                className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer ${
                   activeField === "card"
-                    ? "bg-discord-sidebar border-discord-blurple ring-2 ring-discord-blurple/50"
-                    : "bg-discord-sidebar/60 border-discord-hover"
+                    ? "bg-blue-50 dark:bg-discord-sidebar border-blue-700 dark:border-discord-blurple ring-2 ring-blue-500/40"
+                    : "bg-slate-50 dark:bg-discord-sidebar/60 border-slate-600 dark:border-discord-hover"
                 }`}
               >
-                <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-discord-textMuted mb-1">
                   <span>Número de Tarjeta (16 dígitos)</span>
-                  {activeField === "card" && <span className="text-discord-blurple">● Activo</span>}
+                  {activeField === "card" && <span className="text-blue-700 dark:text-discord-blurple font-black">● Activo</span>}
                 </div>
-                <div className="font-mono text-xl font-bold tracking-widest text-white">
-                  {cardNumber || <span className="text-gray-600">XXXX-XXXX-XXXX-XXXX</span>}
+                <div className="font-mono text-xl font-black tracking-widest text-slate-900 dark:text-white">
+                  {cardNumber || <span className="text-slate-400 dark:text-gray-600">XXXX-XXXX-XXXX-XXXX</span>}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div
                   onClick={() => setActiveField("pin")}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer ${
                     activeField === "pin"
-                      ? "bg-discord-sidebar border-discord-blurple ring-2 ring-discord-blurple/50"
-                      : "bg-discord-sidebar/60 border-discord-hover"
+                      ? "bg-blue-50 dark:bg-discord-sidebar border-blue-700 dark:border-discord-blurple ring-2 ring-blue-500/40"
+                      : "bg-slate-50 dark:bg-discord-sidebar/60 border-slate-600 dark:border-discord-hover"
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-discord-textMuted mb-1">
                     <span>PIN (4 dígitos)</span>
-                    {activeField === "pin" && <span className="text-discord-blurple">● Activo</span>}
+                    {activeField === "pin" && <span className="text-blue-700 dark:text-discord-blurple font-black">● Activo</span>}
                   </div>
                   <div className="flex items-center gap-2 h-7">
                     {[0, 1, 2, 3].map((idx) => (
                       <div
                         key={idx}
-                        className={`w-3.5 h-3.5 rounded-full border transition-all ${
+                        className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${
                           idx < pin.length
-                            ? "bg-discord-green border-discord-green shadow-sm"
-                            : "border-gray-600 bg-discord-surface"
+                            ? "bg-emerald-600 border-emerald-800 dark:bg-discord-green dark:border-discord-green shadow-xs"
+                            : "border-slate-400 bg-white dark:border-gray-600 dark:bg-discord-surface"
                         }`}
                       />
                     ))}
@@ -449,18 +449,18 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
 
                 <div
                   onClick={() => setActiveField("token")}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer ${
                     activeField === "token"
-                      ? "bg-discord-sidebar border-discord-blurple ring-2 ring-discord-blurple/50"
-                      : "bg-discord-sidebar/60 border-discord-hover"
+                      ? "bg-blue-50 dark:bg-discord-sidebar border-blue-700 dark:border-discord-blurple ring-2 ring-blue-500/40"
+                      : "bg-slate-50 dark:bg-discord-sidebar/60 border-slate-600 dark:border-discord-hover"
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-discord-textMuted mb-1">
                     <span>Token Dinámico</span>
-                    {activeField === "token" && <span className="text-discord-blurple">● Activo</span>}
+                    {activeField === "token" && <span className="text-blue-700 dark:text-discord-blurple font-black">● Activo</span>}
                   </div>
-                  <div className="font-mono text-xl font-bold tracking-widest text-discord-green">
-                    {token || <span className="text-gray-600">000000</span>}
+                  <div className="font-mono text-xl font-black tracking-widest text-emerald-800 dark:text-discord-green">
+                    {token || <span className="text-slate-400 dark:text-gray-600">000000</span>}
                   </div>
                 </div>
               </div>
@@ -473,8 +473,8 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
               enterDisabled={loading}
             />
 
-            <div className="mt-3 text-center text-[11px] text-discord-textMuted flex items-center justify-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-discord-green" />
+            <div className="mt-3 text-center text-[11px] font-bold text-slate-800 dark:text-discord-textMuted flex items-center justify-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-discord-green" />
               <span>Soporte de teclado físico activo (0-9, Backspace, Enter, Tab) &amp; Lector RFID ESP32</span>
             </div>
           </div>
