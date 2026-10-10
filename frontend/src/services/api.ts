@@ -1,9 +1,30 @@
 import axios from "axios";
 
-export const getApiBaseUrl = (): string => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+export const RENDER_CLOUD_URL = "https://sistema-de-cajero.onrender.com";
+export const LOCAL_API_URL = "http://127.0.0.1:8000";
+
+export const getServerMode = (): "cloud" | "local" => {
+  if (typeof window === "undefined") return "local";
+  const custom = localStorage.getItem("atm_api_url");
+  if (custom) {
+    return custom.includes("onrender.com") ? "cloud" : "local";
   }
+  if (window.location.origin.includes("onrender.com")) {
+    return "cloud";
+  }
+  return "local";
+};
+
+export const switchServerMode = (mode: "cloud" | "local") => {
+  if (mode === "cloud") {
+    localStorage.setItem("atm_api_url", RENDER_CLOUD_URL);
+  } else {
+    localStorage.setItem("atm_api_url", LOCAL_API_URL);
+  }
+  window.location.reload();
+};
+
+export const getApiBaseUrl = (): string => {
   if (typeof window !== "undefined") {
     const custom = localStorage.getItem("atm_api_url");
     if (custom) return custom;
@@ -14,7 +35,7 @@ export const getApiBaseUrl = (): string => {
     const host = window.location.hostname;
 
     // Si está en Render o dominio web HTTPS/HTTP sin puerto de desarrollo Vite (5173) y no es archivo local Electron
-    if (origin && !origin.startsWith("file:") && !origin.includes(":5173")) {
+    if (origin && !origin.startsWith("file:") && !origin.includes(":5173") && !origin.includes("localhost") && !origin.includes("127.0.0.1")) {
       return origin;
     }
 
@@ -23,7 +44,12 @@ export const getApiBaseUrl = (): string => {
       return `${protocol}//${host}:8000`;
     }
   }
-  return "http://127.0.0.1:8000";
+
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  return LOCAL_API_URL;
 };
 
 export const getWsBaseUrl = (): string => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Maximize2, Minimize2, Monitor, Square, Minus, X, Tv, Sun, Moon } from "lucide-react";
+import { Maximize2, Minimize2, Monitor, Square, Minus, X, Tv, Sun, Moon, Cloud, HardDrive } from "lucide-react";
+import { getServerMode, switchServerMode } from "../services/api";
 
 declare global {
   interface Window {
@@ -42,6 +43,14 @@ export const WindowBar: React.FC = () => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
     localStorage.setItem("atm_theme", next);
+  };
+
+  const [serverMode, setServerMode] = useState<"cloud" | "local">(() => getServerMode());
+
+  const handleToggleServer = () => {
+    const next = serverMode === "cloud" ? "local" : "cloud";
+    setServerMode(next);
+    switchServerMode(next);
   };
 
   useEffect(() => {
@@ -150,6 +159,25 @@ export const WindowBar: React.FC = () => {
 
       {/* Mode Switchers and Window Controls (no-drag) */}
       <div style={{ WebkitAppRegion: "no-drag" } as any} className="flex items-center gap-2">
+        {/* Toggle Servidor: Nube (Render) / Local (Offline) */}
+        <button
+          type="button"
+          onClick={handleToggleServer}
+          title={
+            serverMode === "cloud"
+              ? "Conectado a la Nube (Render). Clic para cambiar a Modo Local (Offline)"
+              : "Modo Local (Offline). Clic para sincronizar con la Nube (Render)"
+          }
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-xs ${
+            serverMode === "cloud"
+              ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/30"
+              : "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/30"
+          }`}
+        >
+          {serverMode === "cloud" ? <Cloud className="w-3.5 h-3.5" /> : <HardDrive className="w-3.5 h-3.5" />}
+          <span>{serverMode === "cloud" ? "Nube (Render)" : "Local (Offline)"}</span>
+        </button>
+
         {/* Toggle Modo Claro / Modo Oscuro */}
         <button
           type="button"

@@ -43,11 +43,11 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
   const authCode = voucher.autorizacion || `AUT-${Math.abs(Number(voucher.id) * 314159 % 900000 + 100000)}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div className="voucher-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm animate-fadeIn print:static print:p-0 print:bg-transparent print:backdrop-blur-none">
       {/* Container Dialog */}
-      <div className="relative w-full max-w-md bg-white text-gray-900 rounded-2xl shadow-2xl border border-gray-300 overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-md bg-white text-gray-900 rounded-2xl shadow-2xl border border-gray-300 overflow-hidden flex flex-col max-h-[92vh] print:max-w-none print:max-h-none print:shadow-none print:border-none print:overflow-visible">
         {/* Header Actions (No se imprime) */}
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-100 border-b border-slate-200">
+        <div className="no-print flex items-center justify-between px-4 py-3 bg-slate-100 border-b border-slate-200">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
             <Printer className="w-4 h-4 text-blue-600" />
             <span>Comprobante Oficial Bancario</span>
@@ -74,7 +74,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
         {/* PRINTABLE VOUCHER CONTENT */}
         <div
           id="printable-voucher"
-          className="p-6 overflow-y-auto font-mono text-xs text-gray-900 bg-white"
+          className="p-6 overflow-y-auto print:overflow-visible print:p-2 font-mono text-xs text-gray-900 bg-white"
         >
           {/* Logo y Encabezado del Banco */}
           <div className="text-center pb-3 border-b-2 border-dashed border-gray-400">
@@ -245,7 +245,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
         </div>
 
         {/* Footer Modal Bar (No se imprime) */}
-        <div className="p-3 bg-slate-100 border-t border-slate-200 flex justify-end">
+        <div className="no-print p-3 bg-slate-100 border-t border-slate-200 flex justify-end">
           <button
             type="button"
             onClick={onClose}

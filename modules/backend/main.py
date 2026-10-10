@@ -49,7 +49,7 @@ app = FastAPI(
 # CORS configuration for multi-device / LAN / mini-production deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^https?://.*",
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

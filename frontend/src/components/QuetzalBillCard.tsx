@@ -113,7 +113,6 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
     iconStyle: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
   };
 
-  const isStockEmpty = stock <= 0;
   const canIncrement = count < stock && !disabled;
 
   return (
@@ -122,39 +121,30 @@ export const QuetzalBillCard: React.FC<QuetzalBillCardProps> = ({
         count > 0 ? "ring-2 ring-discord-blurple shadow-glow" : ""
       }`}
     >
-      {/* Top row: Denomination preview & Available stock */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg border shadow-2xs ${cfg.iconStyle}`}>
+      {/* Top row: Denomination preview & Selected Subtotal */}
+      <div className="flex items-center justify-between gap-2 min-h-[38px]">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className={`p-1.5 rounded-lg border shadow-2xs flex-shrink-0 ${cfg.iconStyle}`}>
             <Banknote className="w-4 h-4" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className={`font-black text-lg tracking-wide leading-tight ${cfg.accentText}`}>
               {cfg.label}
             </div>
-            <div className="text-[10px] font-semibold text-slate-500 dark:text-discord-textMuted truncate max-w-[100px]">
+            <div className="text-[10px] font-semibold text-slate-500 dark:text-discord-textMuted truncate">
               {cfg.sublabel}
             </div>
           </div>
         </div>
 
-        {/* Available stock pill */}
-        <div className="text-right">
-          <span
-            className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded border ${
-              isStockEmpty
-                ? "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800"
-                : cfg.badgeColor
-            }`}
-          >
-            Disp: {stock}
-          </span>
-          {count > 0 && (
-            <div className="text-xs font-black text-emerald-700 dark:text-discord-green">
+        {/* Selected subtotal (solo visible cuando hay piezas seleccionadas) */}
+        {count > 0 && (
+          <div className="text-right flex-shrink-0">
+            <span className="inline-block px-2 py-0.5 text-xs font-black text-emerald-700 dark:text-discord-green font-mono bg-emerald-500/10 dark:bg-emerald-500/20 rounded-lg border border-emerald-500/30">
               Q{(denom * count).toFixed(2)}
-            </div>
-          )}
-        </div>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Stepper controls */}
