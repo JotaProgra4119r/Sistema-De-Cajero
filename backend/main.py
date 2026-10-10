@@ -79,20 +79,53 @@ def favicon():
     from fastapi import Response
     return Response(status_code=204)
 
-@app.get("/")
-def root():
-    return {
-        "name": "ATM Banking System Core API",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/health"
-    }
+# =========================================================================
+# MONTAJE Y SERVIDO DEL FRONTEND COMPILADO (PRODUCCIÓN CLOUD / RENDER / WEB)
+# =========================================================================
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIST = os.path.join(BASE_DIR, "frontend", "dist")
+
+if os.path.exists(FRONTEND_DIST):
+    assets_dir = os.path.join(FRONTEND_DIST, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/")
+    async def serve_index():
+        return FileResponse(os.path.join(FRONTEND_DIST, "index.html"))
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # Si la ruta es de la API o docs, dejar que FastAPI maneje el 404 o su ruta
+        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi.json") or full_path.startswith("ws"):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Endpoint no encontrado.")
+        file_path = os.path.join(FRONTEND_DIST, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(FRONTEND_DIST, "index.html"))
+else:
+    @app.get("/")
+    def root():
+        return {
+            "name": "ATM Banking System Core API",
+            "version": "1.0.2",
+            "docs": "/docs",
+            "health": "/health",
+            "nota": "Para acceder a la interfaz web, compile el frontend con: cd frontend && npm run build"
+        }
 
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.environ.get("PORT", settings.API_PORT))
     uvicorn.run(
         "backend.main:app",
-        host=settings.API_HOST,
-        port=settings.API_PORT,
+        host="0.0.0.0",
+        port=port,
         reload=False
     )
+

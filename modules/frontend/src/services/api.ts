@@ -8,9 +8,19 @@ export const getApiBaseUrl = (): string => {
     const custom = localStorage.getItem("atm_api_url");
     if (custom) return custom;
 
+    // Si se corre en la nube (ej. https://sistema-de-cajero.onrender.com) o en el mismo servidor web que sirve el frontend
+    const origin = window.location.origin;
+    const protocol = window.location.protocol;
     const host = window.location.hostname;
+
+    // Si está en Render o dominio web HTTPS/HTTP sin puerto de desarrollo Vite (5173) y no es archivo local Electron
+    if (origin && !origin.startsWith("file:") && !origin.includes(":5173")) {
+      return origin;
+    }
+
+    // Si es modo desarrollo o Electron apuntando a IP LAN específica
     if (host && host !== "localhost" && host !== "127.0.0.1" && !host.startsWith("file")) {
-      return `http://${host}:8000`;
+      return `${protocol}//${host}:8000`;
     }
   }
   return "http://127.0.0.1:8000";
@@ -18,17 +28,18 @@ export const getApiBaseUrl = (): string => {
 
 export const getWsBaseUrl = (): string => {
   const httpUrl = getApiBaseUrl();
-  return httpUrl.replace(/^http/, "ws") + "/ws";
+  if (httpUrl.startsWith("https://")) {
+    return httpUrl.replace(/^https:\/\//, "wss://") + "/ws";
+  }
+  return httpUrl.replace(/^http:\/\//, "ws://") + "/ws";
 };
 
-export const API_BASE_URL = getApiBaseUrl();
-
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
   timeout: 10000,
 });
 
 apiClient.interceptors.request.use((config) => {
+  config.baseURL = getApiBaseUrl();
   const token = localStorage.getItem("atm_token");
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -177,4 +188,33 @@ export const hardwareService = {
     const res = await apiClient.post("/api/hardware/rfid/debug-mode", { active });
     return res.data;
   },
+};
+
+export const syncService = {
+  saveOfflineSnapshot: (key: string, data: any) => {
+    try {
+      localStorage.setItem(`atm_cache_${key}`, JSON.stringify({
+        timestamp: Date.now(),
+        data
+      }));
+    } catch {
+      // quota or private mode
+    }
+  },
+  getOfflineSnapshot: (key: string) => {
+    try {
+      const item = localStorage.getItem(`atm_cache_${key}`);
+      return item ? JSON.parse(item).data : null;
+    } catch {
+      return null;
+    }
+  },
+  isCloudOnline: async (): Promise<boolean> => {
+    try {
+      const res = await apiClient.get("/health", { timeout: 3000 });
+      return res.status === 200;
+    } catch {
+      return false;
+    }
+  }
 };
