@@ -46,12 +46,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration restricted to authorized origins (prevents CSRF & Unauthorized Browser Injection)
+# CORS configuration for multi-device / LAN / mini-production deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"^https?://.*",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 

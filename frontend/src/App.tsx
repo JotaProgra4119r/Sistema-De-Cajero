@@ -3,7 +3,7 @@ import { WelcomeAuthView } from "./views/WelcomeAuthView";
 import { UserDashboardView } from "./views/UserDashboardView";
 import { AdminConsoleView } from "./views/AdminConsoleView";
 import { WindowBar } from "./components/WindowBar";
-import { authService } from "./services/api";
+import { authService, getWsBaseUrl } from "./services/api";
 
 export function App() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
@@ -15,7 +15,7 @@ export function App() {
   useEffect(() => {
     let ws: WebSocket | null = null;
     try {
-      ws = new WebSocket("ws://127.0.0.1:8000/ws");
+      ws = new WebSocket(getWsBaseUrl());
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);

@@ -1,6 +1,27 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+export const getApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    const custom = localStorage.getItem("atm_api_url");
+    if (custom) return custom;
+
+    const host = window.location.hostname;
+    if (host && host !== "localhost" && host !== "127.0.0.1" && !host.startsWith("file")) {
+      return `http://${host}:8000`;
+    }
+  }
+  return "http://127.0.0.1:8000";
+};
+
+export const getWsBaseUrl = (): string => {
+  const httpUrl = getApiBaseUrl();
+  return httpUrl.replace(/^http/, "ws") + "/ws";
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
