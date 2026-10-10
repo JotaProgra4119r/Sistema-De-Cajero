@@ -8,6 +8,12 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_vault_stock():
+    # Garantizar esquema y semilla de usuarios
+    from database.init_db import init_db
+    from database.connection import Base, engine
+    Base.metadata.create_all(bind=engine)
+    init_db()
+
     # Clear consumed and blacklisted TOTP token caches between test cases
     _consumed_totp_tokens.clear()
     _blacklisted_totp_tokens.clear()

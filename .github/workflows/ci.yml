@@ -31,7 +31,10 @@ jobs:
           pip install -r backend/requirements.txt pytest httpx httpx2
 
       - name: Run Backend Pytest Suite
+        env:
+          PYTHONPATH: .
         run: |
+          python database/init_db.py
           pytest backend/tests/ -v
 
   frontend-validation:
