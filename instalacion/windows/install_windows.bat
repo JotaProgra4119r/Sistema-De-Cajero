@@ -1,55 +1,49 @@
 @echo off
 title Instalador Sistema Bancario Cajero ATM (Windows)
-cd /d "%~dp0\..\.."
+cd /d "%~dp0\.."
 echo ===================================================================
-echo   INSTALACION DE DEPENDENCIAS (WINDOWS 10 / 11)
-echo   Sistema de Cajero Automatico Bancario Embebido
+echo   INSTALACION DE DEPENDENCIAS (WINDOWS)
 echo ===================================================================
 echo.
 
-where python >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [ERROR] Python no esta instalado o no se encuentra en el PATH.
-    echo Por favor instale Python 3.10 o superior marcando "Add Python to PATH".
-    pause
-    exit /b 1
-)
+REM Asegurar que el entorno de Python este en el PATH
+if exist "%LOCALAPPDATA%\Python\bin" set "PATH=%LOCALAPPDATA%\Python\bin;%LOCALAPPDATA%\Python\pythoncore-3.14-64\Scripts;%PATH%"
+if exist "%LOCALAPPDATA%\Programs\Python\Python314" set "PATH=%LOCALAPPDATA%\Programs\Python\Python314;%LOCALAPPDATA%\Programs\Python\Python314\Scripts;%PATH%"
+if exist "%LOCALAPPDATA%\Programs\Python\Python312" set "PATH=%LOCALAPPDATA%\Programs\Python\Python312;%LOCALAPPDATA%\Programs\Python\Python312\Scripts;%PATH%"
+if exist "%ProgramFiles%\Python314" set "PATH=%ProgramFiles%\Python314;%ProgramFiles%\Python314\Scripts;%PATH%"
+if exist "%ProgramFiles%\Python312" set "PATH=%ProgramFiles%\Python312;%ProgramFiles%\Python312\Scripts;%PATH%"
 
-where npm >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [ERROR] Node.js / NPM no esta instalado o no se encuentra en el PATH.
-    echo Por favor instale Node.js (v18+) desde https://nodejs.org/
-    pause
-    exit /b 1
+set "PYTHON_CMD="
+if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
+    set "PYTHON_CMD=%LOCALAPPDATA%\Python\bin\python.exe"
+) else (
+    python -c "import sys" >nul 2>nul
+    if %errorlevel% equ 0 (
+        set "PYTHON_CMD=python"
+    ) else (
+        if exist "%LOCALAPPDATA%\Programs\Python\Python314\python.exe" set "PYTHON_CMD=%LOCALAPPDATA%\Programs\Python\Python314\python.exe"
+        if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PYTHON_CMD=%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
+        if exist "%ProgramFiles%\Python314\python.exe" set "PYTHON_CMD=%ProgramFiles%\Python314\python.exe"
+        if exist "%ProgramFiles%\Python312\python.exe" set "PYTHON_CMD=%ProgramFiles%\Python312\python.exe"
+    )
 )
+if not defined PYTHON_CMD set "PYTHON_CMD=python"
 
-echo [1/3] Instalando dependencias de Python...
-if exist "requirements.txt" (
-    pip install -r requirements.txt
-) else if exist "backend\requirements.txt" (
-    pip install -r backend\requirements.txt
-)
+echo [1/3] Instalando librerias de Python...
+"%PYTHON_CMD%" -m pip install -r requirements.txt
 
-echo.
 echo [2/3] Inicializando base de datos local y tablas...
-python database\init_db.py
+"%PYTHON_CMD%" database/init_db.py
 
-echo.
 echo [3/3] Instalando dependencias de Node.js y compilando Frontend...
 cd frontend
-call npm install --include=dev
+call npm install
 call npm run build
-if not exist "dist\index.html" (
-    echo [ERROR] Fallo la compilacion del bundle de produccion frontend\dist\index.html
-    cd ..
-    pause
-    exit /b 1
-)
 cd ..
 
 echo.
 echo ===================================================================
-echo   INSTALACION COMPLETADA CON EXITO EN WINDOWS
-echo   Para iniciar el cajero ejecute: instalacion\windows\run_windows.bat
+echo   INSTALACION EXITOSA EN WINDOWS
+echo   Para iniciar el cajero ejecute: instalacion\run_windows.bat
 echo ===================================================================
 pause
