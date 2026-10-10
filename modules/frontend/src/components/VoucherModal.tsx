@@ -31,7 +31,120 @@ interface VoucherModalProps {
 
 export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) => {
   const handlePrint = () => {
-    window.print();
+    const voucherEl = document.getElementById("printable-voucher");
+    if (!voucherEl) {
+      window.print();
+      return;
+    }
+
+    let printIframe = document.getElementById("atm-print-frame") as HTMLIFrameElement;
+    if (!printIframe) {
+      printIframe = document.createElement("iframe");
+      printIframe.id = "atm-print-frame";
+      printIframe.style.position = "fixed";
+      printIframe.style.top = "-9999px";
+      printIframe.style.left = "-9999px";
+      printIframe.style.width = "0";
+      printIframe.style.height = "0";
+      printIframe.style.border = "none";
+      document.body.appendChild(printIframe);
+    }
+
+    const frameDoc = printIframe.contentWindow?.document || printIframe.contentDocument;
+    if (!frameDoc) {
+      window.print();
+      return;
+    }
+
+    frameDoc.open();
+    frameDoc.write(`
+      <!DOCTYPE html>
+      <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <title>${voucher.titulo || "Comprobante Bancario"}</title>
+          <style>
+            @page {
+              size: portrait;
+              margin: 4mm 6mm;
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, monospace, sans-serif;
+            }
+            body {
+              background-color: #ffffff !important;
+              color: #000000 !important;
+              padding: 12px;
+              display: flex;
+              justify-content: center;
+              align-items: flex-start;
+              font-size: 11px;
+              line-height: 1.4;
+            }
+            .voucher-wrapper {
+              width: 100%;
+              max-width: 440px;
+              padding: 20px 24px;
+              border: 1px dashed #374151;
+              border-radius: 6px;
+              background: #ffffff;
+              color: #111827;
+            }
+            .voucher-wrapper * {
+              color: #111827 !important;
+              background-color: transparent !important;
+            }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .font-bold { font-weight: bold; }
+            .font-black { font-weight: 900; }
+            .uppercase { text-transform: uppercase; }
+            .border-b { border-bottom: 1px dashed #9ca3af; }
+            .border-b-2 { border-bottom: 2px dashed #4b5563; }
+            .py-1 { padding: 3px 0; }
+            .py-2 { padding: 6px 0; }
+            .py-3 { padding: 10px 0; }
+            .mb-1 { margin-bottom: 4px; }
+            .mt-1 { margin-top: 4px; }
+            .flex { display: flex; }
+            .justify-between { justify-content: space-between; }
+            .items-center { align-items: center; }
+            .grid { display: grid; }
+            .grid-cols-2 { grid-template-columns: 1fr 1fr; gap: 8px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+            th, td { padding: 4px 6px; font-size: 10px; text-align: left; }
+            th { border-bottom: 1px solid #9ca3af; }
+            td.amount, th.amount { text-align: right; }
+            .barcode-box {
+              display: inline-block;
+              background: #111827 !important;
+              color: #ffffff !important;
+              padding: 4px 14px;
+              border-radius: 4px;
+              letter-spacing: 4px;
+              font-size: 12px;
+              font-family: monospace;
+              margin: 6px 0;
+            }
+            button, .no-print { display: none !important; }
+          </style>
+        </head>
+        <body>
+          <div class="voucher-wrapper">
+            ${voucherEl.innerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    frameDoc.close();
+
+    setTimeout(() => {
+      printIframe.contentWindow?.focus();
+      printIframe.contentWindow?.print();
+    }, 250);
   };
 
   const maskedCard = voucher.tarjeta

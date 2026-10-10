@@ -48,6 +48,13 @@ if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
 if not defined PYTHON_CMD set "PYTHON_CMD=python"
 
 echo.
+echo [*] Verificando y liberando puerto 8000...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING"') do (
+    echo [*] Cerrando proceso previo en puerto 8000 (PID %%a)...
+    taskkill /F /PID %%a >nul 2>nul
+)
+
+echo.
 echo [1/2] Iniciando Backend FastAPI en http://0.0.0.0:8000...
 start "Backend FastAPI (Puerto 8000)" cmd /k ""%PYTHON_CMD%" -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
 
