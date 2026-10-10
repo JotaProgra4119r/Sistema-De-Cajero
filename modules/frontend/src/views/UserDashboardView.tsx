@@ -984,14 +984,47 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
               <span className="text-xs font-bold text-discord-textMuted uppercase tracking-wider">
                 Últimas 5 Transacciones
               </span>
-              <button
-                type="button"
-                onClick={reloadData}
-                className="p-1 rounded hover:bg-discord-sidebar text-discord-textMuted hover:text-white"
-                title="Actualizar movimientos"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                {transactions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const ultimos = transactions.slice(0, 5);
+                      setActiveVoucher({
+                        id: `EXT-${Date.now().toString().slice(-6)}`,
+                        tipo: "AUDITORIA",
+                        titulo: "ESTADO DE CUENTA: ÚLTIMOS 5 MOVIMIENTOS",
+                        cliente: userSummary.nombre_completo,
+                        tarjeta: userSummary.tarjeta,
+                        saldo_anterior: userSummary.saldo_actual,
+                        nuevo_saldo: userSummary.saldo_actual,
+                        fecha_hora: new Date().toLocaleString(),
+                        detalles_extra: `Extracto oficial de los últimos ${ultimos.length} movimientos de la cuenta.`,
+                        ultimos_movimientos: ultimos.map((t: any) => ({
+                          id_transaccion: t.id_transaccion,
+                          tipo: t.tipo,
+                          monto: Number(t.monto) || 0,
+                          fecha_hora: t.fecha_hora,
+                          desglose: t.desglose || {}
+                        }))
+                      });
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 rounded bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/30 text-[10px] font-bold transition-all"
+                    title="Imprimir extracto bancario con los últimos 5 movimientos en PDF"
+                  >
+                    <Printer className="w-3 h-3" />
+                    <span>Imprimir 5 Movimientos (PDF)</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={reloadData}
+                  className="p-1 rounded hover:bg-discord-sidebar text-discord-textMuted hover:text-white"
+                  title="Actualizar movimientos"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-1.5 max-h-[170px] overflow-y-auto">

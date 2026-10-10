@@ -118,25 +118,88 @@ button, input {
 
 /* Reglas de impresión para Vouchers y Certificados Bancarios */
 @media print {
-  /* Ocultar interfaz del cajero y barras */
-  body {
+  @page {
+    margin: 8mm 10mm;
+    size: auto;
+  }
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
     background: #ffffff !important;
     color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  body * {
-    visibility: hidden;
+
+  /* Ocultar elementos irrelevantes en la impresión */
+  .no-print,
+  button,
+  header,
+  nav,
+  .animate-bounce,
+  .animate-fadeIn {
+    animation: none !important;
   }
-  #printable-voucher, #printable-voucher * {
-    visibility: visible;
+
+  /* El modal backdrop deja de ser una cortina negra opaca fija centrada */
+  .fixed.inset-0 {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
   }
+
+  /* El diálogo contenedor se expande como hoja natural sin bordes de ventana ni scroll */
+  .fixed.inset-0 > div {
+    position: static !important;
+    max-width: 520px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* Ocultar barras de botones del modal */
+  .fixed.inset-0 .bg-slate-100 {
+    display: none !important;
+  }
+
+  /* Ocultar vistas de fondo cuando el modal de voucher está activo */
+  body:has(#printable-voucher) .w-screen.h-screen > *:not(.flex-1),
+  body:has(#printable-voucher) .flex-1 > *:not(.fixed) {
+    display: none !important;
+  }
+
   #printable-voucher {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 12px;
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    margin: 0 auto !important;
+    padding: 16px 20px !important;
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #111827 !important;
+    border: 1px dashed #9ca3af !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    max-height: none !important;
+    page-break-inside: avoid !important;
+  }
+
+  #printable-voucher * {
+    visibility: visible !important;
+    color: #111827 !important;
+    background-color: transparent !important;
   }
 }

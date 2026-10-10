@@ -3,7 +3,7 @@ import {
   Shield, Users, BarChart3, FileText, LogOut, Database,
   AlertCircle, CheckCircle2, RefreshCw, Plus, Radio,
   ArrowDownRight, ArrowUpRight, RotateCcw, AlertTriangle,
-  Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote
+  Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key
 } from "lucide-react";
 import { adminService, hardwareService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
@@ -43,6 +43,10 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
   const [selectedUserForCard, setSelectedUserForCard] = useState<any | null>(null);
   const [newCardValue, setNewCardValue] = useState<string>("");
   const [reassignModalError, setReassignModalError] = useState<string | null>(null);
+
+  const [selectedUserForPin, setSelectedUserForPin] = useState<any | null>(null);
+  const [newPinValue, setNewPinValue] = useState<string>("");
+  const [pinModalError, setPinModalError] = useState<string | null>(null);
 
   const [showNewEmpModal, setShowNewEmpModal] = useState<boolean>(false);
   const [newEmpName, setNewEmpName] = useState<string>("");
@@ -157,6 +161,27 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
     } catch (err: any) {
       const msg = err.response?.data?.detail || "Error al reasignar tarjeta.";
       setReassignModalError(msg);
+    }
+  };
+
+  const handleSavePin = async () => {
+    if (!selectedUserForPin) return;
+    setPinModalError(null);
+    const cleanPin = newPinValue.replace(/\D/g, "");
+    if (cleanPin.length !== 4) {
+      setPinModalError(`El PIN debe tener exactamente 4 dígitos numéricos (${cleanPin.length}/4).`);
+      return;
+    }
+    try {
+      const res = await adminService.changeUserPin(selectedUserForPin.id_usuario, cleanPin);
+      setFeedbackMsg({ type: "success", text: res.mensaje });
+      setSelectedUserForPin(null);
+      setNewPinValue("");
+      setPinModalError(null);
+      await fetchMetrics();
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || "Error al actualizar el PIN.";
+      setPinModalError(msg);
     }
   };
 
@@ -659,6 +684,18 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                         </span>
                       </td>
                       <td className="py-3 px-3 text-right space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUserForPin(u);
+                            setNewPinValue("");
+                            setPinModalError(null);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-discord-sidebar hover:bg-discord-hover text-discord-amber hover:text-white border border-discord-hover"
+                          title="Cambiar PIN desde modo administrador"
+                        >
+                          Cambiar PIN
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -1570,6 +1607,88 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 className="px-5 py-2 rounded-xl bg-discord-green hover:bg-emerald-400 text-black text-xs font-extrabold shadow-md"
               >
                 Reasignar Plástico
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CAMBIAR PIN (ADMIN) */}
+      {selectedUserForPin && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full p-6 bg-discord-surface rounded-2xl border border-discord-hover shadow-2xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Key className="w-5 h-5 text-discord-amber" />
+              <h3 className="text-lg font-black text-white">Cambio de PIN Administrativo</h3>
+            </div>
+            <p className="text-xs text-discord-textMuted mb-3">
+              Empleado: <span className="text-white font-bold">{selectedUserForPin.nombre_completo}</span>
+              <br />
+              <span className="text-discord-textMuted text-[11px]">
+                Tarjeta: <span className="font-mono text-discord-green">{selectedUserForPin.tarjeta}</span>
+              </span>
+            </p>
+
+            {pinModalError && (
+              <div className="p-3 mb-3 rounded-xl bg-discord-red/20 border border-discord-red text-discord-red text-xs font-semibold flex items-center gap-2 animate-shake">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{pinModalError}</span>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-discord-textMuted">
+                  Nuevo PIN Confidencial (4 dígitos):
+                </label>
+                <span className={`text-[11px] font-mono font-bold ${
+                  newPinValue.length === 4 ? "text-discord-green" : "text-discord-amber"
+                }`}>
+                  {newPinValue.length === 4 ? "✓ 4/4" : `${newPinValue.length}/4`}
+                </span>
+              </div>
+              <input
+                type="password"
+                maxLength={4}
+                value={newPinValue}
+                onChange={(e) => {
+                  setPinModalError(null);
+                  setNewPinValue(e.target.value.replace(/\D/g, "").slice(0, 4));
+                }}
+                className="w-full px-4 py-2.5 rounded-xl bg-discord-sidebar border border-discord-hover font-mono text-xl text-center text-discord-amber font-bold tracking-widest focus:outline-none focus:border-discord-blurple"
+                placeholder="••••"
+                autoFocus
+              />
+              <div className="mt-1 text-[11px]">
+                {newPinValue.length === 4 ? (
+                  <span className="text-discord-green font-semibold">✓ 4 dígitos ingresados correctamente.</span>
+                ) : (
+                  <span className="text-discord-amber font-semibold">
+                    ⚠️ {newPinValue.length === 0 ? "Ingrese el nuevo PIN de 4 dígitos." : `Faltan ${4 - newPinValue.length} dígitos para completar el PIN.`}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => { setSelectedUserForPin(null); setNewPinValue(""); setPinModalError(null); }}
+                className="px-4 py-2 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted text-xs font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSavePin}
+                disabled={newPinValue.length !== 4}
+                className={`px-5 py-2 rounded-xl text-xs font-extrabold shadow-md transition-all ${
+                  newPinValue.length === 4
+                    ? "bg-discord-amber hover:bg-amber-400 text-black cursor-pointer"
+                    : "bg-gray-700 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Actualizar PIN
               </button>
             </div>
           </div>

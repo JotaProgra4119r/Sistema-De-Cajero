@@ -31,6 +31,10 @@ class AdjustLimitRequest(BaseModel):
     id_usuario: int
     nuevo_limite_diario: float
 
+class AdminChangePinRequest(BaseModel):
+    id_usuario: int
+    nuevo_pin: str = Field(..., min_length=4, max_length=4, description="Nuevo PIN numérico de 4 dígitos")
+
 class SoftDeleteUserRequest(BaseModel):
     id_usuario: int
     motivo: str = "Baja solicitada por administración"
@@ -66,6 +70,11 @@ async def reassign_card(payload: ReassignCardRequest, current_admin: Usuario = D
 @router.post("/users/adjust-limit")
 async def adjust_limit(payload: AdjustLimitRequest, current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
     return await BankingService.admin_adjust_limit(db, current_admin.id_usuario, payload.id_usuario, payload.nuevo_limite_diario)
+
+@router.post("/users/change-pin")
+async def admin_change_pin(payload: AdminChangePinRequest, current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Permite al administrador modificar o asignar un nuevo PIN confidencial a un usuario."""
+    return await BankingService.admin_change_pin(db, current_admin.id_usuario, payload.id_usuario, payload.nuevo_pin)
 
 @router.delete("/users/{user_id}")
 async def soft_delete_user_by_id(user_id: int, motivo: str = "Baja administrativa", current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):

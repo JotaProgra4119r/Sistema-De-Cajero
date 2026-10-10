@@ -392,3 +392,45 @@ def test_rfid_tap_and_debug_mode():
     assert hw_data["rfid_ready"] is True
     assert "debug_logs" in hw_data
 
+def test_admin_change_user_pin():
+    # 0. Admin logs in
+    _consumed_totp_tokens.clear()
+    _blacklisted_totp_tokens.clear()
+    tok_admin = generate_totp_token()
+    login_admin = client.post("/api/auth/login", json={
+        "card_number": "9999888877776666",
+        "pin": "1234",
+        "token": tok_admin,
+        "is_admin": True
+    })
+    assert login_admin.status_code == 200
+    admin_token = login_admin.json()["access_token"]
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # 1. Admin cambia el PIN del usuario 2 a "9876"
+    res = client.post("/api/admin/users/change-pin", headers=admin_headers, json={
+        "id_usuario": 2,
+        "nuevo_pin": "9876"
+    })
+    assert res.status_code == 200
+    assert res.json()["status"] == "SUCCESS"
+
+    # 2. Verificar que el usuario 2 puede hacer login con el nuevo PIN
+    _consumed_totp_tokens.clear()
+    tok = generate_totp_token()
+    login_res = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "9876",
+        "token": tok,
+        "is_admin": False
+    })
+    assert login_res.status_code == 200
+
+    # 3. Restaurar PIN a "1234" para conservar consistencia
+    restore_res = client.post("/api/admin/users/change-pin", headers=admin_headers, json={
+        "id_usuario": 2,
+        "nuevo_pin": "1234"
+    })
+    assert restore_res.status_code == 200
+
+

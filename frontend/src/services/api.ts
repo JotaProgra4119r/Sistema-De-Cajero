@@ -137,6 +137,13 @@ export const adminService = {
     });
     return res.data;
   },
+  changeUserPin: async (userId: number, newPin: string) => {
+    const res = await apiClient.post("/api/admin/users/change-pin", {
+      id_usuario: userId,
+      nuevo_pin: newPin,
+    });
+    return res.data;
+  },
   softDeleteUser: async (userId: number, motivo: string) => {
     const res = await apiClient.post("/api/admin/users/soft-delete", {
       id_usuario: userId,

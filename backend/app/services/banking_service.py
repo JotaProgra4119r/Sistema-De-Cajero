@@ -722,6 +722,41 @@ class BankingService:
 
         return {"status": "SUCCESS", "mensaje": f"Límite diario de {user.nombre_completo} ajustado a Q{new_limit:.2f}."}
 
+    @staticmethod
+    async def admin_change_pin(db: Session, admin_user_id: int, user_id: int, new_pin: str) -> Dict[str, Any]:
+        """Permite al administrador asignar o restablecer el PIN confidencial de un usuario sin requerir el PIN anterior."""
+        clean_pin = str(new_pin).strip()
+        if not clean_pin.isdigit() or len(clean_pin) != 4:
+            raise HTTPException(status_code=400, detail="El nuevo PIN debe contener exactamente 4 dígitos numéricos.")
+
+        user = db.query(Usuario).filter(Usuario.id_usuario == user_id, Usuario.is_deleted == False).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado o dado de baja.")
+
+        user.pin_hash = get_pin_hash(clean_pin)
+        user.cambio_pin_realizado = True
+
+        log = LogAuditoria(
+            id_usuario=admin_user_id,
+            accion="ADMIN_CAMBIO_PIN",
+            detalles=f"El administrador actualizó el PIN del empleado {user.nombre_completo} (ID: {user.id_usuario}).",
+            fecha_hora=datetime.now()
+        )
+        db.add(log)
+        db.commit()
+        db.refresh(log)
+
+        active_card = next((c.numero_tarjeta for c in user.tarjetas if c.activa), "N/A")
+        await txt_manager.update_usuario(
+            user.id_usuario, user.nombre_completo, active_card, user.pin_hash,
+            float(user.saldo_actual), float(user.monto_max_diario), float(user.total_retirado_hoy),
+            user.cambio_pin_realizado, user.fecha_ultimo_acceso
+        )
+        await txt_manager.append_auditoria(log.id_log, admin_user_id, log.accion, log.detalles)
+
+        return {"status": "SUCCESS", "mensaje": f"PIN de {user.nombre_completo} actualizado correctamente desde modo administrador."}
+
+
     # ==========================
     # SECCIÓN DE BORRADO LÓGICO (SOFT DELETE) Y AUDITORÍA
     # ==========================

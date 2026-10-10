@@ -15,6 +15,13 @@ export interface VoucherData {
   autorizacion?: string;
   detalles_extra?: string;
   items_auditoria?: any[];
+  ultimos_movimientos?: Array<{
+    id_transaccion?: string | number;
+    tipo: string;
+    monto: number;
+    fecha_hora: string;
+    desglose?: Record<string, number>;
+  }>;
 }
 
 interface VoucherModalProps {
@@ -161,6 +168,42 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
             <div className="py-2.5 text-[10px] text-gray-600 border-b border-dashed border-gray-300">
               <span className="font-bold text-gray-800">Detalles: </span>
               {voucher.detalles_extra}
+            </div>
+          )}
+
+          {/* Tabla de Últimos 5 Movimientos (Extracto / Resumen de Cuenta) */}
+          {voucher.ultimos_movimientos && voucher.ultimos_movimientos.length > 0 && (
+            <div className="py-3 border-b border-dashed border-gray-300 space-y-2">
+              <div className="text-[10px] font-black uppercase text-gray-800 tracking-wider flex items-center justify-between">
+                <span>ÚLTIMOS 5 MOVIMIENTOS BANCARIOS</span>
+                <span className="text-[9px] text-gray-500 font-normal">Extracto Reciente</span>
+              </div>
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <table className="w-full text-[10px] text-left">
+                  <thead className="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
+                    <tr>
+                      <th className="py-1 px-2">Tipo</th>
+                      <th className="py-1 px-2">Fecha / Hora</th>
+                      <th className="py-1 px-2 text-right">Importe</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 font-mono">
+                    {voucher.ultimos_movimientos.slice(0, 5).map((m, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="py-1 px-2 font-bold font-sans">
+                          <span className={m.tipo === "RETIRO" ? "text-amber-800" : "text-emerald-800"}>
+                            {m.tipo === "RETIRO" ? "(-) RETIRO" : "(+) DEPÓSITO"}
+                          </span>
+                        </td>
+                        <td className="py-1 px-2 text-[9px] text-gray-600">{m.fecha_hora}</td>
+                        <td className="py-1 px-2 text-right font-bold text-gray-900">
+                          Q{Number(m.monto || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
