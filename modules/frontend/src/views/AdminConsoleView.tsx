@@ -287,91 +287,103 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
   };
 
   return (
-    <div className="w-full h-full flex bg-discord-base text-discord-textNormal select-none overflow-hidden">
-      {/* LEFT NAVIGATION RAIL */}
-      <div className="w-52 lg:w-64 bg-discord-sidebar flex flex-col justify-between p-3 lg:p-4 border-r border-discord-hover h-full flex-shrink-0 overflow-y-auto">
+    <div className="w-full min-h-full flex-1 flex flex-col lg:flex-row bg-discord-base text-discord-textNormal select-none overflow-y-auto">
+      {/* LEFT NAVIGATION RAIL (En móviles es barra superior deslizable con tabs horizontales) */}
+      <div className="w-full lg:w-64 bg-discord-sidebar flex flex-col lg:justify-between p-3 lg:p-4 border-b lg:border-b-0 lg:border-r border-discord-hover flex-shrink-0">
         <div>
-          <div className="flex items-center gap-2.5 lg:gap-3 pb-3 lg:pb-4 border-b border-discord-hover">
-            <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-discord-amber flex items-center justify-center text-black font-black text-lg lg:text-xl shadow-md">
-              🛡️
+          <div className="flex items-center justify-between pb-2.5 lg:pb-4 border-b border-discord-hover">
+            <div className="flex items-center gap-2.5 lg:gap-3">
+              <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-discord-amber flex items-center justify-center text-black font-black text-base lg:text-xl shadow-md">
+                🛡️
+              </div>
+              <div>
+                <h1 className="text-xs lg:text-sm font-black text-white uppercase tracking-wider">
+                  Consola Admin
+                </h1>
+                <p className="text-[10px] lg:text-[11px] text-discord-textMuted">Gestión de Bóveda & Auditoría</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xs lg:text-sm font-black text-white uppercase tracking-wider">
-                Consola Admin
-              </h1>
-              <p className="text-[10px] lg:text-[11px] text-discord-textMuted">Gestión de Bóveda & Auditoría</p>
-            </div>
+            {/* Botón Logout móvil visible en la cabecera */}
+            <button
+              type="button"
+              onClick={onLogout}
+              className="lg:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white font-bold text-xs"
+              title="Cerrar Sesión"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Salir</span>
+            </button>
           </div>
 
-          <nav className="mt-4 lg:mt-6 space-y-1 lg:space-y-1.5">
+          <nav className="mt-2.5 lg:mt-6 flex lg:flex-col gap-1.5 lg:space-y-1.5 overflow-x-auto lg:overflow-x-visible pb-1 lg:pb-0 scrollbar-none">
             <button
               type="button"
               onClick={() => { setActiveSection("vault"); setFeedbackMsg(null); }}
-              className={`w-full flex items-center gap-2.5 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all ${
+              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
                 activeSection === "vault"
                   ? "bg-discord-blurple text-white shadow-md"
-                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white"
+                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white bg-discord-surface/50 lg:bg-transparent"
               }`}
             >
-              <Database className="w-4 h-4 lg:w-5 lg:h-5" />
+              <Database className="w-3.5 h-3.5 lg:w-5 lg:h-5" />
               <span>Bóveda y Arqueo</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveSection("users"); setFeedbackMsg(null); }}
-              className={`w-full flex items-center gap-2.5 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all ${
+              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
                 activeSection === "users"
                   ? "bg-discord-blurple text-white shadow-md"
-                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white"
+                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white bg-discord-surface/50 lg:bg-transparent"
               }`}
             >
-              <Users className="w-4 h-4 lg:w-5 lg:h-5" />
+              <Users className="w-3.5 h-3.5 lg:w-5 lg:h-5" />
               <span>Cuentas de Usuarios</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveSection("analytics"); setFeedbackMsg(null); }}
-              className={`w-full flex items-center gap-2.5 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all ${
+              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
                 activeSection === "analytics"
                   ? "bg-discord-blurple text-white shadow-md"
-                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white"
+                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white bg-discord-surface/50 lg:bg-transparent"
               }`}
             >
-              <BarChart3 className="w-4 h-4 lg:w-5 lg:h-5" />
+              <BarChart3 className="w-3.5 h-3.5 lg:w-5 lg:h-5" />
               <span>Métricas Diarias</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveSection("audit"); setFeedbackMsg(null); }}
-              className={`w-full flex items-center gap-2.5 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all ${
+              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
                 activeSection === "audit"
                   ? "bg-discord-blurple text-white shadow-md"
-                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white"
+                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white bg-discord-surface/50 lg:bg-transparent"
               }`}
             >
-              <FileText className="w-4 h-4 lg:w-5 lg:h-5" />
+              <FileText className="w-3.5 h-3.5 lg:w-5 lg:h-5" />
               <span>Bitácora de Auditoría</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveSection("hardware"); setFeedbackMsg(null); }}
-              className={`w-full flex items-center gap-2.5 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all ${
+              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
                 activeSection === "hardware"
                   ? "bg-discord-blurple text-white shadow-md"
-                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white"
+                  : "text-discord-textMuted hover:bg-discord-surface hover:text-white bg-discord-surface/50 lg:bg-transparent"
               }`}
             >
-              <Radio className="w-4 h-4 lg:w-5 lg:h-5" />
+              <Radio className="w-3.5 h-3.5 lg:w-5 lg:h-5" />
               <span>Telemetría Hardware</span>
             </button>
           </nav>
         </div>
 
-        <div className="pt-3 pb-1 border-t border-discord-hover flex flex-col gap-2 flex-shrink-0">
+        <div className="hidden lg:flex pt-3 pb-1 border-t border-discord-hover flex-col gap-2 flex-shrink-0">
           <div className="text-[11px] lg:text-xs text-discord-textMuted truncate">
             Administrador: <span className="text-white font-bold">{adminUser.nombre_completo}</span>
           </div>
@@ -387,9 +399,9 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col p-4 lg:p-6 overflow-y-auto">
+      <div className="flex-1 w-full min-w-0 flex flex-col p-3 sm:p-4 lg:p-6 pb-16 lg:pb-20 overflow-y-auto">
         {/* TOP 4 KPI CARDS BAR */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 mb-4 lg:mb-6 flex-shrink-0">
           <div className="p-3 lg:p-4 rounded-2xl bg-discord-surface border border-discord-hover shadow-md">
             <div className="flex items-center justify-between text-[11px] lg:text-xs font-bold text-discord-textMuted uppercase">
               <span>Saldo en Bóveda</span>

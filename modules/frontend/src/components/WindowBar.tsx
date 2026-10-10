@@ -200,33 +200,35 @@ export const WindowBar: React.FC = () => {
           <span>{isFullscreen ? "Salir Completa" : "Pantalla Completa"}</span>
         </button>
 
-        {/* Window Actions */}
-        <div className="flex items-center ml-2 border-l border-discord-hover pl-2 gap-1">
-          <button
-            type="button"
-            onClick={handleMinimize}
-            title="Minimizar"
-            className="p-1.5 rounded hover:bg-discord-hover text-discord-textMuted hover:text-discord-textPure transition-colors"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleMaximize}
-            title="Maximizar / Restaurar"
-            className="p-1.5 rounded hover:bg-discord-hover text-discord-textMuted hover:text-discord-textPure transition-colors"
-          >
-            <Square className="w-3 h-3" />
-          </button>
-          <button
-            type="button"
-            onClick={handleClose}
-            title="Cerrar Aplicación"
-            className="p-1.5 rounded hover:bg-discord-red text-discord-textMuted hover:text-white transition-colors"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        {/* Window Actions (Solo en Kiosco Electron nativo) */}
+        {typeof window !== "undefined" && Boolean(window.electronAPI) && (
+          <div className="flex items-center ml-2 border-l border-discord-hover pl-2 gap-1">
+            <button
+              type="button"
+              onClick={handleMinimize}
+              title="Minimizar"
+              className="p-1.5 rounded hover:bg-discord-hover text-discord-textMuted hover:text-discord-textPure transition-colors"
+            >
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleMaximize}
+              title="Maximizar / Restaurar"
+              className="p-1.5 rounded hover:bg-discord-hover text-discord-textMuted hover:text-discord-textPure transition-colors"
+            >
+              <Square className="w-3 h-3" />
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              title="Cerrar Aplicación"
+              className="p-1.5 rounded hover:bg-discord-red text-discord-textMuted hover:text-white transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

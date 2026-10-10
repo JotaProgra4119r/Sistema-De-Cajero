@@ -63,12 +63,12 @@ export function App() {
   };
 
   return (
-    <div className="w-screen h-screen bg-discord-base overflow-hidden relative flex flex-col">
+    <div className="w-full min-h-screen min-h-[100dvh] bg-discord-base overflow-x-hidden overflow-y-auto relative flex flex-col">
       {/* Top Window Bar: Modo Ventana / Pantalla Completa & Controls */}
       <WindowBar />
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 w-full min-h-0 overflow-y-auto relative flex flex-col">
         {/* Toast notification for hardware events */}
         {wsNotification && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-2xl bg-discord-surface border border-discord-blurple text-white font-bold text-sm shadow-kiosk flex items-center gap-3 animate-bounce">

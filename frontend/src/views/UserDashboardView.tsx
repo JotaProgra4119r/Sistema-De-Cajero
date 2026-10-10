@@ -346,18 +346,18 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   const strokeDashoffset = 251.2 * (1 - usedRatio);
 
   return (
-    <div className="w-full h-full flex flex-col justify-between bg-discord-base p-3 lg:p-5 text-discord-textNormal select-none overflow-y-auto lg:overflow-hidden">
+    <div className="w-full min-h-full flex-1 flex flex-col bg-discord-base p-2 sm:p-3 lg:p-5 text-discord-textNormal select-none overflow-y-auto">
       {/* Top Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-discord-surface flex-shrink-0">
-        <div className="flex items-center gap-3 lg:gap-4">
-          <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-discord-blurple flex items-center justify-center shadow-glow flex-shrink-0">
-            <Wallet className="w-5 h-5 text-white" />
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 sm:pb-3 border-b border-discord-surface flex-shrink-0">
+        <div className="flex items-center gap-2.5 lg:gap-4">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-xl bg-discord-blurple flex items-center justify-center shadow-glow flex-shrink-0">
+            <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base lg:text-lg font-black text-discord-textPure tracking-wide">
+            <h1 className="text-sm sm:text-base lg:text-lg font-black text-discord-textPure tracking-wide">
               Área de Autoservicio Bancario
             </h1>
-            <p className="text-[11px] lg:text-xs text-discord-textMuted">
+            <p className="text-[10px] sm:text-[11px] lg:text-xs text-discord-textMuted">
               Usuario: <span className="text-white font-bold">{userSummary.nombre_completo}</span> | Tarjeta: <span className="font-mono text-discord-green">{userSummary.tarjeta}</span>
             </p>
           </div>
@@ -368,15 +368,15 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           <button
             type="button"
             onClick={() => setShowHelpModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-discord-surface hover:bg-discord-hover text-discord-textMuted hover:text-white border border-discord-hover text-xs font-semibold transition-all active:scale-95"
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-discord-surface hover:bg-discord-hover text-discord-textMuted hover:text-white border border-discord-hover text-xs font-semibold transition-all active:scale-95"
             title="Guía rápida de autoservicio"
           >
-            <HelpCircle className="w-4 h-4 text-discord-blurple" />
+            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-discord-blurple" />
             <span className="hidden sm:inline">Ayuda</span>
           </button>
 
-          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-discord-surface border border-discord-hover text-xs font-mono">
-            <span className="text-discord-textMuted">Inactividad:</span>
+          <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl bg-discord-surface border border-discord-hover text-xs font-mono">
+            <span className="text-discord-textMuted text-[10px] sm:text-xs">Inactividad:</span>
             <span className={`font-bold ${secondsRemaining <= 15 ? "text-discord-red animate-pulse" : "text-discord-amber"}`}>
               {secondsRemaining}s
             </span>
@@ -385,18 +385,18 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           <button
             type="button"
             onClick={onLogout}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white border border-discord-red font-bold text-xs transition-all shadow-sm active:scale-95"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white border border-discord-red font-bold text-xs transition-all shadow-sm active:scale-95"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Cerrar Sesión</span>
+            <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Salir</span>
           </button>
         </div>
       </div>
 
-      {/* Main 3-Column Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 items-stretch overflow-y-auto lg:overflow-hidden my-1">
+      {/* Main Responsive Grid con Scroll Vertical Dinámico */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 flex-1 min-h-0 items-start lg:items-stretch overflow-y-auto my-2 pb-6">
         {/* COLUMN 1 (Left, 3 cols) */}
-        <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
+        <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-3.5 lg:p-4 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto flex-shrink-0">
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
               Saldo Contable Disponible
@@ -413,11 +413,11 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
             </div>
 
             {/* Circular Progress Gauge */}
-            <div className="mt-4 p-3 rounded-xl bg-discord-sidebar/60 border border-discord-hover text-center">
+            <div className="mt-2.5 sm:mt-4 p-2.5 sm:p-3 rounded-xl bg-discord-sidebar/60 border border-discord-hover text-center">
               <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
                 Cupo Diario de Retiro
               </div>
-              <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" stroke="var(--atm-gauge-track)" strokeWidth="10" fill="transparent" />
                   <circle
@@ -458,57 +458,57 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
             </div>
           </div>
 
-          {/* Tab Selector */}
-          <div className="space-y-2 mt-3">
+          {/* Tab Selector (Horizontal scrollable en móviles, vertical en desktop) */}
+          <div className="flex lg:flex-col gap-1.5 lg:space-y-2 mt-3 overflow-x-auto lg:overflow-x-visible pb-1 lg:pb-0 scrollbar-none">
             <button
               type="button"
               onClick={() => { setActiveTab("withdraw"); setFeedbackMessage(null); resetInactivity(); }}
-              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
+              className={`flex-shrink-0 w-auto lg:w-full py-2 lg:py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2 lg:gap-2.5 transition-all whitespace-nowrap ${
                 activeTab === "withdraw"
                   ? "bg-discord-blurple text-white shadow-md"
                   : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
               }`}
             >
-              <ArrowDownRight className="w-4 h-4" />
+              <ArrowDownRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
               <span>Retiro Personalizado</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveTab("deposit"); setFeedbackMessage(null); resetInactivity(); }}
-              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
+              className={`flex-shrink-0 w-auto lg:w-full py-2 lg:py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2 lg:gap-2.5 transition-all whitespace-nowrap ${
                 activeTab === "deposit"
                   ? "bg-discord-green text-black font-extrabold shadow-md"
                   : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
               }`}
             >
-              <ArrowUpRight className="w-4 h-4" />
+              <ArrowUpRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
               <span>Depósito Desglosado</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveTab("pin"); setFeedbackMessage(null); resetInactivity(); }}
-              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
+              className={`flex-shrink-0 w-auto lg:w-full py-2 lg:py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2 lg:gap-2.5 transition-all whitespace-nowrap ${
                 activeTab === "pin"
                   ? "bg-discord-amber text-black font-extrabold shadow-md"
                   : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
               }`}
             >
-              <KeyRound className="w-4 h-4" />
+              <KeyRound className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
               <span>Actualizar PIN</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveTab("audit"); setFeedbackMessage(null); resetInactivity(); loadDeletedRecords(); }}
-              className={`w-full py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 transition-all ${
+              className={`flex-shrink-0 w-auto lg:w-full py-2 lg:py-2.5 px-3 rounded-xl text-left font-bold text-xs flex items-center gap-2 lg:gap-2.5 transition-all whitespace-nowrap ${
                 activeTab === "audit"
                   ? "bg-purple-600 text-white font-extrabold shadow-md"
                   : "bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted"
               }`}
             >
-              <Archive className="w-4 h-4" />
+              <Archive className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
               <span>Mis Registros y Bajas</span>
             </button>
           </div>
@@ -530,7 +530,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           )}
 
           {activeTab === "withdraw" && (
-            <div className="flex flex-col justify-between h-full overflow-hidden">
+            <div className="flex flex-col justify-between h-full">
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="flex items-center justify-between mb-2 flex-shrink-0">
                   <h2 className="text-base font-black text-white flex items-center gap-2">
@@ -611,7 +611,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 </div>
 
                 {/* 7 Bills Grid without awkward cutoff */}
-                <div className="grid grid-cols-2 gap-2 flex-1 min-h-0 overflow-y-auto pr-1 pb-1">
+                <div className="grid grid-cols-2 gap-2 flex-1 min-h-[220px] overflow-y-auto pr-1 pb-3">
                   {DENOMINATIONS.map((d) => (
                     <QuetzalBillCard
                       key={d}
@@ -691,7 +691,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                   Alimentador de Billetes Oficiales (7 Denominaciones):
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 flex-1 min-h-0 overflow-y-auto pr-1 pb-1">
+                <div className="grid grid-cols-2 gap-2 flex-1 min-h-[220px] overflow-y-auto pr-1 pb-3">
                   {DENOMINATIONS.map((d) => (
                     <QuetzalBillCard
                       key={d}
@@ -770,7 +770,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           )}
 
           {activeTab === "audit" && (
-            <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-2.5 flex-shrink-0">
                 <h2 className="text-base font-black text-white flex items-center gap-2">
                   <Archive className="w-5 h-5 text-purple-400" />
