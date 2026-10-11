@@ -25,10 +25,8 @@ if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
 )
 if not defined PYTHON_CMD set "PYTHON_CMD=python"
 
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING"') do (
-    echo [*] Cerrando proceso previo en puerto 8000 (PID %%a)...
-    taskkill /F /PID %%a >nul 2>nul
-)
+echo [*] Verificando y liberando puerto 8000 si estuviera ocupado...
+"%PYTHON_CMD%" -c "import psutil; [p.kill() for p in psutil.process_iter() if any(getattr(getattr(c, 'laddr', None), 'port', None) == 8000 for c in getattr(p, 'net_connections', lambda *a: [])('inet'))]" >nul 2>nul
 
 echo [*] Iniciando Backend FastAPI en http://127.0.0.1:8000...
 "%PYTHON_CMD%" -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload

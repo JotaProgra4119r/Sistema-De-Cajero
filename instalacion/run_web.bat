@@ -47,15 +47,18 @@ if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
 )
 if not defined PYTHON_CMD set "PYTHON_CMD=python"
 
+echo [*] Verificando y liberando puerto 8000 si estuviera ocupado...
+"%PYTHON_CMD%" -c "import psutil; [p.kill() for p in psutil.process_iter() if any(getattr(getattr(c, 'laddr', None), 'port', None) == 8000 for c in getattr(p, 'net_connections', lambda *a: [])('inet'))]" >nul 2>nul
+
 echo [1/2] Iniciando Backend FastAPI en http://0.0.0.0:8000...
 start "Backend FastAPI (Puerto 8000)" cmd /k ""%PYTHON_CMD%" -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
 
-timeout /t 2 /nobreak > nul
+"%PYTHON_CMD%" -c "import time; time.sleep(1.5)"
 
 echo [2/2] Iniciando Servidor Web Frontend en http://localhost:%PORT%...
 start "Servidor Web Frontend (Puerto %PORT%)" cmd /k ""%PYTHON_CMD%" -m http.server %PORT% --directory frontend\dist"
 
-timeout /t 1 /nobreak > nul
+"%PYTHON_CMD%" -c "import time; time.sleep(1)"
 
 echo.
 echo [*] Abriendo navegador predeterminado en http://localhost:%PORT%...

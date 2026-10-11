@@ -48,20 +48,17 @@ if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
 if not defined PYTHON_CMD set "PYTHON_CMD=python"
 
 echo.
-echo [*] Verificando y liberando puerto 8000...
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING"') do (
-    echo [*] Cerrando proceso previo en puerto 8000 (PID %%a)...
-    taskkill /F /PID %%a >nul 2>nul
-)
+echo [*] Verificando y liberando puerto 8000 si estuviera ocupado...
+"%PYTHON_CMD%" -c "import psutil; [p.kill() for p in psutil.process_iter() if any(getattr(getattr(c, 'laddr', None), 'port', None) == 8000 for c in getattr(p, 'net_connections', lambda *a: [])('inet'))]" >nul 2>nul
 
 echo.
 echo [1/2] Iniciando Backend FastAPI en http://0.0.0.0:8000...
 start "Backend FastAPI (Puerto 8000)" cmd /k ""%PYTHON_CMD%" -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
 
-timeout /t 2 /nobreak > nul
+"%PYTHON_CMD%" -c "import time; time.sleep(1.5)"
 
 echo [2/2] Iniciando Terminal de Kiosco Electron...
-start "Kiosco Electron" cmd /c "cd frontend && npm run start"
+start "Kiosco Electron" cmd /c "cd /d ""%~dp0..\frontend"" && npm.cmd run start"
 
 echo.
 echo ===================================================================
