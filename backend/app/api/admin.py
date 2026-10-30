@@ -55,11 +55,28 @@ def get_metrics(
 
 @router.get("/super/metrics")
 def get_superadmin_metrics(
-    current_admin: Usuario = Depends(get_current_admin),
+    current_superadmin: Usuario = Depends(get_current_superadmin),
     db: Session = Depends(get_db)
 ):
-    """Métricas maestras de red global multicajero para la consola de Superadministración."""
+    """Métricas maestras de red global multicajero exclusivas para la consola de Superadministración."""
     return BankingService.get_superadmin_metrics(db)
+
+@router.get("/super/cajero/{id_cajero}/detalles")
+def get_superadmin_cajero_details(
+    id_cajero: str,
+    current_superadmin: Usuario = Depends(get_current_superadmin),
+    db: Session = Depends(get_db)
+):
+    """Despliegue profundo e individual de un cajero específico para el Superagente/Superadministrador."""
+    return BankingService.get_cajero_detailed_report(db, id_cajero)
+
+@router.get("/super/reporte-consolidado")
+def get_superadmin_consolidated_report(
+    current_superadmin: Usuario = Depends(get_current_superadmin),
+    db: Session = Depends(get_db)
+):
+    """Genera dataset para el Certificado y Reporte Consolidado Imprimible de toda la Red Multicajero."""
+    return BankingService.get_superadmin_consolidated_report(db)
 
 @router.post("/vault/initialize")
 async def initialize_vault(
@@ -74,12 +91,12 @@ async def initialize_vault(
 @router.post("/vault/initialize-all")
 async def initialize_all_vaults(
     payload: Optional[VaultInitAllRequest] = None,
-    current_admin: Usuario = Depends(get_current_admin),
+    current_superadmin: Usuario = Depends(get_current_superadmin),
     db: Session = Depends(get_db)
 ):
     """Acción de Superadministrador para inicializar simultáneamente todos los cajeros de la red."""
     bills = payload.bills if payload else None
-    return await BankingService.vault_initialize_all(db, current_admin.id_usuario, bills=bills)
+    return await BankingService.vault_initialize_all(db, current_superadmin.id_usuario, bills=bills)
 
 @router.post("/vault/add-cash")
 async def add_cash_vault(

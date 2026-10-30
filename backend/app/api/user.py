@@ -108,9 +108,24 @@ async def deposit_to_account(
     )
 
 @router.get("/transactions")
-async def get_transactions(current_user: Usuario = Depends(get_current_user)):
-    """Obtiene directamente de transacciones_historico.txt las últimas 5 transacciones del usuario."""
-    return await txt_manager.get_last_transactions(current_user.id_usuario, limit=5)
+def get_transactions(current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Obtiene las transacciones recientes del usuario con desglose, cajero y datos de destinatario."""
+    from backend.app.db.models import Transaccion
+    txs = db.query(Transaccion).filter(Transaccion.id_usuario == current_user.id_usuario).order_by(Transaccion.fecha_hora.desc()).limit(10).all()
+    res = []
+    for t in txs:
+        res.append({
+            "id_transaccion": t.id_transaccion,
+            "id_cajero": t.id_cajero or "ATM-001",
+            "id_usuario": t.id_usuario,
+            "tipo": t.tipo_transaccion,
+            "monto": float(t.monto),
+            "desglose": t.desglose_billetes,
+            "id_cuenta_destino": t.id_cuenta_destino,
+            "nombre_destinatario": t.nombre_destinatario,
+            "fecha_hora": t.fecha_hora.strftime("%Y-%m-%d %H:%M:%S") if t.fecha_hora else ""
+        })
+    return res
 
 @router.post("/change-pin")
 async def change_pin(payload: ChangePinRequest, current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):

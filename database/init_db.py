@@ -29,6 +29,10 @@ def migrate_existing_schema(db):
         "ALTER TABLE transacciones ADD COLUMN id_cajero VARCHAR(20) DEFAULT 'ATM-001'",
         "ALTER TABLE transacciones ADD COLUMN id_cuenta_destino VARCHAR(20)",
         "ALTER TABLE transacciones ADD COLUMN nombre_destinatario VARCHAR(100)",
+        "ALTER TABLE cajeros ADD COLUMN codigo_cajero VARCHAR(10) DEFAULT '1234'",
+        "ALTER TABLE cajeros ADD COLUMN en_linea BOOLEAN DEFAULT 0",
+        "ALTER TABLE cajeros ADD COLUMN sesion_activa_id VARCHAR(100)",
+        "ALTER TABLE cajeros ADD COLUMN ultimo_latido DATETIME",
     ]
     for q in alter_queries:
         try:
@@ -99,8 +103,13 @@ def init_db():
                     nombre=name,
                     ubicacion=location,
                     estado="ACTIVO",
-                    is_initialized=False
+                    is_initialized=False,
+                    codigo_cajero="1234",
+                    en_linea=False
                 ))
+            else:
+                if not existing_atm.codigo_cajero:
+                    existing_atm.codigo_cajero = "1234"
         db.commit()
 
         # 3. Seed Super Admin User (Cuenta de prueba rápida aislada)

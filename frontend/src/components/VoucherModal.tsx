@@ -3,7 +3,7 @@ import { Printer, X, ShieldCheck, Building2, Banknote } from "lucide-react";
 
 export interface VoucherData {
   id: string | number;
-  tipo: "RETIRO" | "DEPOSITO" | "AUDITORIA" | "INICIALIZACION";
+  tipo: "RETIRO" | "DEPOSITO" | "AUDITORIA" | "INICIALIZACION" | "DEPOSITO_A_TERCERO" | "TRANSFERENCIA";
   titulo?: string;
   cliente: string;
   tarjeta?: string;
@@ -14,6 +14,9 @@ export interface VoucherData {
   fecha_hora: string;
   autorizacion?: string;
   detalles_extra?: string;
+  destinatario_nombre?: string;
+  destinatario_cuenta?: string;
+  cajero_origen?: string;
   items_auditoria?: any[];
   ultimos_movimientos?: Array<{
     id_transaccion?: string | number;
@@ -219,7 +222,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
               <span className="font-semibold">{voucher.fecha_hora}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Titular de Cuenta:</span>
+              <span className="text-gray-600">Titular Emisor:</span>
               <span className="font-bold uppercase truncate max-w-[200px]">{voucher.cliente}</span>
             </div>
             {voucher.tarjeta && (
@@ -233,6 +236,30 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
               <span className="font-bold text-blue-800">{authCode}</span>
             </div>
           </div>
+
+          {/* Datos del Destinatario (Transferencia Interbancaria / Nube) */}
+          {(voucher.destinatario_nombre || voucher.destinatario_cuenta) && (
+            <div className="py-2.5 px-3 my-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-950 font-sans">
+              <div className="text-[10px] font-black tracking-wide text-blue-800 uppercase flex items-center gap-1 mb-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-700" />
+                <span>BENEFICIARIO DE LA TRANSFERENCIA</span>
+              </div>
+              <div className="flex justify-between items-center text-xs font-bold font-mono">
+                <span className="text-gray-700">Acreditado a:</span>
+                <span className="text-blue-900 uppercase font-black">{voucher.destinatario_nombre || "Titular de Cuenta"}</span>
+              </div>
+              <div className="flex justify-between items-center text-[11px] font-mono mt-0.5">
+                <span className="text-gray-600">ID / Token de Cuenta:</span>
+                <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded font-black tracking-widest">{voucher.destinatario_cuenta}</span>
+              </div>
+              {voucher.cajero_origen && (
+                <div className="flex justify-between items-center text-[10px] text-gray-500 font-mono mt-1 pt-1 border-t border-blue-200">
+                  <span>Terminal Origen:</span>
+                  <span>{voucher.cajero_origen}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Importe y Saldos */}
           {voucher.monto !== undefined && (

@@ -1329,41 +1329,77 @@ class BankingService:
     @staticmethod
     def get_superadmin_metrics(db: Session) -> Dict[str, Any]:
         """Dashboard consolidado para el Superadministrador: métricas simultáneas de todos los cajeros."""
+        now = datetime.now(timezone.utc)
+        today_date_str = datetime.now().strftime("%Y-%m-%d")
         all_cajeros = db.query(Cajero).all()
         cajeros_details = []
         global_vault_total = 0.0
         global_withdrawals_total = 0.0
         global_deposits_total = 0.0
+        global_transfers_total = 0.0
         global_withdrawals_count = 0
         global_deposits_count = 0
+        global_transfers_count = 0
+
+        # Totales del día
+        salidas_hoy_red = 0.0
+        conteo_salidas_hoy_red = 0
+        entradas_hoy_red = 0.0
+        conteo_entradas_hoy_red = 0
+        transferencias_hoy_red = 0.0
+        conteo_transferencias_hoy_red = 0
+
+        cajeros_iniciados_count = 0
 
         for c in all_cajeros:
+            # Estado en línea (activo si en_linea=True y latido reciente dentro de 180s)
+            is_online = False
+            if c.en_linea:
+                if c.ultimo_latido:
+                    dt_lat = c.ultimo_latido if c.ultimo_latido.tzinfo else c.ultimo_latido.replace(tzinfo=timezone.utc)
+                    if (now - dt_lat).total_seconds() <= 180:
+                        is_online = True
+                else:
+                    is_online = True
+            if is_online:
+                cajeros_iniciados_count += 1
+
             c_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == c.id_cajero).all()
             c_vault = sum(d.denominacion * d.cantidad_billetes for d in c_denoms)
             global_vault_total += c_vault
 
-            c_withdr_sum = db.query(func.sum(Transaccion.monto)).filter(
-                Transaccion.id_cajero == c.id_cajero,
-                Transaccion.tipo_transaccion == "RETIRO"
-            ).scalar() or 0.0
-            c_withdr_cnt = db.query(func.count(Transaccion.id_transaccion)).filter(
-                Transaccion.id_cajero == c.id_cajero,
-                Transaccion.tipo_transaccion == "RETIRO"
-            ).scalar() or 0
+            # Transacciones de este cajero
+            c_txs = db.query(Transaccion).filter(Transaccion.id_cajero == c.id_cajero).all()
+            
+            c_withdr_sum = sum(float(t.monto) for t in c_txs if t.tipo_transaccion == "RETIRO")
+            c_withdr_cnt = sum(1 for t in c_txs if t.tipo_transaccion == "RETIRO")
+            c_dep_sum = sum(float(t.monto) for t in c_txs if t.tipo_transaccion in ["DEPOSITO", "DEPOSITO_A_TERCERO"])
+            c_dep_cnt = sum(1 for t in c_txs if t.tipo_transaccion in ["DEPOSITO", "DEPOSITO_A_TERCERO"])
+            c_trf_sum = sum(float(t.monto) for t in c_txs if t.tipo_transaccion == "DEPOSITO_A_TERCERO")
+            c_trf_cnt = sum(1 for t in c_txs if t.tipo_transaccion == "DEPOSITO_A_TERCERO")
 
-            c_dep_sum = db.query(func.sum(Transaccion.monto)).filter(
-                Transaccion.id_cajero == c.id_cajero,
-                Transaccion.tipo_transaccion.in_(["DEPOSITO", "DEPOSITO_A_TERCERO"])
-            ).scalar() or 0.0
-            c_dep_cnt = db.query(func.count(Transaccion.id_transaccion)).filter(
-                Transaccion.id_cajero == c.id_cajero,
-                Transaccion.tipo_transaccion.in_(["DEPOSITO", "DEPOSITO_A_TERCERO"])
-            ).scalar() or 0
+            # Hoy
+            c_txs_today = [t for t in c_txs if t.fecha_hora and t.fecha_hora.strftime("%Y-%m-%d") == today_date_str]
+            c_salidas_hoy = sum(float(t.monto) for t in c_txs_today if t.tipo_transaccion == "RETIRO")
+            c_cnt_salidas_hoy = sum(1 for t in c_txs_today if t.tipo_transaccion == "RETIRO")
+            c_entradas_hoy = sum(float(t.monto) for t in c_txs_today if t.tipo_transaccion in ["DEPOSITO", "DEPOSITO_A_TERCERO"])
+            c_cnt_entradas_hoy = sum(1 for t in c_txs_today if t.tipo_transaccion in ["DEPOSITO", "DEPOSITO_A_TERCERO"])
+            c_trf_hoy = sum(float(t.monto) for t in c_txs_today if t.tipo_transaccion == "DEPOSITO_A_TERCERO")
+            c_cnt_trf_hoy = sum(1 for t in c_txs_today if t.tipo_transaccion == "DEPOSITO_A_TERCERO")
 
-            global_withdrawals_total += float(c_withdr_sum)
-            global_deposits_total += float(c_dep_sum)
+            global_withdrawals_total += c_withdr_sum
+            global_deposits_total += c_dep_sum
+            global_transfers_total += c_trf_sum
             global_withdrawals_count += c_withdr_cnt
             global_deposits_count += c_dep_cnt
+            global_transfers_count += c_trf_cnt
+
+            salidas_hoy_red += c_salidas_hoy
+            conteo_salidas_hoy_red += c_cnt_salidas_hoy
+            entradas_hoy_red += c_entradas_hoy
+            conteo_entradas_hoy_red += c_cnt_entradas_hoy
+            transferencias_hoy_red += c_trf_hoy
+            conteo_transferencias_hoy_red += c_cnt_trf_hoy
 
             cajeros_details.append({
                 "id_cajero": c.id_cajero,
@@ -1371,17 +1407,34 @@ class BankingService:
                 "ubicacion": c.ubicacion,
                 "estado": c.estado,
                 "is_initialized": c.is_initialized,
+                "en_linea": is_online,
+                "codigo_cajero": c.codigo_cajero or "1234",
+                "ultimo_latido": c.ultimo_latido.strftime("%Y-%m-%d %H:%M:%S") if c.ultimo_latido else "",
                 "total_boveda": float(c_vault),
                 "total_salidas": float(c_withdr_sum),
                 "conteo_salidas": int(c_withdr_cnt),
                 "total_entradas": float(c_dep_sum),
                 "conteo_entradas": int(c_dep_cnt),
+                "total_transferencias": float(c_trf_sum),
+                "conteo_transferencias": int(c_trf_cnt),
+                "salidas_hoy": float(c_salidas_hoy),
+                "conteo_salidas_hoy": int(c_cnt_salidas_hoy),
+                "entradas_hoy": float(c_entradas_hoy),
+                "conteo_entradas_hoy": int(c_cnt_entradas_hoy),
+                "transferencias_hoy": float(c_trf_hoy),
+                "conteo_transferencias_hoy": int(c_cnt_trf_hoy),
                 "total_transacciones": int(c_withdr_cnt + c_dep_cnt),
                 "denominaciones": {d.denominacion: d.cantidad_billetes for d in c_denoms}
             })
 
         super_count = db.query(Usuario).filter(Usuario.id_rol == 3, Usuario.is_deleted == False).count()
         normal_users_count = db.query(Usuario).filter(Usuario.id_rol == 2, Usuario.is_deleted == False).count()
+
+        # Saldo total de todas las cuentas bancarias alojadas en la nube/SQL
+        saldo_cuentas_total = db.query(func.sum(Usuario.saldo_actual)).filter(
+            Usuario.activo == True,
+            Usuario.is_deleted == False
+        ).scalar() or 0.0
 
         recent_txs = db.query(Transaccion).order_by(Transaccion.fecha_hora.desc()).limit(150).all()
         txs_list = []
@@ -1402,8 +1455,17 @@ class BankingService:
 
         return {
             "total_cajeros": len(all_cajeros),
+            "cajeros_iniciados": int(cajeros_iniciados_count),
+            "cajeros_apagados": int(len(all_cajeros) - cajeros_iniciados_count),
             "cajeros_operativos": sum(1 for c in all_cajeros if c.is_initialized),
             "boveda_total_red": float(global_vault_total),
+            "saldo_total_cuentas_alojadas": float(saldo_cuentas_total),
+            "salidas_hoy_red": float(salidas_hoy_red),
+            "conteo_salidas_hoy_red": int(conteo_salidas_hoy_red),
+            "entradas_hoy_red": float(entradas_hoy_red),
+            "conteo_entradas_hoy_red": int(conteo_entradas_hoy_red),
+            "transferencias_hoy_red": float(transferencias_hoy_red),
+            "conteo_transferencias_hoy_red": int(conteo_transferencias_hoy_red),
             "salidas_totales_red": float(global_withdrawals_total),
             "entradas_totales_red": float(global_deposits_total),
             "conteo_salidas_red": int(global_withdrawals_count),
@@ -1413,4 +1475,275 @@ class BankingService:
             "usuarios_activos_count": int(normal_users_count),
             "cajeros": cajeros_details,
             "transacciones_recientes": txs_list
+        }
+
+    @staticmethod
+    async def connect_atm(db: Session, id_cajero: str, codigo_cajero: str, session_id: str, force: bool = False) -> Dict[str, Any]:
+        """
+        Conecta un cajero terminal existente al sistema.
+        Verifica el código de seguridad de 4 dígitos y valida la exclusividad de sesión
+        para evitar que dos terminales usen el mismo cajero simultáneamente.
+        """
+        cajero = db.query(Cajero).filter(Cajero.id_cajero == id_cajero).first()
+        if not cajero:
+            raise HTTPException(status_code=404, detail=f"Cajero con ID '{id_cajero}' no encontrado en la red bancaria.")
+
+        clean_code = str(codigo_cajero).strip()
+        expected_code = str(cajero.codigo_cajero or "1234").strip()
+        if clean_code != expected_code:
+            raise HTTPException(status_code=401, detail="Código de seguridad de 4 dígitos incorrecto para este cajero.")
+
+        # Validar si ya hay una sesión activa en otra terminal
+        now = datetime.now(timezone.utc)
+        if cajero.en_linea and cajero.sesion_activa_id and cajero.sesion_activa_id != session_id:
+            # Comprobar si el último latido es reciente (menos de 90 segundos)
+            if cajero.ultimo_latido:
+                dt_latido = cajero.ultimo_latido
+                if dt_latido.tzinfo is None:
+                    dt_latido = dt_latido.replace(tzinfo=timezone.utc)
+                diff_sec = (now - dt_latido).total_seconds()
+                if diff_sec < 90 and not force:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"Acceso denegado: El '{cajero.nombre}' ({cajero.id_cajero}) ya cuenta con una sesión activa en otra terminal (última actividad hace {int(diff_sec)}s). Solo se permite un operador activo simultáneamente."
+                    )
+
+        cajero.en_linea = True
+        cajero.sesion_activa_id = session_id
+        cajero.ultimo_latido = now
+        db.commit()
+
+        # Registrar log de auditoría
+        log = LogAuditoria(
+            id_usuario=None,
+            accion="ATM_SESION_CONECTADA",
+            detalles=f"Cajero {cajero.id_cajero} ({cajero.nombre}) conectado y enlazado a sesión {session_id[:8]}...",
+            fecha_hora=now
+        )
+        db.add(log)
+        db.commit()
+
+        try:
+            await txt_manager.sync_cajeros(db)
+        except Exception as e:
+            print(f"[TXT_MANAGER] Error syncing cajeros: {e}")
+
+        v_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == cajero.id_cajero).all()
+        v_total = sum(d.denominacion * d.cantidad_billetes for d in v_denoms)
+
+        return {
+            "status": "SUCCESS",
+            "mensaje": f"Cajero '{cajero.nombre}' ({cajero.id_cajero}) enlazado y puesto en línea exitosamente.",
+            "cajero": {
+                "id_cajero": cajero.id_cajero,
+                "nombre": cajero.nombre,
+                "ubicacion": cajero.ubicacion,
+                "estado": cajero.estado,
+                "is_initialized": cajero.is_initialized,
+                "en_linea": True,
+                "vault_total": float(v_total),
+                "sesion_activa_id": session_id
+            }
+        }
+
+    @staticmethod
+    async def register_atm(db: Session, nombre: str, codigo_cajero: str, ubicacion: Optional[str], session_id: str) -> Dict[str, Any]:
+        """
+        Primer Inicio: Registra e inicializa un nuevo cajero en la red con nombre personalizado
+        y código de 4 dígitos. Escala dinámicamente el número de cajeros en el sistema.
+        """
+        clean_name = str(nombre).strip()
+        if not clean_name or len(clean_name) < 3:
+            raise HTTPException(status_code=400, detail="El nombre del cajero debe tener al menos 3 caracteres (ej. 'Cajero de José').")
+
+        clean_code = str(codigo_cajero).strip()
+        if not (clean_code.isdigit() and len(clean_code) == 4):
+            raise HTTPException(status_code=400, detail="El código de seguridad del cajero debe consistir exactamente de 4 dígitos numéricos.")
+
+        # Generar siguiente ID escalable
+        all_cajeros = db.query(Cajero).all()
+        nums = []
+        for c in all_cajeros:
+            if c.id_cajero.startswith("ATM-"):
+                try:
+                    nums.append(int(c.id_cajero.split("-")[1]))
+                except ValueError:
+                    pass
+        next_num = (max(nums) + 1) if nums else (len(all_cajeros) + 1)
+        new_atm_id = f"ATM-{next_num:03d}"
+
+        now = datetime.now(timezone.utc)
+        new_cajero = Cajero(
+            id_cajero=new_atm_id,
+            nombre=clean_name,
+            ubicacion=str(ubicacion).strip() if ubicacion else "Sucursal General / Red Bancaria",
+            estado="ACTIVO",
+            is_initialized=False,
+            codigo_cajero=clean_code,
+            en_linea=True,
+            sesion_activa_id=session_id,
+            ultimo_latido=now,
+            fecha_creacion=now
+        )
+        db.add(new_cajero)
+        db.flush()
+
+        # Denominaciones inicializadas en 0
+        for denom in VALID_DENOMINATIONS:
+            db.add(DenominacionCajero(
+                id_cajero=new_atm_id,
+                denominacion=denom,
+                cantidad_billetes=0
+            ))
+
+        log = LogAuditoria(
+            id_usuario=None,
+            accion="ATM_CREADO_Y_ENLAZADO",
+            detalles=f"Nuevo cajero {new_atm_id} registrado como '{clean_name}' con código de 4 dígitos y enlazado.",
+            fecha_hora=now
+        )
+        db.add(log)
+        db.commit()
+
+        try:
+            await txt_manager.sync_cajeros(db)
+        except Exception as e:
+            print(f"[TXT_MANAGER] Error syncing cajeros: {e}")
+
+        return {
+            "status": "SUCCESS",
+            "mensaje": f"Cajero '{clean_name}' ({new_atm_id}) registrado y conectado exitosamente.",
+            "cajero": {
+                "id_cajero": new_atm_id,
+                "nombre": clean_name,
+                "ubicacion": new_cajero.ubicacion,
+                "estado": new_cajero.estado,
+                "is_initialized": False,
+                "en_linea": True,
+                "vault_total": 0.0,
+                "sesion_activa_id": session_id
+            }
+        }
+
+    @staticmethod
+    def heartbeat_atm(db: Session, id_cajero: str, session_id: str) -> Dict[str, Any]:
+        """Actualiza el latido (keepalive) de la sesión del cajero."""
+        cajero = db.query(Cajero).filter(Cajero.id_cajero == id_cajero).first()
+        if not cajero:
+            return {"status": "NOT_FOUND"}
+        now = datetime.now(timezone.utc)
+        if not cajero.sesion_activa_id or cajero.sesion_activa_id == session_id:
+            cajero.ultimo_latido = now
+            cajero.en_linea = True
+            cajero.sesion_activa_id = session_id
+            db.commit()
+        return {"status": "ONLINE", "id_cajero": id_cajero, "timestamp": now.isoformat()}
+
+    @staticmethod
+    async def disconnect_atm(db: Session, id_cajero: str, session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Libera la sesión y apaga el cajero."""
+        cajero = db.query(Cajero).filter(Cajero.id_cajero == id_cajero).first()
+        if not cajero:
+            return {"status": "NOT_FOUND"}
+        now = datetime.now(timezone.utc)
+        cajero.en_linea = False
+        cajero.sesion_activa_id = None
+        cajero.ultimo_latido = now
+        db.commit()
+
+        log = LogAuditoria(
+            id_usuario=None,
+            accion="ATM_SESION_DESCONECTADA",
+            detalles=f"Cajero {cajero.id_cajero} ({cajero.nombre}) apagado / desconectado formalmente.",
+            fecha_hora=now
+        )
+        db.add(log)
+        db.commit()
+
+        try:
+            await txt_manager.sync_cajeros(db)
+        except Exception:
+            pass
+
+        return {
+            "status": "SUCCESS",
+            "mensaje": f"Cajero '{cajero.nombre}' ({cajero.id_cajero}) ha sido apagado/desconectado correctamente."
+        }
+
+    @staticmethod
+    def get_cajero_detailed_report(db: Session, id_cajero: str) -> Dict[str, Any]:
+        """
+        Provee al Superagente el despliegue profundo de los datos de un cajero específico:
+        transferencias del día, retiros, depósitos, inventario de denominaciones y auditoría.
+        """
+        cajero = db.query(Cajero).filter(Cajero.id_cajero == id_cajero).first()
+        if not cajero:
+            raise HTTPException(status_code=404, detail=f"Cajero '{id_cajero}' no encontrado.")
+
+        today_date_str = datetime.now().strftime("%Y-%m-%d")
+
+        # Denominaciones y Bóveda
+        denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == id_cajero).all()
+        total_vault = sum(d.denominacion * d.cantidad_billetes for d in denoms)
+
+        # Transacciones de este cajero
+        txs = db.query(Transaccion).filter(Transaccion.id_cajero == id_cajero).order_by(Transaccion.fecha_hora.desc()).all()
+
+        txs_today = [t for t in txs if t.fecha_hora and t.fecha_hora.strftime("%Y-%m-%d") == today_date_str]
+
+        salidas_hoy = sum(float(t.monto) for t in txs_today if t.tipo_transaccion == "RETIRO")
+        entradas_hoy = sum(float(t.monto) for t in txs_today if t.tipo_transaccion in ["DEPOSITO", "DEPOSITO_A_TERCERO"])
+        transferencias_hoy = sum(float(t.monto) for t in txs_today if t.tipo_transaccion == "DEPOSITO_A_TERCERO")
+
+        txs_formatted = []
+        for t in txs[:100]:
+            u = t.usuario
+            txs_formatted.append({
+                "id_transaccion": t.id_transaccion,
+                "id_cajero": t.id_cajero,
+                "id_usuario": t.id_usuario,
+                "nombre_usuario": u.nombre_completo if u else "Desconocido",
+                "tipo": t.tipo_transaccion,
+                "monto": float(t.monto),
+                "desglose": t.desglose_billetes,
+                "id_cuenta_destino": t.id_cuenta_destino,
+                "nombre_destinatario": t.nombre_destinatario,
+                "fecha_hora": t.fecha_hora.strftime("%Y-%m-%d %H:%M:%S") if t.fecha_hora else ""
+            })
+
+        return {
+            "cajero": {
+                "id_cajero": cajero.id_cajero,
+                "nombre": cajero.nombre,
+                "ubicacion": cajero.ubicacion,
+                "estado": cajero.estado,
+                "is_initialized": cajero.is_initialized,
+                "codigo_cajero": cajero.codigo_cajero or "1234",
+                "en_linea": bool(cajero.en_linea),
+                "ultimo_latido": cajero.ultimo_latido.strftime("%Y-%m-%d %H:%M:%S") if cajero.ultimo_latido else "",
+                "total_boveda": float(total_vault),
+                "denominaciones": {d.denominacion: d.cantidad_billetes for d in denoms}
+            },
+            "metricas_dia": {
+                "salidas_hoy": float(salidas_hoy),
+                "entradas_hoy": float(entradas_hoy),
+                "transferencias_hoy": float(transferencias_hoy),
+                "conteo_salidas_hoy": sum(1 for t in txs_today if t.tipo_transaccion == "RETIRO"),
+                "conteo_entradas_hoy": sum(1 for t in txs_today if t.tipo_transaccion in ["DEPOSITO", "DEPOSITO_A_TERCERO"]),
+                "conteo_transferencias_hoy": sum(1 for t in txs_today if t.tipo_transaccion == "DEPOSITO_A_TERCERO")
+            },
+            "transacciones": txs_formatted
+        }
+
+    @staticmethod
+    def get_superadmin_consolidated_report(db: Session) -> Dict[str, Any]:
+        """Genera el reporte consolidado global imprimible de toda la red de cajeros."""
+        metrics = BankingService.get_superadmin_metrics(db)
+        return {
+            "fecha_reporte": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "titulo": "REPORTE CONSOLIDADO DE AUDITORÍA Y ARQUEO DE RED MULTICAJERO",
+            "banco": "RED DE CAJEROS AUTOMÁTICOS MULTICAJERO GT",
+            "metricas_globales": metrics,
+            "cajeros": metrics["cajeros"],
+            "transacciones": metrics["transacciones_recientes"]
         }

@@ -3,6 +3,7 @@ import { WelcomeAuthView } from "./views/WelcomeAuthView";
 import { UserDashboardView } from "./views/UserDashboardView";
 import { AdminConsoleView } from "./views/AdminConsoleView";
 import { WindowBar } from "./components/WindowBar";
+import { AtmIdentificationModal } from "./components/AtmIdentificationModal";
 import { authService, getWsBaseUrl } from "./services/api";
 
 export function App() {
@@ -10,6 +11,16 @@ export function App() {
   const [isAdminSession, setIsAdminSession] = useState<boolean>(false);
   const [wsNotification, setWsNotification] = useState<string | null>(null);
   const [lastRfidCard, setLastRfidCard] = useState<string | null>(null);
+  const [showAtmModal, setShowAtmModal] = useState<boolean>(() => {
+    return !localStorage.getItem("active_atm_id") || localStorage.getItem("active_atm_session_started") !== "true";
+  });
+
+  // Escuchar apertura manual o automática del modal de identificación de cajero
+  useEffect(() => {
+    const handleOpenModal = () => setShowAtmModal(true);
+    window.addEventListener("open_atm_identification_modal", handleOpenModal);
+    return () => window.removeEventListener("open_atm_identification_modal", handleOpenModal);
+  }, []);
 
   // Connect to WebSocket for live hardware events
   useEffect(() => {
@@ -62,8 +73,22 @@ export function App() {
     setIsAdminSession(false);
   };
 
+  const handleAtmSelected = (atm: any) => {
+    localStorage.setItem("active_atm_session_started", "true");
+    setShowAtmModal(false);
+    setWsNotification(`🏧 Cajero enlazado: ${atm.nombre} (${atm.id_cajero})`);
+    setTimeout(() => setWsNotification(null), 4000);
+  };
+
   return (
     <div className="w-full min-h-screen min-h-[100dvh] bg-discord-base overflow-x-hidden overflow-y-auto relative flex flex-col">
+      {/* Modal de Identificación y Enlace de Cajero al Iniciar */}
+      <AtmIdentificationModal
+        isOpen={showAtmModal}
+        onClose={() => setShowAtmModal(false)}
+        onAtmSelected={handleAtmSelected}
+      />
+
       {/* Top Window Bar: Modo Ventana / Pantalla Completa & Controls */}
       <WindowBar />
 

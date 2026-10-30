@@ -326,9 +326,12 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         setFeedbackMessage({ type: "success", text: res.mensaje || "Depósito interbancario acreditado con éxito." });
         setActiveVoucher({
           id: res.id_transaccion || Date.now(),
-          tipo: "DEPOSITO",
-          titulo: "COMPROBANTE DE DEPÓSITO INTERBANCARIO",
-          cliente: `Remitente: ${userSummary.nombre_completo} -> Destinatario: ${res.destinatario_nombre} (ID: ${res.destinatario_cuenta})`,
+          tipo: "DEPOSITO_A_TERCERO",
+          titulo: "COMPROBANTE DE TRANSFERENCIA / DEPÓSITO INTERBANCARIO",
+          cliente: userSummary.nombre_completo,
+          destinatario_nombre: res.destinatario_nombre || targetUserData.nombre_completo,
+          destinatario_cuenta: res.destinatario_cuenta || targetUserData.id_cuenta,
+          cajero_origen: userSummary?.cajero_nombre || localStorage.getItem("active_atm_id") || "ATM-001",
           tarjeta: userSummary.tarjeta,
           monto: totalSelectedDeposit,
           saldo_anterior: prevBal,
@@ -1204,12 +1207,16 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                       <div className="font-semibold text-white flex items-center gap-1">
                         {tx.tipo === "RETIRO" ? (
                           <ArrowDownRight className="w-3.5 h-3.5 text-discord-amber" />
+                        ) : tx.tipo === "DEPOSITO_A_TERCERO" ? (
+                          <ArrowUpRight className="w-3.5 h-3.5 text-blue-400" />
                         ) : (
                           <ArrowUpRight className="w-3.5 h-3.5 text-discord-green" />
                         )}
-                        <span>{tx.tipo}</span>
+                        <span>{tx.tipo === "DEPOSITO_A_TERCERO" ? "TRANSFERENCIA" : tx.tipo}</span>
                       </div>
-                      <div className="text-[10px] text-discord-textMuted">{tx.fecha_hora}</div>
+                      <div className="text-[10px] text-discord-textMuted">
+                        {tx.nombre_destinatario ? `Acreditado a: ${tx.nombre_destinatario} • ` : ""}{tx.fecha_hora}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-white">
@@ -1220,9 +1227,12 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                         onClick={() => {
                           setActiveVoucher({
                             id: tx.id_transaccion || Date.now(),
-                            tipo: tx.tipo === "RETIRO" ? "RETIRO" : "DEPOSITO",
-                            titulo: tx.tipo === "RETIRO" ? "COMPROBANTE DE RETIRO DE EFECTIVO" : "COMPROBANTE DE DEPÓSITO EN EFECTIVO",
+                            tipo: tx.tipo === "RETIRO" ? "RETIRO" : tx.tipo === "DEPOSITO_A_TERCERO" ? "DEPOSITO_A_TERCERO" : "DEPOSITO",
+                            titulo: tx.tipo === "RETIRO" ? "COMPROBANTE DE RETIRO DE EFECTIVO" : tx.tipo === "DEPOSITO_A_TERCERO" ? "COMPROBANTE DE TRANSFERENCIA / DEPÓSITO" : "COMPROBANTE DE DEPÓSITO EN EFECTIVO",
                             cliente: userSummary.nombre_completo,
+                            destinatario_nombre: tx.nombre_destinatario,
+                            destinatario_cuenta: tx.id_cuenta_destino,
+                            cajero_origen: tx.id_cajero,
                             tarjeta: userSummary.tarjeta,
                             monto: Number(tx.monto) || 0,
                             desglose: tx.desglose || {},

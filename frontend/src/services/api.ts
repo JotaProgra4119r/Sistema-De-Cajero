@@ -3,6 +3,16 @@ import axios from "axios";
 export const RENDER_CLOUD_URL = "https://sistema-de-cajero.onrender.com";
 export const LOCAL_API_URL = "http://127.0.0.1:8000";
 
+export const getTerminalSessionId = (): string => {
+  if (typeof window === "undefined") return "term-srv";
+  let sId = localStorage.getItem("atm_terminal_session_id");
+  if (!sId) {
+    sId = "term-" + Math.random().toString(36).substring(2, 10) + "-" + Date.now().toString(36);
+    localStorage.setItem("atm_terminal_session_id", sId);
+  }
+  return sId;
+};
+
 export const getServerMode = (): "cloud" | "local" => {
   if (typeof window === "undefined") return "local";
   const custom = localStorage.getItem("atm_api_url");
@@ -110,6 +120,46 @@ export const authService = {
       return null;
     }
   },
+  registerAtm: async (nombre: string, codigoCajero: string, ubicacion?: string, sessionId?: string) => {
+    const sId = sessionId || getTerminalSessionId();
+    const res = await apiClient.post("/api/auth/atm/register", {
+      nombre,
+      codigo_cajero: codigoCajero,
+      ubicacion: ubicacion || "Sucursal General",
+      session_id: sId,
+    });
+    return res.data;
+  },
+  connectAtm: async (idCajero: string, codigoCajero: string, sessionId?: string, force: boolean = false) => {
+    const sId = sessionId || getTerminalSessionId();
+    const res = await apiClient.post("/api/auth/atm/connect", {
+      id_cajero: idCajero,
+      codigo_cajero: codigoCajero,
+      session_id: sId,
+      force,
+    });
+    return res.data;
+  },
+  heartbeatAtm: async (idCajero: string, sessionId?: string) => {
+    const sId = sessionId || getTerminalSessionId();
+    try {
+      const res = await apiClient.post("/api/auth/atm/heartbeat", {
+        id_cajero: idCajero,
+        session_id: sId,
+      });
+      return res.data;
+    } catch {
+      return null;
+    }
+  },
+  disconnectAtm: async (idCajero: string, sessionId?: string) => {
+    const sId = sessionId || getTerminalSessionId();
+    const res = await apiClient.post("/api/auth/atm/disconnect", {
+      id_cajero: idCajero,
+      session_id: sId,
+    });
+    return res.data;
+  },
 };
 
 export const userService = {
@@ -162,6 +212,14 @@ export const adminService = {
   },
   getSuperMetrics: async () => {
     const res = await apiClient.get("/api/admin/super/metrics");
+    return res.data;
+  },
+  getSuperCajeroDetails: async (idCajero: string) => {
+    const res = await apiClient.get(`/api/admin/super/cajero/${idCajero}/detalles`);
+    return res.data;
+  },
+  getSuperConsolidatedReport: async () => {
+    const res = await apiClient.get("/api/admin/super/reporte-consolidado");
     return res.data;
   },
   initializeVault: async (bills: Record<string, number>, idCajero?: string) => {

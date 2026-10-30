@@ -4,7 +4,7 @@ import {
   AlertCircle, CheckCircle2, RefreshCw, Plus, Radio,
   ArrowDownRight, ArrowUpRight, RotateCcw, AlertTriangle,
   Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key,
-  Building2, Globe, Layers
+  Building2, Globe, Layers, X
 } from "lucide-react";
 import { adminService, hardwareService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
@@ -22,6 +22,44 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
     isSuperAdmin ? "network" : "vault"
   );
   const [superMetrics, setSuperMetrics] = useState<any>(null);
+  const [drilldownAtm, setDrilldownAtm] = useState<any | null>(null);
+  const [loadingDrilldown, setLoadingDrilldown] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isSuperAdmin && activeSection === "network") {
+      setActiveSection("vault");
+    }
+  }, [isSuperAdmin, activeSection]);
+
+  const handleOpenDrilldown = async (atmId: string) => {
+    try {
+      setLoadingDrilldown(true);
+      const data = await adminService.getSuperCajeroDetails(atmId);
+      setDrilldownAtm(data);
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: "Error al cargar detalles del cajero." });
+    } finally {
+      setLoadingDrilldown(false);
+    }
+  };
+
+  const handlePrintConsolidatedReport = async () => {
+    try {
+      const rep = await adminService.getSuperConsolidatedReport();
+      setActiveVoucher({
+        id: `REP-RED-${Date.now().toString().slice(-6)}`,
+        tipo: "AUDITORIA",
+        titulo: "REPORTE CONSOLIDADO DE AUDITORÍA Y ARQUEO DE TODA LA RED",
+        cliente: "SUPERADMINISTRADOR DE RED MULTICAJERO",
+        monto: rep.metricas_globales.boveda_total_red,
+        detalles_extra: `Auditoría global: ${rep.metricas_globales.total_cajeros} cajeros registrados (${rep.metricas_globales.cajeros_iniciados} iniciados, ${rep.metricas_globales.cajeros_apagados} apagados). Total retiros hoy: Q${rep.metricas_globales.salidas_hoy_red?.toFixed(2)}. Total depósitos/transferencias hoy: Q${rep.metricas_globales.entradas_hoy_red?.toFixed(2)}. Saldo cuentas alojadas: Q${rep.metricas_globales.saldo_total_cuentas_alojadas?.toFixed(2)}.`,
+        fecha_hora: rep.fecha_reporte,
+        items_auditoria: rep.transacciones
+      });
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: "Error al generar reporte consolidado." });
+    }
+  };
   const [initializingAll, setInitializingAll] = useState<boolean>(false);
   const [selectedAtmFilter, setSelectedAtmFilter] = useState<string>("all");
   const [auditFilter, setAuditFilter] = useState<"all" | "withdrawals" | "deposits" | "system">("all");
@@ -73,8 +111,14 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
     try {
       const data = await adminService.getMetrics();
       setMetrics(data);
-      const superData = await adminService.getSuperMetrics();
-      setSuperMetrics(superData);
+      if (isSuperAdmin) {
+        try {
+          const superData = await adminService.getSuperMetrics();
+          setSuperMetrics(superData);
+        } catch (e) {
+          console.error("Supermetrics error:", e);
+        }
+      }
       const hw = await hardwareService.getStatus();
       setHardwareStatus(hw);
     } catch (err: any) {
@@ -367,19 +411,21 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
           </div>
 
           <nav className="mt-2.5 lg:mt-6 flex lg:flex-col gap-1.5 lg:space-y-1.5 overflow-x-auto lg:overflow-x-visible pb-1 lg:pb-0 scrollbar-none">
-            {/* Botón Red Multicajero (Superadmin) */}
-            <button
-              type="button"
-              onClick={() => { setActiveSection("network"); setFeedbackMsg(null); }}
-              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
-                activeSection === "network"
-                  ? "bg-purple-600 text-white shadow-md font-black"
-                  : "text-purple-300 hover:bg-discord-surface hover:text-white bg-purple-950/40 border border-purple-800/40"
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5 lg:w-5 lg:h-5 text-purple-300" />
-              <span>Red Multicajero {isSuperAdmin ? "★" : ""}</span>
-            </button>
+            {/* Botón Red Multicajero (Superadmin Exclusivo) */}
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={() => { setActiveSection("network"); setFeedbackMsg(null); }}
+                className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
+                  activeSection === "network"
+                    ? "bg-purple-600 text-white shadow-md font-black"
+                    : "text-purple-300 hover:bg-discord-surface hover:text-white bg-purple-950/40 border border-purple-800/40"
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5 lg:w-5 lg:h-5 text-purple-300" />
+                <span>Red Multicajero ★</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -561,66 +607,94 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 </p>
               </div>
 
-              {/* Botón Maestro para Inicializar Todos los Cajeros Simultáneamente */}
-              <button
-                type="button"
-                onClick={handleInitializeAllVaults}
-                disabled={initializingAll}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs lg:text-sm transition-all shadow-glow active:scale-95 border border-purple-400"
-              >
-                <Layers className={`w-4 h-4 ${initializingAll ? "animate-spin" : ""}`} />
-                <span>{initializingAll ? "Inicializando Todos..." : "🚀 Inicializar Todos los Cajeros Simultáneamente"}</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrintConsolidatedReport}
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl bg-discord-surface hover:bg-discord-hover text-white font-black text-xs lg:text-sm transition-all border border-discord-hover shadow-md active:scale-95"
+                  title="Imprimir balance y auditoría consolidada de toda la red de cajeros"
+                >
+                  <Printer className="w-4 h-4 text-discord-blurple" />
+                  <span>🖨️ Imprimir Reporte Consolidado</span>
+                </button>
+
+                {/* Botón Maestro para Inicializar Todos los Cajeros Simultáneamente */}
+                <button
+                  type="button"
+                  onClick={handleInitializeAllVaults}
+                  disabled={initializingAll}
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs lg:text-sm transition-all shadow-glow active:scale-95 border border-purple-400"
+                >
+                  <Layers className={`w-4 h-4 ${initializingAll ? "animate-spin" : ""}`} />
+                  <span>{initializingAll ? "Inicializando Todos..." : "🚀 Inicializar Todos Simultáneamente"}</span>
+                </button>
+              </div>
             </div>
 
             {/* Tarjetas de Métricas Globales de la Red */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
-                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Cajeros en Red</span>
-                <span className="text-xl lg:text-2xl font-black text-white font-mono mt-1 block">
-                  {superMetrics?.total_cajeros || metrics?.cajeros?.length || 3}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+              <div className="p-3 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Total Red</span>
+                <span className="text-lg lg:text-xl font-black text-white font-mono mt-0.5 block">
+                  {superMetrics?.total_cajeros || 3}
                 </span>
-                <span className="text-[10px] text-discord-textMuted">Terminales registradas</span>
+                <span className="text-[10px] text-discord-textMuted">Cajeros</span>
               </div>
 
-              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
-                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Cajeros Operativos</span>
-                <span className="text-xl lg:text-2xl font-black text-emerald-400 font-mono mt-1 block">
-                  {superMetrics?.cajeros_operativos || 0} / {superMetrics?.total_cajeros || 3}
+              <div className="p-3 rounded-xl bg-discord-surface border border-emerald-500/30">
+                <span className="text-[10px] uppercase font-bold text-emerald-400 block">🟢 Iniciados</span>
+                <span className="text-lg lg:text-xl font-black text-emerald-400 font-mono mt-0.5 block">
+                  {superMetrics?.cajeros_iniciados ?? 0}
                 </span>
-                <span className="text-[10px] text-discord-textMuted">Con bóveda activa</span>
+                <span className="text-[10px] text-emerald-300/70">En línea</span>
               </div>
 
-              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
-                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Liquidez Global</span>
-                <span className="text-xl lg:text-2xl font-black text-discord-green font-mono mt-1 block truncate">
-                  Q{(superMetrics?.boveda_total_red || 0).toFixed(2)}
+              <div className="p-3 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">⚪ Apagados</span>
+                <span className="text-lg lg:text-xl font-black text-discord-textMuted font-mono mt-0.5 block">
+                  {superMetrics?.cajeros_apagados ?? 0}
                 </span>
-                <span className="text-[10px] text-discord-textMuted">Total en todas las bóvedas</span>
+                <span className="text-[10px] text-discord-textMuted">Fuera de línea</span>
               </div>
 
-              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
-                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Total Salidas</span>
-                <span className="text-xl lg:text-2xl font-black text-rose-400 font-mono mt-1 block truncate">
-                  Q{(superMetrics?.salidas_totales_red || 0).toFixed(2)}
+              <div className="p-3 rounded-xl bg-discord-surface border border-blue-500/30">
+                <span className="text-[10px] uppercase font-bold text-blue-400 block">Cuentas Nube</span>
+                <span className="text-lg lg:text-xl font-black text-blue-400 font-mono mt-0.5 block truncate">
+                  Q{(superMetrics?.saldo_total_cuentas_alojadas || 0).toFixed(0)}
                 </span>
-                <span className="text-[10px] text-discord-textMuted">{superMetrics?.conteo_salidas_red || 0} retiros en red</span>
+                <span className="text-[10px] text-blue-300/70">Saldo bancario SQL</span>
               </div>
 
-              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
-                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Total Entradas</span>
-                <span className="text-xl lg:text-2xl font-black text-purple-400 font-mono mt-1 block truncate">
-                  Q{(superMetrics?.entradas_totales_red || 0).toFixed(2)}
+              <div className="p-3 rounded-xl bg-discord-surface border border-discord-green/30">
+                <span className="text-[10px] uppercase font-bold text-discord-green block">Bóvedas Red</span>
+                <span className="text-lg lg:text-xl font-black text-discord-green font-mono mt-0.5 block truncate">
+                  Q{(superMetrics?.boveda_total_red || 0).toFixed(0)}
                 </span>
-                <span className="text-[10px] text-discord-textMuted">{superMetrics?.conteo_entradas_red || 0} depósitos en red</span>
+                <span className="text-[10px] text-discord-textMuted">Efectivo total</span>
               </div>
 
-              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
-                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Superusuarios</span>
-                <span className="text-xl lg:text-2xl font-black text-purple-300 font-mono mt-1 block">
-                  {superMetrics?.superusuarios_count || metrics?.superusuarios_count || 1}
+              <div className="p-3 rounded-xl bg-discord-surface border border-rose-500/30">
+                <span className="text-[10px] uppercase font-bold text-rose-400 block">Salidas Hoy</span>
+                <span className="text-lg lg:text-xl font-black text-rose-400 font-mono mt-0.5 block truncate">
+                  Q{(superMetrics?.salidas_hoy_red || 0).toFixed(0)}
                 </span>
-                <span className="text-[10px] text-purple-300">Cuentas maestras</span>
+                <span className="text-[10px] text-discord-textMuted">{superMetrics?.conteo_salidas_hoy_red || 0} retiros hoy</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-discord-surface border border-purple-500/30">
+                <span className="text-[10px] uppercase font-bold text-purple-400 block">Entradas Hoy</span>
+                <span className="text-lg lg:text-xl font-black text-purple-400 font-mono mt-0.5 block truncate">
+                  Q{(superMetrics?.entradas_hoy_red || 0).toFixed(0)}
+                </span>
+                <span className="text-[10px] text-discord-textMuted">{superMetrics?.conteo_entradas_hoy_red || 0} depósitos hoy</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-discord-surface border border-indigo-500/30">
+                <span className="text-[10px] uppercase font-bold text-indigo-400 block">Transf. Hoy</span>
+                <span className="text-lg lg:text-xl font-black text-indigo-400 font-mono mt-0.5 block truncate">
+                  Q{(superMetrics?.transferencias_hoy_red || 0).toFixed(0)}
+                </span>
+                <span className="text-[10px] text-discord-textMuted">{superMetrics?.conteo_transferencias_hoy_red || 0} a terceros</span>
               </div>
             </div>
 
@@ -654,15 +728,27 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                               {c.nombre}
                             </h4>
                           </div>
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${
-                              isReady
-                                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                                : "bg-amber-500/20 text-amber-400 border-amber-500/40"
-                            }`}
-                          >
-                            {isReady ? "Operativo" : "Bóveda Q0.00"}
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${
+                                isReady
+                                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                                  : "bg-amber-500/20 text-amber-400 border-amber-500/40"
+                              }`}
+                            >
+                              {isReady ? "Operativo" : "Bóveda Q0.00"}
+                            </span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-bold flex items-center gap-1 ${
+                                c.en_linea
+                                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                  : "bg-gray-500/20 text-gray-400"
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${c.en_linea ? "bg-green-400 animate-pulse" : "bg-gray-400"}`} />
+                              {c.en_linea ? "En Línea" : "Apagado"}
+                            </span>
+                          </div>
                         </div>
 
                         <p className="text-[11px] text-discord-textMuted mt-1">
@@ -671,7 +757,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                       </div>
 
                       {/* Métricas del cajero individual */}
-                      <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover space-y-1.5 text-xs">
+                      <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover space-y-1 text-xs">
                         <div className="flex items-center justify-between">
                           <span className="text-discord-textMuted">Saldo en Bóveda:</span>
                           <span className="font-mono font-black text-white text-sm">
@@ -679,42 +765,51 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-discord-textMuted">Salidas (Retiros):</span>
+                          <span className="text-discord-textMuted">Salidas de Hoy:</span>
                           <span className="font-mono font-bold text-rose-400">
-                            Q{c.total_salidas?.toFixed(2) || "0.00"} ({c.conteo_salidas || 0})
+                            Q{c.salidas_hoy !== undefined ? c.salidas_hoy.toFixed(2) : (c.total_salidas?.toFixed(2) || "0.00")} ({c.conteo_salidas_hoy ?? c.conteo_salidas ?? 0})
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-discord-textMuted">Entradas (Depósitos):</span>
+                          <span className="text-discord-textMuted">Entradas de Hoy:</span>
                           <span className="font-mono font-bold text-purple-400">
-                            Q{c.total_entradas?.toFixed(2) || "0.00"} ({c.conteo_entradas || 0})
+                            Q{c.entradas_hoy !== undefined ? c.entradas_hoy.toFixed(2) : (c.total_entradas?.toFixed(2) || "0.00")} ({c.conteo_entradas_hoy ?? c.conteo_entradas ?? 0})
                           </span>
                         </div>
-                        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-discord-hover">
-                          <span className="text-discord-textMuted">Total Operaciones:</span>
-                          <span className="font-mono font-bold text-white">
-                            {c.total_transacciones || 0}
-                          </span>
+                        <div className="flex items-center justify-between text-[10px] text-discord-textMuted pt-1 border-t border-discord-hover">
+                          <span>PIN Cajero: <strong className="text-white font-mono">{c.codigo_cajero || "1234"}</strong></span>
+                          <span>{c.total_transacciones || 0} ops tot.</span>
                         </div>
                       </div>
 
                       {/* Acciones para este cajero individual */}
-                      <div className="flex items-center gap-2 pt-1">
+                      <div className="space-y-1.5 pt-1">
                         <button
                           type="button"
-                          onClick={() => handleInitializeSingleAtm(c.id_cajero)}
-                          className="flex-1 py-2 rounded-lg bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold text-[11px] transition-all shadow-xs text-center"
+                          onClick={() => handleOpenDrilldown(c.id_cajero)}
+                          disabled={loadingDrilldown}
+                          className="w-full py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white font-bold text-xs border border-purple-500/30 transition-all flex items-center justify-center gap-1.5 shadow-xs"
                         >
-                          Inicializar
+                          <BarChart3 className="w-3.5 h-3.5" />
+                          <span>Desplegar Datos y Movimientos</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleResetSingleAtm(c.id_cajero)}
-                          className="px-2.5 py-2 rounded-lg bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white font-bold text-[11px] border border-discord-red/40 transition-all text-center"
-                          title="Vaciar bóveda a Q0.00"
-                        >
-                          Vaciar
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleInitializeSingleAtm(c.id_cajero)}
+                            className="flex-1 py-1.5 rounded-lg bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold text-[11px] transition-all shadow-xs text-center"
+                          >
+                            Inicializar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleResetSingleAtm(c.id_cajero)}
+                            className="px-2.5 py-1.5 rounded-lg bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white font-bold text-[11px] border border-discord-red/40 transition-all text-center"
+                            title="Vaciar bóveda a Q0.00"
+                          >
+                            Vaciar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -809,6 +904,163 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 </table>
               </div>
             </div>
+
+            {/* MODAL / DRAWER DE DESPLIEGUE PROFUNDO DEL CAJERO (SUPERAGENTE) */}
+            {drilldownAtm && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+                <div className="relative w-full max-w-2xl bg-discord-surface text-discord-textNormal rounded-2xl shadow-2xl border border-purple-500/40 overflow-hidden flex flex-col max-h-[90vh]">
+                  {/* Modal Header */}
+                  <div className="p-4 bg-gradient-to-r from-purple-950 via-discord-surface to-discord-sidebar border-b border-discord-hover flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white font-bold shadow-md">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-black text-white flex items-center gap-2">
+                          <span>{drilldownAtm.cajero.nombre}</span>
+                          <span className="font-mono text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                            {drilldownAtm.cajero.id_cajero}
+                          </span>
+                        </h3>
+                        <p className="text-xs text-discord-textMuted flex items-center gap-2 mt-0.5">
+                          <span>📍 {drilldownAtm.cajero.ubicacion}</span>
+                          <span>•</span>
+                          <span className="font-mono">PIN: <strong className="text-white">{drilldownAtm.cajero.codigo_cajero}</strong></span>
+                          <span>•</span>
+                          <span>{drilldownAtm.cajero.en_linea ? "🟢 En Línea" : "⚪ Apagado"}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDrilldownAtm(null)}
+                      className="p-1.5 rounded-lg text-discord-textMuted hover:text-white hover:bg-discord-hover transition-all"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Modal Body */}
+                  <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
+                    {/* KPI Cards del Cajero Individual */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                        <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Bóveda Actual</span>
+                        <span className="text-lg font-black text-emerald-400 font-mono mt-1 block">
+                          Q{drilldownAtm.cajero.total_boveda?.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-discord-sidebar border border-rose-500/30">
+                        <span className="text-[10px] uppercase font-bold text-rose-400 block">Salidas de Hoy</span>
+                        <span className="text-lg font-black text-rose-400 font-mono mt-1 block">
+                          Q{drilldownAtm.metricas_dia.salidas_hoy?.toFixed(2)}
+                        </span>
+                        <span className="text-[10px] text-discord-textMuted">{drilldownAtm.metricas_dia.conteo_salidas_hoy} retiros</span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-discord-sidebar border border-purple-500/30">
+                        <span className="text-[10px] uppercase font-bold text-purple-400 block">Entradas de Hoy</span>
+                        <span className="text-lg font-black text-purple-400 font-mono mt-1 block">
+                          Q{drilldownAtm.metricas_dia.entradas_hoy?.toFixed(2)}
+                        </span>
+                        <span className="text-[10px] text-discord-textMuted">{drilldownAtm.metricas_dia.conteo_entradas_hoy} depósitos</span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-discord-sidebar border border-blue-500/30">
+                        <span className="text-[10px] uppercase font-bold text-blue-400 block">Transferencias Hoy</span>
+                        <span className="text-lg font-black text-blue-400 font-mono mt-1 block">
+                          Q{drilldownAtm.metricas_dia.transferencias_hoy?.toFixed(2)}
+                        </span>
+                        <span className="text-[10px] text-discord-textMuted">{drilldownAtm.metricas_dia.conteo_transferencias_hoy} interbancarias</span>
+                      </div>
+                    </div>
+
+                    {/* Billetes en Bóveda */}
+                    <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover">
+                      <span className="text-xs font-bold text-white uppercase tracking-wider block mb-2">
+                        Inventario Físico de Billetes en Cartuchos
+                      </span>
+                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                        {DENOMINATIONS.map((d) => (
+                          <div key={d} className="p-2 rounded-lg bg-discord-base text-center border border-discord-hover">
+                            <span className="text-[10px] text-discord-textMuted font-bold block">Q{d}</span>
+                            <span className="font-mono font-black text-sm text-white">
+                              {drilldownAtm.cajero.denominaciones?.[d] || 0}
+                            </span>
+                            <span className="text-[9px] text-discord-textMuted block">
+                              Q{((drilldownAtm.cajero.denominaciones?.[d] || 0) * d).toFixed(0)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Acciones directas sobre este cajero */}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await handleInitializeSingleAtm(drilldownAtm.cajero.id_cajero);
+                          await handleOpenDrilldown(drilldownAtm.cajero.id_cajero);
+                        }}
+                        className="flex-1 py-2 rounded-xl bg-discord-blurple hover:bg-blue-600 text-white font-bold text-xs"
+                      >
+                        Inicializar Bóveda (Lote Estándar)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await handleResetSingleAtm(drilldownAtm.cajero.id_cajero);
+                          await handleOpenDrilldown(drilldownAtm.cajero.id_cajero);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white font-bold text-xs border border-discord-red/30"
+                      >
+                        Vaciar a Q0.00
+                      </button>
+                    </div>
+
+                    {/* Movimientos Recientes de este cajero */}
+                    <div>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider block mb-2">
+                        Transacciones Registradas en {drilldownAtm.cajero.id_cajero} ({drilldownAtm.transacciones?.length || 0})
+                      </span>
+                      <div className="overflow-x-auto max-h-48 border border-discord-hover rounded-xl">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-discord-sidebar text-discord-textMuted uppercase font-bold sticky top-0">
+                            <tr>
+                              <th className="py-2 px-2.5">Folio</th>
+                              <th className="py-2 px-2.5">Fecha</th>
+                              <th className="py-2 px-2.5">Cliente</th>
+                              <th className="py-2 px-2.5">Operación</th>
+                              <th className="py-2 px-2.5">Destinatario</th>
+                              <th className="py-2 px-2.5 text-right">Monto</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-discord-hover">
+                            {drilldownAtm.transacciones?.length === 0 ? (
+                              <tr>
+                                <td colSpan={6} className="text-center py-4 text-xs text-discord-textMuted italic">
+                                  Sin movimientos en este cajero aún.
+                                </td>
+                              </tr>
+                            ) : (
+                              drilldownAtm.transacciones.map((tx: any) => (
+                                <tr key={tx.id_transaccion} className="hover:bg-discord-sidebar/40">
+                                  <td className="py-1.5 px-2.5 font-mono text-discord-textMuted">#{tx.id_transaccion}</td>
+                                  <td className="py-1.5 px-2.5 font-mono text-discord-textMuted">{tx.fecha_hora}</td>
+                                  <td className="py-1.5 px-2.5 font-bold text-white">{tx.nombre_usuario}</td>
+                                  <td className="py-1.5 px-2.5 font-bold text-[11px] text-discord-blurple">{tx.tipo}</td>
+                                  <td className="py-1.5 px-2.5 text-purple-300">{tx.nombre_destinatario ? `${tx.nombre_destinatario} (${tx.id_cuenta_destino})` : "-"}</td>
+                                  <td className="py-1.5 px-2.5 font-mono font-bold text-white text-right">Q{tx.monto?.toFixed(2)}</td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

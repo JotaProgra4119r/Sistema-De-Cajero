@@ -73,6 +73,10 @@ class Cajero(Base):
     ubicacion = Column(String(150), nullable=True)
     estado = Column(String(20), default="ACTIVO", nullable=False)  # ACTIVO | FUERA_DE_SERVICIO | MANTENIMIENTO
     is_initialized = Column(Boolean, default=False, nullable=False)
+    codigo_cajero = Column(String(10), default="1234", nullable=False)  # Código/PIN de 4 dígitos para inicio del cajero
+    en_linea = Column(Boolean, default=False, nullable=False)  # True si el cajero está encendido/en sesión activa
+    sesion_activa_id = Column(String(100), nullable=True)  # Token identificador de sesión única activa
+    ultimo_latido = Column(DateTime, nullable=True)  # Timestamp de último heartbeat de la terminal
     fecha_creacion = Column(DateTime, default=utc_now, nullable=False)
 
     denominaciones = relationship("DenominacionCajero", back_populates="cajero")

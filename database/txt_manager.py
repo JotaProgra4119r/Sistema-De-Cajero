@@ -117,6 +117,42 @@ class TxtStorageManager:
             if lines_audit_elim:
                 self._write_file_all_paths("auditoria_eliminaciones.txt", "\n".join(lines_audit_elim) + "\n", mode="w")
 
+            # 6. cajeros_red.txt (Control sincronizado de la red multicajero)
+            from database.models import Cajero
+            cajeros = db.query(Cajero).order_by(Cajero.id_cajero.asc()).all()
+            lines_cajeros = []
+            for c in cajeros:
+                v_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == c.id_cajero).all()
+                v_total = sum(d.denominacion * d.cantidad_billetes for d in v_denoms)
+                onl_flag = "1" if c.en_linea else "0"
+                init_flag = "1" if c.is_initialized else "0"
+                last_hb = c.ultimo_latido.strftime("%Y-%m-%d %H:%M:%S") if c.ultimo_latido else ""
+                clean_nom = sanitize_flat_field(c.nombre)
+                clean_ubi = sanitize_flat_field(c.ubicacion or "N/A")
+                line = f"{c.id_cajero}|{clean_nom}|{c.codigo_cajero}|{clean_ubi}|{c.estado}|{onl_flag}|{init_flag}|{v_total:.2f}|{last_hb}"
+                lines_cajeros.append(line)
+            if lines_cajeros:
+                self._write_file_all_paths("cajeros_red.txt", "\n".join(lines_cajeros) + "\n", mode="w")
+
+    async def sync_cajeros(self, db: Session):
+        """Sincroniza y persiste el estado actual de los cajeros en `cajeros_red.txt`."""
+        async with self.lock:
+            from database.models import Cajero, DenominacionCajero
+            cajeros = db.query(Cajero).order_by(Cajero.id_cajero.asc()).all()
+            lines_cajeros = []
+            for c in cajeros:
+                v_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == c.id_cajero).all()
+                v_total = sum(d.denominacion * d.cantidad_billetes for d in v_denoms)
+                onl_flag = "1" if c.en_linea else "0"
+                init_flag = "1" if c.is_initialized else "0"
+                last_hb = c.ultimo_latido.strftime("%Y-%m-%d %H:%M:%S") if c.ultimo_latido else ""
+                clean_nom = sanitize_flat_field(c.nombre)
+                clean_ubi = sanitize_flat_field(c.ubicacion or "N/A")
+                line = f"{c.id_cajero}|{clean_nom}|{c.codigo_cajero}|{clean_ubi}|{c.estado}|{onl_flag}|{init_flag}|{v_total:.2f}|{last_hb}"
+                lines_cajeros.append(line)
+            if lines_cajeros:
+                self._write_file_all_paths("cajeros_red.txt", "\n".join(lines_cajeros) + "\n", mode="w")
+
     async def update_usuario(self, user_id: int, name: str, card: str, pin_hash: str, saldo: float, max_diario: float, retirado_hoy: float, pin_changed: bool, last_access: Optional[datetime] = None, is_deleted: bool = False):
         async with self.lock:
             content = self._read_file_first_available("usuarios.txt")

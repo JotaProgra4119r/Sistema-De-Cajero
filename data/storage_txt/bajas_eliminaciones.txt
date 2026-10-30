@@ -50,5 +50,11 @@
 52|2026-10-29 22:55:19|usuarios|62|Administrador Bóveda|62|Auditoria de cumplimiento regulatorio
 53|2026-10-29 22:55:39|usuarios|64|Administrador Bóveda|64|Fin de contrato laboral
 54|2026-10-29 22:55:40|usuarios|65|Administrador Bóveda|65|Auditoria de cumplimiento regulatorio
+55|2026-10-29 23:42:30|usuarios|67|Administrador Bóveda|67|Fin de contrato laboral
+56|2026-10-29 23:42:31|usuarios|68|Administrador Bóveda|68|Auditoria de cumplimiento regulatorio
+57|2026-10-29 23:43:05|usuarios|70|Administrador Bóveda|70|Fin de contrato laboral
+58|2026-10-29 23:43:06|usuarios|71|Administrador Bóveda|71|Auditoria de cumplimiento regulatorio
+59|2026-10-29 23:53:49|usuarios|73|Administrador Bóveda|73|Fin de contrato laboral
+60|2026-10-29 23:53:50|usuarios|74|Administrador Bóveda|74|Auditoria de cumplimiento regulatorio
 45|2026-10-30 04:37:38|usuarios|53|Administrador Bóveda|53|Fin de contrato laboral
 46|2026-10-30 04:37:38|usuarios|54|Administrador Bóveda|54|Auditoria de cumplimiento regulatorio

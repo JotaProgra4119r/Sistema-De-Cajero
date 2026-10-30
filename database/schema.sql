@@ -89,13 +89,17 @@ CREATE TABLE IF NOT EXISTS cajeros (
     ubicacion VARCHAR(150) NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVO',
     is_initialized BOOLEAN NOT NULL DEFAULT FALSE,
+    codigo_cajero VARCHAR(10) NOT NULL DEFAULT '1234',
+    en_linea BOOLEAN NOT NULL DEFAULT FALSE,
+    sesion_activa_id VARCHAR(100) NULL,
+    ultimo_latido DATETIME NULL,
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-INSERT INTO cajeros (id_cajero, nombre, ubicacion, estado, is_initialized) VALUES
-('ATM-001', 'Cajero Central - Sede Principal (Zona 10)', '7ma Avenida 12-34, Zona 10, Ciudad de Guatemala', 'ACTIVO', FALSE),
-('ATM-002', 'Cajero Express - Sucursal Zona 1', '6ta Avenida 4-20, Centro Histórico, Zona 1', 'ACTIVO', FALSE),
-('ATM-003', 'Cajero Miraflores - Centro Comercial', 'Calzada Roosevelt, C.C. Miraflores, Local K-12', 'ACTIVO', FALSE);
+INSERT INTO cajeros (id_cajero, nombre, ubicacion, estado, is_initialized, codigo_cajero, en_linea) VALUES
+('ATM-001', 'Cajero Central - Sede Principal (Zona 10)', '7ma Avenida 12-34, Zona 10, Ciudad de Guatemala', 'ACTIVO', FALSE, '1234', FALSE),
+('ATM-002', 'Cajero Express - Sucursal Zona 1', '6ta Avenida 4-20, Centro Histórico, Zona 1', 'ACTIVO', FALSE, '1234', FALSE),
+('ATM-003', 'Cajero Miraflores - Centro Comercial', 'Calzada Roosevelt, C.C. Miraflores, Local K-12', 'ACTIVO', FALSE, '1234', FALSE);
 
 -- -----------------------------------------------------------------------------
 -- 4. TABLA: denominaciones_cajero (Inventario Físico de Billetes en Bóveda por Cajero)

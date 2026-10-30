@@ -189,3 +189,130 @@ def test_register_employee_generates_8_digit_account_id():
     assert "id_cuenta_bancaria" in data
     assert len(data["id_cuenta_bancaria"]) == 8
     assert data["id_cuenta_bancaria"].isdigit()
+
+def test_atm_first_start_registration_and_normal_start():
+    """Verifica el primer inicio (registro de nuevo cajero personalizado) e inicio normal con código de 4 dígitos."""
+    import uuid
+    session_terminal_1 = str(uuid.uuid4())
+
+    # 1. Primer Inicio: Registrar un cajero con nombre de persona y código de 4 dígitos
+    reg_res = client.post("/api/auth/atm/register", json={
+        "nombre": "Cajero de José Javier",
+        "codigo_cajero": "4321",
+        "ubicacion": "Oficina Central",
+        "session_id": session_terminal_1
+    })
+    assert reg_res.status_code == 200
+    reg_data = reg_res.json()
+    assert reg_data["status"] == "SUCCESS"
+    new_atm_id = reg_data["cajero"]["id_cajero"]
+    assert new_atm_id.startswith("ATM-")
+    assert reg_data["cajero"]["nombre"] == "Cajero de José Javier"
+    assert reg_data["cajero"]["en_linea"] is True
+
+    # 2. Desconectar / Apagar cajero
+    disc_res = client.post("/api/auth/atm/disconnect", json={
+        "id_cajero": new_atm_id,
+        "session_id": session_terminal_1
+    })
+    assert disc_res.status_code == 200
+
+    # 3. Inicio Normal: Conectar cajero con código incorrecto (debe fallar 401)
+    fail_res = client.post("/api/auth/atm/connect", json={
+        "id_cajero": new_atm_id,
+        "codigo_cajero": "0000",
+        "session_id": session_terminal_1
+    })
+    assert fail_res.status_code == 401
+    assert "incorrecto" in fail_res.json()["detail"]
+
+    # 4. Inicio Normal: Conectar con código correcto de 4 dígitos
+    conn_res = client.post("/api/auth/atm/connect", json={
+        "id_cajero": new_atm_id,
+        "codigo_cajero": "4321",
+        "session_id": session_terminal_1
+    })
+    assert conn_res.status_code == 200
+    assert conn_res.json()["cajero"]["en_linea"] is True
+
+def test_atm_session_conflict_rejection():
+    """Verifica que si un cajero ya está en sesión activa en una terminal, se rechace el acceso a otra terminal."""
+    import uuid
+    session_terminal_a = str(uuid.uuid4())
+    session_terminal_b = str(uuid.uuid4())
+
+    # Conectar cajero ATM-001 desde Terminal A
+    conn_a = client.post("/api/auth/atm/connect", json={
+        "id_cajero": "ATM-001",
+        "codigo_cajero": "1234",
+        "session_id": session_terminal_a,
+        "force": True
+    })
+    assert conn_a.status_code == 200
+
+    # Intentar conectar el mismo cajero ATM-001 desde Terminal B (debe responder 409 Conflict)
+    conn_b = client.post("/api/auth/atm/connect", json={
+        "id_cajero": "ATM-001",
+        "codigo_cajero": "1234",
+        "session_id": session_terminal_b,
+        "force": False
+    })
+    assert conn_b.status_code == 409
+    assert "ya cuenta con una sesión activa en otra terminal" in conn_b.json()["detail"]
+
+def test_superadmin_role_enforcement_and_reports():
+    """Verifica restricción estricta: Administrador normal NO puede acceder a red multicajero ni reportes de Superadmin."""
+    # 1. Login con Administrador Local
+    _consumed_totp_tokens.clear()
+    tok_adm = generate_totp_token()
+    login_admin = client.post("/api/auth/login", json={
+        "card_number": "9999888877776666",
+        "pin": "1234",
+        "token": tok_adm,
+        "is_admin": True
+    })
+    adm_headers = {"Authorization": f"Bearer {login_admin.json()['access_token']}"}
+
+    # Intentar acceder a /super/metrics con rol ADMINISTRADOR -> Debe dar 403 Forbidden
+    super_metrics_denied = client.get("/api/admin/super/metrics", headers=adm_headers)
+    assert super_metrics_denied.status_code == 403
+
+    # Intentar acceder a /vault/initialize-all con rol ADMINISTRADOR -> Debe dar 403 Forbidden
+    init_all_denied = client.post("/api/admin/vault/initialize-all", headers=adm_headers)
+    assert init_all_denied.status_code == 403
+
+    # 2. Login con Superadministrador
+    _consumed_totp_tokens.clear()
+    tok_super = generate_totp_token()
+    login_super = client.post("/api/auth/login", json={
+        "card_number": "8888888888888888",
+        "pin": "1234",
+        "token": tok_super,
+        "is_admin": True
+    })
+    super_headers = {"Authorization": f"Bearer {login_super.json()['access_token']}"}
+
+    # Acceso permitido para Superadmin
+    super_metrics_ok = client.get("/api/admin/super/metrics", headers=super_headers)
+    assert super_metrics_ok.status_code == 200
+    data = super_metrics_ok.json()
+    assert "cajeros_iniciados" in data
+    assert "cajeros_apagados" in data
+    assert "salidas_hoy_red" in data
+    assert "entradas_hoy_red" in data
+    assert "saldo_total_cuentas_alojadas" in data
+
+    # Despliegue individual de datos de un cajero para el Superagente
+    details_res = client.get("/api/admin/super/cajero/ATM-001/detalles", headers=super_headers)
+    assert details_res.status_code == 200
+    det_data = details_res.json()
+    assert "cajero" in det_data
+    assert "metricas_dia" in det_data
+    assert "transacciones" in det_data
+
+    # Reporte consolidado de red imprimible
+    rep_res = client.get("/api/admin/super/reporte-consolidado", headers=super_headers)
+    assert rep_res.status_code == 200
+    rep_data = rep_res.json()
+    assert "titulo" in rep_data
+    assert "cajeros" in rep_data

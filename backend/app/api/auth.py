@@ -21,6 +21,26 @@ class LoginRequest(BaseModel):
 class LogoutRequest(BaseModel):
     token: Optional[str] = Field(None, description="Token dinámico TOTP a invalidar de inmediato")
 
+class AtmRegisterRequest(BaseModel):
+    nombre: str = Field(..., description="Nombre descriptivo personalizado del cajero, ej. 'Cajero de José'")
+    codigo_cajero: str = Field(..., min_length=4, max_length=4, description="Código de seguridad de 4 dígitos")
+    ubicacion: Optional[str] = Field("Sucursal General", description="Ubicación física del cajero")
+    session_id: str = Field(..., description="ID de sesión único de la terminal o navegador")
+
+class AtmConnectRequest(BaseModel):
+    id_cajero: str = Field(..., description="Identificador del cajero a conectar (ej. ATM-001)")
+    codigo_cajero: str = Field(..., min_length=4, max_length=4, description="Código de seguridad de 4 dígitos")
+    session_id: str = Field(..., description="ID de sesión único de la terminal o navegador")
+    force: bool = Field(False, description="Forzar conexión si la sesión anterior quedó colgada")
+
+class AtmHeartbeatRequest(BaseModel):
+    id_cajero: str
+    session_id: str
+
+class AtmDisconnectRequest(BaseModel):
+    id_cajero: str
+    session_id: Optional[str] = None
+
 @router.post("/login")
 def login(payload: LoginRequest, x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"), db: Session = Depends(get_db)):
     atm_id = payload.id_cajero or x_atm_id or "ATM-001"
@@ -100,19 +120,52 @@ def get_atm_status(id_cajero: Optional[str] = None, x_atm_id: Optional[str] = He
 
 @router.get("/atms")
 def list_atms(db: Session = Depends(get_db)):
-    """Lista todos los cajeros de la red con su estado de inicialización y fondos."""
+    """Lista todos los cajeros de la red con su estado de inicialización, en línea y fondos."""
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
     all_cajeros = db.query(Cajero).all()
     res = []
     for c in all_cajeros:
         v_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == c.id_cajero).all()
         v_total = sum(d.denominacion * d.cantidad_billetes for d in v_denoms)
+        is_online = False
+        if c.en_linea:
+            if c.ultimo_latido:
+                dt_lat = c.ultimo_latido if c.ultimo_latido.tzinfo else c.ultimo_latido.replace(tzinfo=timezone.utc)
+                if (now - dt_lat).total_seconds() <= 180:
+                    is_online = True
+            else:
+                is_online = True
         res.append({
             "id_cajero": c.id_cajero,
             "nombre": c.nombre,
             "ubicacion": c.ubicacion,
             "estado": c.estado,
             "is_initialized": c.is_initialized,
+            "en_linea": is_online,
+            "codigo_cajero": c.codigo_cajero or "1234",
             "vault_total": float(v_total),
-            "vault_empty": v_total <= 0
+            "vault_empty": v_total <= 0,
+            "sesion_activa_id": c.sesion_activa_id
         })
     return res
+
+@router.post("/atm/register")
+async def register_new_atm(payload: AtmRegisterRequest, db: Session = Depends(get_db)):
+    """Primer Inicio: Registra e inicializa un nuevo cajero en la red."""
+    return await BankingService.register_atm(db, payload.nombre, payload.codigo_cajero, payload.ubicacion, payload.session_id)
+
+@router.post("/atm/connect")
+async def connect_existing_atm(payload: AtmConnectRequest, db: Session = Depends(get_db)):
+    """Inicio Normal: Conecta y activa un cajero existente validando el código de 4 dígitos y exclusividad."""
+    return await BankingService.connect_atm(db, payload.id_cajero, payload.codigo_cajero, payload.session_id, payload.force)
+
+@router.post("/atm/heartbeat")
+def heartbeat_atm(payload: AtmHeartbeatRequest, db: Session = Depends(get_db)):
+    """Keepalive de la terminal enlazada."""
+    return BankingService.heartbeat_atm(db, payload.id_cajero, payload.session_id)
+
+@router.post("/atm/disconnect")
+async def disconnect_atm(payload: AtmDisconnectRequest, db: Session = Depends(get_db)):
+    """Apaga el cajero y libera la sesión activa."""
+    return await BankingService.disconnect_atm(db, payload.id_cajero, payload.session_id)
