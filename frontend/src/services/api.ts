@@ -70,25 +70,36 @@ apiClient.interceptors.request.use((config) => {
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const activeAtm = localStorage.getItem("active_atm_id") || "ATM-001";
+  if (config.headers) {
+    config.headers["X-ATM-ID"] = activeAtm;
+  }
   return config;
 });
 
 export const authService = {
-  login: async (cardNumber: string, pin: string, token: string, isAdmin: boolean) => {
+  login: async (cardNumber: string, pin: string, token: string, isAdmin: boolean, idCajero?: string) => {
     const res = await apiClient.post("/api/auth/login", {
       card_number: cardNumber,
       pin,
       token,
       is_admin: isAdmin,
+      id_cajero: idCajero || localStorage.getItem("active_atm_id") || "ATM-001",
     });
     return res.data;
   },
-  getTokenPreview: async () => {
-    const res = await apiClient.get("/api/auth/token-preview");
+  getAtms: async () => {
+    const res = await apiClient.get("/api/auth/atms");
     return res.data;
   },
-  getAtmStatus: async () => {
-    const res = await apiClient.get("/api/auth/atm-status");
+  getTokenPreview: async (idCajero?: string) => {
+    const active = idCajero || localStorage.getItem("active_atm_id") || "ATM-001";
+    const res = await apiClient.get(`/api/auth/token-preview?id_cajero=${active}`);
+    return res.data;
+  },
+  getAtmStatus: async (idCajero?: string) => {
+    const active = idCajero || localStorage.getItem("active_atm_id") || "ATM-001";
+    const res = await apiClient.get(`/api/auth/atm-status?id_cajero=${active}`);
     return res.data;
   },
   logout: async (token?: string) => {
@@ -112,6 +123,17 @@ export const userService = {
   },
   deposit: async (bills: Record<string, number>) => {
     const res = await apiClient.post("/api/user/deposit", { bills });
+    return res.data;
+  },
+  lookupAccount: async (accountId: string) => {
+    const res = await apiClient.get(`/api/user/lookup-account?account_id=${encodeURIComponent(accountId)}`);
+    return res.data;
+  },
+  depositToAccount: async (accountId: string, bills: Record<string, number>) => {
+    const res = await apiClient.post("/api/user/deposit-to-account", {
+      id_cuenta_destino: accountId,
+      bills,
+    });
     return res.data;
   },
   getTransactions: async () => {
@@ -138,16 +160,25 @@ export const adminService = {
     const res = await apiClient.get("/api/admin/metrics");
     return res.data;
   },
-  initializeVault: async (bills: Record<string, number>) => {
-    const res = await apiClient.post("/api/admin/vault/initialize", { bills });
+  getSuperMetrics: async () => {
+    const res = await apiClient.get("/api/admin/super/metrics");
     return res.data;
   },
-  addCashVault: async (bills: Record<string, number>) => {
-    const res = await apiClient.post("/api/admin/vault/add-cash", { bills });
+  initializeVault: async (bills: Record<string, number>, idCajero?: string) => {
+    const res = await apiClient.post("/api/admin/vault/initialize", { bills, id_cajero: idCajero });
     return res.data;
   },
-  resetVault: async () => {
-    const res = await apiClient.post("/api/admin/vault/reset");
+  initializeAllVaults: async (bills?: Record<string, number>) => {
+    const res = await apiClient.post("/api/admin/vault/initialize-all", { bills });
+    return res.data;
+  },
+  addCashVault: async (bills: Record<string, number>, idCajero?: string) => {
+    const res = await apiClient.post("/api/admin/vault/add-cash", { bills, id_cajero: idCajero });
+    return res.data;
+  },
+  resetVault: async (idCajero?: string) => {
+    const q = idCajero ? `?id_cajero=${idCajero}` : "";
+    const res = await apiClient.post(`/api/admin/vault/reset${q}`);
     return res.data;
   },
   registerEmployee: async (data: {

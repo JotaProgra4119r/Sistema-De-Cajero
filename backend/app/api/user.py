@@ -1,10 +1,10 @@
-from typing import Dict
-from fastapi import APIRouter, Depends
+from typing import Dict, Optional
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from backend.app.db.database import get_db
-from backend.app.db.models import Usuario
+from backend.app.db.models import Usuario, DenominacionCajero
 from backend.app.api.deps import get_current_user
 from backend.app.services.banking_service import BankingService
 from backend.app.storage_txt.txt_manager import txt_manager
@@ -21,6 +21,10 @@ class CalculateBreakdownRequest(BaseModel):
 class DepositRequest(BaseModel):
     bills: Dict[str, int] = Field(..., description="Vector de piezas introducidas por denominación")
 
+class DepositToAccountRequest(BaseModel):
+    id_cuenta_destino: str = Field(..., min_length=8, description="ID numérico de la cuenta destino (al menos 8 dígitos)")
+    bills: Dict[str, int] = Field(..., description="Vector de piezas físicas a depositar por denominación")
+
 class ChangePinRequest(BaseModel):
     card_number: str
     current_pin: str
@@ -28,34 +32,80 @@ class ChangePinRequest(BaseModel):
     new_pin: str
 
 @router.get("/summary")
-def get_summary(current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
-    return BankingService.get_user_summary(db, current_user.id_usuario)
+def get_summary(
+    current_user: Usuario = Depends(get_current_user),
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    db: Session = Depends(get_db)
+):
+    atm_id = x_atm_id or "ATM-001"
+    return BankingService.get_user_summary(db, current_user.id_usuario, id_cajero=atm_id)
 
 @router.post("/withdraw")
-async def withdraw_money(payload: WithdrawRequest, current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
-    return await BankingService.withdraw_custom(db, current_user.id_usuario, payload.amount, payload.bills)
+async def withdraw_money(
+    payload: WithdrawRequest,
+    current_user: Usuario = Depends(get_current_user),
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    db: Session = Depends(get_db)
+):
+    atm_id = x_atm_id or "ATM-001"
+    return await BankingService.withdraw_custom(db, current_user.id_usuario, payload.amount, payload.bills, id_cajero=atm_id)
 
 @router.post("/calculate-breakdown")
-def calculate_breakdown(payload: CalculateBreakdownRequest, db: Session = Depends(get_db)):
-    from backend.app.db.models import DenominacionCajero
-    from fastapi import HTTPException
-    vault_records = db.query(DenominacionCajero).all()
+def calculate_breakdown(
+    payload: CalculateBreakdownRequest,
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    db: Session = Depends(get_db)
+):
+    atm_id = x_atm_id or "ATM-001"
+    vault_records = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == atm_id).all()
     stock_map = {d.denominacion: d.cantidad_billetes for d in vault_records}
     breakdown = BankingService.calculate_optimal_dispense(int(payload.amount), stock_map)
     if breakdown is None:
         raise HTTPException(
             status_code=400,
-            detail=f"Inventario físico insuficiente: No es posible dispensar Q{payload.amount:.2f} con las existencias actuales de la bóveda."
+            detail=f"Inventario físico insuficiente en {atm_id}: No es posible dispensar Q{payload.amount:.2f} con las existencias de este cajero."
         )
     return {
         "amount": payload.amount,
         "breakdown": breakdown,
+        "id_cajero": atm_id,
         "status": "FEASIBLE"
     }
 
 @router.post("/deposit")
-async def deposit_money(payload: DepositRequest, current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
-    return await BankingService.deposit_custom(db, current_user.id_usuario, payload.bills)
+async def deposit_money(
+    payload: DepositRequest,
+    current_user: Usuario = Depends(get_current_user),
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    db: Session = Depends(get_db)
+):
+    atm_id = x_atm_id or "ATM-001"
+    return await BankingService.deposit_custom(db, current_user.id_usuario, payload.bills, id_cajero=atm_id)
+
+@router.get("/lookup-account")
+def lookup_account(
+    account_id: str = Query(..., description="ID de cuenta de 8 dígitos a consultar"),
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Verifica y consulta el nombre del titular para un depósito a terceros por su ID de 8 dígitos."""
+    return BankingService.lookup_account(db, account_id)
+
+@router.post("/deposit-to-account")
+async def deposit_to_account(
+    payload: DepositToAccountRequest,
+    current_user: Usuario = Depends(get_current_user),
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    db: Session = Depends(get_db)
+):
+    """
+    Efectúa un depósito en efectivo a otra cuenta bancaria en la red (interbancario/entre cajeros)
+    usando el ID de al menos 8 dígitos de la persona receptora.
+    """
+    atm_id = x_atm_id or "ATM-001"
+    return await BankingService.deposit_to_third_party(
+        db, current_user.id_usuario, payload.id_cuenta_destino, payload.bills, id_cajero=atm_id
+    )
 
 @router.get("/transactions")
 async def get_transactions(current_user: Usuario = Depends(get_current_user)):

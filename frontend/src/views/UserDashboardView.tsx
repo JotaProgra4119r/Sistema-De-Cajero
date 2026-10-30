@@ -29,10 +29,37 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0
   });
 
-  // Deposit state
+  // Deposit state & Transfer to Other Account
+  const [depositMode, setDepositMode] = useState<"own" | "third_party">("own");
+  const [targetAccountId, setTargetAccountId] = useState<string>("");
+  const [targetUserData, setTargetUserData] = useState<{ id_cuenta: string; nombre_completo: string } | null>(null);
+  const [targetLookupLoading, setTargetLookupLoading] = useState<boolean>(false);
+  const [targetLookupError, setTargetLookupError] = useState<string | null>(null);
+
   const [depositBills, setDepositBills] = useState<Record<number, number>>({
     200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0
   });
+
+  const handleVerifyTargetAccount = async () => {
+    resetInactivity();
+    setTargetLookupError(null);
+    setTargetUserData(null);
+    const clean = targetAccountId.trim();
+    if (clean.length < 8) {
+      setTargetLookupError("El ID de cuenta debe tener al menos 8 dígitos.");
+      return;
+    }
+    setTargetLookupLoading(true);
+    try {
+      const res = await userService.lookupAccount(clean);
+      setTargetUserData(res);
+      setTargetLookupError(null);
+    } catch (err: any) {
+      setTargetLookupError(err?.response?.data?.detail || "Cuenta no encontrada en la red bancaria.");
+    } finally {
+      setTargetLookupLoading(false);
+    }
+  };
 
   // PIN change state (Sin token dinámico redundante)
   const [currentPin, setCurrentPin] = useState<string>("");
@@ -288,22 +315,44 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         if (Number(v) > 0) billsPayload[k] = Number(v);
       }
       const prevBal = userSummary.saldo_actual || 0;
-      const res = await userService.deposit(billsPayload);
-      setFeedbackMessage({ type: "success", text: res.mensaje || "Depósito completado con éxito." });
-
-      const newBal = res.nuevo_saldo !== undefined ? res.nuevo_saldo : prevBal + totalSelectedDeposit;
-      setActiveVoucher({
-        id: res.id_transaccion || Date.now(),
-        tipo: "DEPOSITO",
-        titulo: "COMPROBANTE DE DEPÓSITO EN EFECTIVO",
-        cliente: userSummary.nombre_completo,
-        tarjeta: userSummary.tarjeta,
-        monto: totalSelectedDeposit,
-        saldo_anterior: prevBal,
-        nuevo_saldo: newBal,
-        desglose: billsPayload,
-        fecha_hora: res.fecha_hora || new Date().toLocaleString()
-      });
+      let res;
+      if (depositMode === "third_party") {
+        if (!targetUserData) {
+          setFeedbackMessage({ type: "error", text: "Debe verificar la cuenta destinataria de 8 dígitos antes de continuar." });
+          setLoading(false);
+          return;
+        }
+        res = await userService.depositToAccount(targetUserData.id_cuenta, billsPayload);
+        setFeedbackMessage({ type: "success", text: res.mensaje || "Depósito interbancario acreditado con éxito." });
+        setActiveVoucher({
+          id: res.id_transaccion || Date.now(),
+          tipo: "DEPOSITO",
+          titulo: "COMPROBANTE DE DEPÓSITO INTERBANCARIO",
+          cliente: `Remitente: ${userSummary.nombre_completo} -> Destinatario: ${res.destinatario_nombre} (ID: ${res.destinatario_cuenta})`,
+          tarjeta: userSummary.tarjeta,
+          monto: totalSelectedDeposit,
+          saldo_anterior: prevBal,
+          nuevo_saldo: prevBal,
+          desglose: billsPayload,
+          fecha_hora: res.fecha_hora || new Date().toLocaleString()
+        });
+      } else {
+        res = await userService.deposit(billsPayload);
+        setFeedbackMessage({ type: "success", text: res.mensaje || "Depósito completado con éxito." });
+        const newBal = res.nuevo_saldo !== undefined ? res.nuevo_saldo : prevBal + totalSelectedDeposit;
+        setActiveVoucher({
+          id: res.id_transaccion || Date.now(),
+          tipo: "DEPOSITO",
+          titulo: "COMPROBANTE DE DEPÓSITO EN EFECTIVO",
+          cliente: userSummary.nombre_completo,
+          tarjeta: userSummary.tarjeta,
+          monto: totalSelectedDeposit,
+          saldo_anterior: prevBal,
+          nuevo_saldo: newBal,
+          desglose: billsPayload,
+          fecha_hora: res.fecha_hora || new Date().toLocaleString()
+        });
+      }
 
       setDepositBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
       await reloadData();
@@ -357,8 +406,14 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
             <h1 className="text-sm sm:text-base lg:text-lg font-black text-discord-textPure tracking-wide">
               Área de Autoservicio Bancario
             </h1>
-            <p className="text-[10px] sm:text-[11px] lg:text-xs text-discord-textMuted">
-              Usuario: <span className="text-white font-bold">{userSummary.nombre_completo}</span> | Tarjeta: <span className="font-mono text-discord-green">{userSummary.tarjeta}</span>
+            <p className="text-[10px] sm:text-[11px] lg:text-xs text-discord-textMuted flex flex-wrap items-center gap-1.5">
+              <span>Usuario: <strong className="text-white">{userSummary.nombre_completo}</strong></span>
+              <span>|</span>
+              <span>ID Cuenta: <strong className="font-mono text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800">{userSummary.id_cuenta_bancaria || "N/A"}</strong></span>
+              <span>|</span>
+              <span>Tarjeta: <strong className="font-mono text-discord-green">{userSummary.tarjeta}</strong></span>
+              <span>|</span>
+              <span>Cajero: <strong className="text-amber-300">{userSummary.id_cajero || "ATM-001"}</strong></span>
             </p>
           </div>
         </div>
@@ -633,11 +688,108 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 <div className="flex items-center justify-between mb-1 flex-shrink-0">
                   <h2 className="text-base lg:text-lg font-black text-white flex items-center gap-2">
                     <ArrowUpRight className="w-5 h-5 text-discord-green" />
-                    <span>Depósito de Efectivo a Cuenta Bancaria</span>
+                    <span>Depósito y Transferencia de Efectivo</span>
                   </h2>
                 </div>
-                <p className="text-xs text-discord-textMuted mb-3 flex-shrink-0">
-                  Introduzca los billetes por ranura receptora o seleccione piezas por denominación oficial
+
+                {/* Sub-selector de Modalidad: Cuenta Propia vs Otra Cuenta */}
+                <div className="grid grid-cols-2 gap-2 mb-3 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDepositMode("own");
+                      setFeedbackMessage(null);
+                      resetInactivity();
+                    }}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border ${
+                      depositMode === "own"
+                        ? "bg-discord-green text-black border-discord-green shadow-sm"
+                        : "bg-discord-sidebar text-discord-textMuted border-discord-hover hover:text-white"
+                    }`}
+                  >
+                    <span>💵 Depósito a Cuenta Propia</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDepositMode("third_party");
+                      setFeedbackMessage(null);
+                      resetInactivity();
+                    }}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border ${
+                      depositMode === "third_party"
+                        ? "bg-purple-600 text-white border-purple-500 shadow-sm"
+                        : "bg-discord-sidebar text-discord-textMuted border-discord-hover hover:text-white"
+                    }`}
+                  >
+                    <span>🔄 Depósito a Otra Cuenta (Red Nube)</span>
+                  </button>
+                </div>
+
+                {/* Si es depósito a tercero, pedir ID de 8 dígitos y verificar */}
+                {depositMode === "third_party" && (
+                  <div className="mb-3 p-3 rounded-xl bg-purple-950/40 border border-purple-800/60 flex-shrink-0 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-purple-200">
+                        ID de Cuenta Bancaria del Destinatario (8 dígitos):
+                      </label>
+                      <span className="text-[10px] text-discord-textMuted">Red Intercajeros SQL</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        maxLength={12}
+                        value={targetAccountId}
+                        onChange={(e) => {
+                          setTargetAccountId(e.target.value.replace(/\D/g, ""));
+                          setTargetUserData(null);
+                          setTargetLookupError(null);
+                        }}
+                        placeholder="Ej. 20027819"
+                        className="flex-1 px-3 py-2 rounded-lg bg-discord-surface border border-purple-700/80 font-mono text-sm font-bold text-white tracking-wider outline-none focus:border-purple-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyTargetAccount}
+                        disabled={targetLookupLoading || targetAccountId.length < 8}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          targetAccountId.length >= 8 && !targetLookupLoading
+                            ? "bg-purple-600 hover:bg-purple-500 text-white shadow-md active:scale-95"
+                            : "bg-discord-surface text-gray-500 border border-discord-hover cursor-not-allowed"
+                        }`}
+                      >
+                        {targetLookupLoading ? "Buscando..." : "Verificar Cuenta"}
+                      </button>
+                    </div>
+
+                    {targetLookupError && (
+                      <div className="p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>{targetLookupError}</span>
+                      </div>
+                    )}
+
+                    {targetUserData && (
+                      <div className="p-2.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                          <div>
+                            <span className="font-bold text-white block">{targetUserData.nombre_completo}</span>
+                            <span className="text-[10px] text-emerald-200 font-mono">ID Cuenta: {targetUserData.id_cuenta}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] uppercase font-black bg-emerald-500/30 text-emerald-200 px-2 py-0.5 rounded">
+                          Destinatario OK
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <p className="text-xs text-discord-textMuted mb-2 flex-shrink-0">
+                  {depositMode === "third_party"
+                    ? "Ingrese el efectivo en billetes que desea acreditar a la cuenta del destinatario:"
+                    : "Introduzca los billetes por ranura receptora o seleccione piezas por denominación oficial:"}
                 </p>
 
                 {/* Quick preset buttons for deposit */}
@@ -870,14 +1022,24 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 <button
                   type="button"
                   onClick={handleExecuteDeposit}
-                  disabled={totalSelectedDeposit <= 0 || loading}
+                  disabled={
+                    totalSelectedDeposit <= 0 ||
+                    loading ||
+                    (depositMode === "third_party" && !targetUserData)
+                  }
                   className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
-                    totalSelectedDeposit > 0 && !loading
-                      ? "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
+                    totalSelectedDeposit > 0 && !loading && (depositMode !== "third_party" || targetUserData)
+                      ? depositMode === "third_party"
+                        ? "bg-purple-600 hover:bg-purple-500 text-white shadow-glow active:scale-95"
+                        : "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
                       : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
                   }`}
                 >
-                  {loading ? "Acreditando..." : "Confirmar Depósito"}
+                  {loading
+                    ? "Acreditando..."
+                    : depositMode === "third_party"
+                    ? (targetUserData ? "Confirmar Transferencia / Depósito" : "Verifique Destinatario Primero")
+                    : "Confirmar Depósito"}
                 </button>
 
                 <button

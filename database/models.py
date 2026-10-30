@@ -22,6 +22,7 @@ class Usuario(Base):
     id_usuario = Column(Integer, primary_key=True, autoincrement=True)
     id_rol = Column(Integer, ForeignKey("roles.id_rol"), nullable=False)
     nombre_completo = Column(String(100), nullable=False)
+    id_cuenta_bancaria = Column(String(20), unique=True, nullable=True)  # Token / ID de Cuenta de al menos 8 dígitos
     pin_hash = Column(String(255), nullable=False)
     token_temporal = Column(String(10), nullable=True)
     saldo_actual = Column(Numeric(12, 2), default=0.00, nullable=False)
@@ -63,11 +64,25 @@ class Tarjeta(Base):
 
     usuario = relationship("Usuario", back_populates="tarjetas")
 
+class Cajero(Base):
+    """Modelo relacional de Cajeros Automáticos (ATM Terminals) en la Red Bancaria."""
+    __tablename__ = "cajeros"
+
+    id_cajero = Column(String(20), primary_key=True)  # ej. "ATM-001", "ATM-002", "ATM-003"
+    nombre = Column(String(100), nullable=False)
+    ubicacion = Column(String(150), nullable=True)
+    estado = Column(String(20), default="ACTIVO", nullable=False)  # ACTIVO | FUERA_DE_SERVICIO | MANTENIMIENTO
+    is_initialized = Column(Boolean, default=False, nullable=False)
+    fecha_creacion = Column(DateTime, default=utc_now, nullable=False)
+
+    denominaciones = relationship("DenominacionCajero", back_populates="cajero")
+
 class ArqueoCajero(Base):
     __tablename__ = "arqueos_cajero"
 
     id_arqueo = Column(Integer, primary_key=True, autoincrement=True)
-    tipo_evento = Column(String(20), nullable=False)  # INICIALIZACION | RECARGA
+    id_cajero = Column(String(20), default="ATM-001", nullable=False)
+    tipo_evento = Column(String(30), nullable=False)  # INICIALIZACION | RECARGA | RESET
     monto_total = Column(Numeric(12, 2), nullable=False)
     fecha_evento = Column(DateTime, default=utc_now, nullable=False)
 
@@ -75,18 +90,24 @@ class DenominacionCajero(Base):
     __tablename__ = "denominaciones_cajero"
 
     id_denominacion = Column(Integer, primary_key=True, autoincrement=True)
-    denominacion = Column(Integer, unique=True, nullable=False)
+    id_cajero = Column(String(20), ForeignKey("cajeros.id_cajero"), default="ATM-001", nullable=False)
+    denominacion = Column(Integer, nullable=False)
     cantidad_billetes = Column(Integer, default=0, nullable=False)
+
+    cajero = relationship("Cajero", back_populates="denominaciones")
 
 class Transaccion(Base):
     __tablename__ = "transacciones"
 
     id_transaccion = Column(Integer, primary_key=True, autoincrement=True)
+    id_cajero = Column(String(20), default="ATM-001", nullable=True)
     id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)
-    tipo_transaccion = Column(String(20), nullable=False)  # RETIRO | DEPOSITO
+    tipo_transaccion = Column(String(30), nullable=False)  # RETIRO | DEPOSITO | DEPOSITO_A_TERCERO
     monto = Column(Numeric(12, 2), nullable=False)
     fecha_hora = Column(DateTime, default=utc_now, nullable=False)
     desglose_billetes = Column(JSON, nullable=False)
+    id_cuenta_destino = Column(String(20), nullable=True)  # ID de 8 dígitos de la cuenta que recibió la acreditación
+    nombre_destinatario = Column(String(100), nullable=True)  # Nombre del titular destinatario
 
     usuario = relationship("Usuario", back_populates="transacciones")
 

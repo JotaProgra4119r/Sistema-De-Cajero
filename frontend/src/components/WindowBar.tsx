@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Square, Minus, X, Sun, Moon, Cloud, HardDrive } from "lucide-react";
+import { Square, Minus, X, Sun, Moon, Cloud, HardDrive, Building2 } from "lucide-react";
 import { getServerMode, switchServerMode } from "../services/api";
 
 declare global {
@@ -45,6 +45,16 @@ export const WindowBar: React.FC = () => {
   };
 
   const [serverMode, setServerMode] = useState<"cloud" | "local">(() => getServerMode());
+  const [activeAtm, setActiveAtm] = useState<string>(() => {
+    return localStorage.getItem("active_atm_id") || "ATM-001";
+  });
+
+  const handleAtmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextAtm = e.target.value;
+    setActiveAtm(nextAtm);
+    localStorage.setItem("active_atm_id", nextAtm);
+    window.dispatchEvent(new CustomEvent("atm_changed", { detail: nextAtm }));
+  };
 
   const handleToggleServer = () => {
     const next = serverMode === "cloud" ? "local" : "cloud";
@@ -105,6 +115,21 @@ export const WindowBar: React.FC = () => {
 
       {/* Mode Switchers and Window Controls (no-drag) */}
       <div style={{ WebkitAppRegion: "no-drag" } as any} className="flex items-center gap-2 flex-shrink-0">
+        {/* Selector de Cajero Activo */}
+        <div className="flex items-center gap-1.5 bg-discord-sidebar px-2 py-1 rounded text-xs border border-discord-hover">
+          <Building2 className="w-3.5 h-3.5 text-discord-blurple flex-shrink-0" />
+          <select
+            value={activeAtm}
+            onChange={handleAtmChange}
+            className="bg-transparent text-discord-textPure font-bold text-[11px] outline-none cursor-pointer"
+            title="Seleccionar terminal ATM activa"
+          >
+            <option value="ATM-001" className="bg-discord-surface text-discord-textPure">ATM-001 (Sede Central)</option>
+            <option value="ATM-002" className="bg-discord-surface text-discord-textPure">ATM-002 (Sucursal Zona 1)</option>
+            <option value="ATM-003" className="bg-discord-surface text-discord-textPure">ATM-003 (Miraflores Express)</option>
+          </select>
+        </div>
+
         {/* Toggle Servidor: SOLO en Electron de escritorio */}
         {isElectron && (
           <button

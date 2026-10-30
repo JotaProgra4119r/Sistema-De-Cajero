@@ -26,6 +26,8 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   const [vaultEmpty, setVaultEmpty] = useState<boolean>(false);
   const [vaultTotal, setVaultTotal] = useState<number>(0);
   const [rfidScannedNotification, setRfidScannedNotification] = useState<string | null>(null);
+  const [activeAtm, setActiveAtm] = useState<string>(() => localStorage.getItem("active_atm_id") || "ATM-001");
+  const [atmName, setAtmName] = useState<string>("Cajero Central - Zona 10");
 
   // Auto-populate when physical RFID card is detected
   useEffect(() => {
@@ -39,6 +41,16 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
     }
   }, [lastRfidCard]);
 
+  // Escuchar cambio de cajero activo
+  useEffect(() => {
+    const handleAtmChanged = (e: any) => {
+      const nextId = e.detail || localStorage.getItem("active_atm_id") || "ATM-001";
+      setActiveAtm(nextId);
+    };
+    window.addEventListener("atm_changed", handleAtmChanged);
+    return () => window.removeEventListener("atm_changed", handleAtmChanged);
+  }, []);
+
   // Clock updater & dynamic token preview
   useEffect(() => {
     const updateTime = () => {
@@ -51,8 +63,9 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
 
     const fetchToken = async () => {
       try {
-        const res = await authService.getTokenPreview();
+        const res = await authService.getTokenPreview(activeAtm);
         setDynamicTokenPreview(res.token);
+        if (res.cajero_nombre) setAtmName(res.cajero_nombre);
         if (res.vault_total !== undefined) {
           setVaultTotal(res.vault_total);
           setVaultEmpty(res.vault_empty ?? res.vault_total <= 0);
@@ -68,7 +81,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
       clearInterval(interval);
       clearInterval(tokenInterval);
     };
-  }, []);
+  }, [activeAtm]);
 
   // Format 16 digits into XXXX-XXXX-XXXX-XXXX
   const formatCard = (digits: string) => {
@@ -191,7 +204,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await authService.login(cleanCard, pin, token, isAdminMode);
+      const res = await authService.login(cleanCard, pin, token, isAdminMode, activeAtm);
       localStorage.setItem("atm_token", res.access_token);
       onLoginSuccess(res.user, isAdminMode);
     } catch (err: any) {
@@ -221,6 +234,26 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
 
   return (
     <div className="w-full h-full flex flex-col justify-between bg-discord-base p-3 md:p-4 lg:p-5 text-discord-textNormal select-none overflow-y-auto">
+      {/* Active ATM Status Banner */}
+      <div className="mb-2 p-2 rounded-xl bg-discord-sidebar border border-discord-hover flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-discord-blurple animate-pulse" />
+          <span className="font-bold text-discord-textPure uppercase">🏧 {activeAtm}:</span>
+          <span className="text-discord-textMuted font-semibold">{atmName}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {vaultEmpty ? (
+            <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold border border-rose-500/30 text-[11px]">
+              ⚠️ Bóveda Vacía (Q0.00)
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 text-[11px]">
+              🟢 En Servicio (Q{vaultTotal.toFixed(2)})
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* RFID Scan Toast Notification */}
       {rfidScannedNotification && (
         <div className="mb-2 p-2.5 rounded-xl bg-discord-green/20 border border-discord-green text-discord-green text-xs font-bold flex items-center justify-between animate-bounce">
@@ -364,6 +397,14 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 className="px-3 py-2 text-xs font-bold rounded-xl bg-amber-950/60 hover:bg-amber-900/80 text-left truncate text-amber-300 border border-amber-800"
               >
                 🛡️ Admin Bóveda
+              </button>
+              <button
+                type="button"
+                onClick={() => setPresetUser("8888888888888888", "1234", dynamicTokenPreview, true)}
+                className="col-span-2 px-3 py-2.5 text-xs font-black rounded-xl bg-purple-950/70 hover:bg-purple-900/90 text-left truncate text-purple-300 border border-purple-700 shadow-md flex items-center justify-between"
+              >
+                <span>⭐ Super Administrador (Red Global)</span>
+                <span className="text-[10px] bg-purple-800/80 text-white px-2 py-0.5 rounded font-mono">Master</span>
               </button>
             </div>
           </div>

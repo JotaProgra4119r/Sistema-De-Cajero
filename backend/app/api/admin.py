@@ -1,20 +1,25 @@
-from typing import Dict
-from fastapi import APIRouter, Depends
+from typing import Dict, Optional
+from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from backend.app.db.database import get_db
-from backend.app.db.models import Usuario
-from backend.app.api.deps import get_current_admin
+from backend.app.db.models import Usuario, Cajero
+from backend.app.api.deps import get_current_admin, get_current_superadmin
 from backend.app.services.banking_service import BankingService
 
 router = APIRouter(prefix="/api/admin", tags=["Consola Administrativa"])
 
 class VaultInitRequest(BaseModel):
     bills: Dict[str, int] = Field(..., description="Cantidades por denominación para inicialización (máx Q10,000)")
+    id_cajero: Optional[str] = Field(None, description="Identificador del cajero a inicializar (opcional)")
+
+class VaultInitAllRequest(BaseModel):
+    bills: Optional[Dict[str, int]] = Field(None, description="Lote de billetes con el que inicializar todos los cajeros simultáneamente")
 
 class VaultAddCashRequest(BaseModel):
     bills: Dict[str, int] = Field(..., description="Lote adicional de billetes a recargar (tope acumulado Q30,000)")
+    id_cajero: Optional[str] = Field(None, description="Identificador del cajero a recargar (opcional)")
 
 class RegisterEmployeeRequest(BaseModel):
     nombre_completo: str
@@ -40,21 +45,62 @@ class SoftDeleteUserRequest(BaseModel):
     motivo: str = "Baja solicitada por administración"
 
 @router.get("/metrics")
-def get_metrics(current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
-    return BankingService.get_admin_metrics(db)
+def get_metrics(
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    current_admin: Usuario = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    atm_id = x_atm_id or "ATM-001"
+    return BankingService.get_admin_metrics(db, id_cajero=atm_id)
+
+@router.get("/super/metrics")
+def get_superadmin_metrics(
+    current_admin: Usuario = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Métricas maestras de red global multicajero para la consola de Superadministración."""
+    return BankingService.get_superadmin_metrics(db)
 
 @router.post("/vault/initialize")
-async def initialize_vault(payload: VaultInitRequest, current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
-    return await BankingService.vault_initialize(db, current_admin.id_usuario, payload.bills)
+async def initialize_vault(
+    payload: VaultInitRequest,
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    current_admin: Usuario = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    atm_id = payload.id_cajero or x_atm_id or "ATM-001"
+    return await BankingService.vault_initialize(db, current_admin.id_usuario, payload.bills, id_cajero=atm_id)
+
+@router.post("/vault/initialize-all")
+async def initialize_all_vaults(
+    payload: Optional[VaultInitAllRequest] = None,
+    current_admin: Usuario = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Acción de Superadministrador para inicializar simultáneamente todos los cajeros de la red."""
+    bills = payload.bills if payload else None
+    return await BankingService.vault_initialize_all(db, current_admin.id_usuario, bills=bills)
 
 @router.post("/vault/add-cash")
-async def add_cash_vault(payload: VaultAddCashRequest, current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
-    return await BankingService.vault_add_cash(db, current_admin.id_usuario, payload.bills)
+async def add_cash_vault(
+    payload: VaultAddCashRequest,
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    current_admin: Usuario = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    atm_id = payload.id_cajero or x_atm_id or "ATM-001"
+    return await BankingService.vault_add_cash(db, current_admin.id_usuario, payload.bills, id_cajero=atm_id)
 
 @router.post("/vault/reset")
-async def reset_vault(current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):
-    """Restablece toda la bóveda y variables del cajero a cero (Q0.00)."""
-    return await BankingService.vault_reset(db, current_admin.id_usuario)
+async def reset_vault(
+    id_cajero: Optional[str] = None,
+    x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
+    current_admin: Usuario = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Restablece la bóveda y variables de un cajero individual a cero (Q0.00)."""
+    atm_id = id_cajero or x_atm_id or "ATM-001"
+    return await BankingService.vault_reset(db, current_admin.id_usuario, id_cajero=atm_id)
 
 @router.post("/users/register")
 async def register_employee(payload: RegisterEmployeeRequest, current_admin: Usuario = Depends(get_current_admin), db: Session = Depends(get_db)):

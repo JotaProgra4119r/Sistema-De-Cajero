@@ -3,7 +3,8 @@ import {
   Shield, Users, BarChart3, FileText, LogOut, Database,
   AlertCircle, CheckCircle2, RefreshCw, Plus, Radio,
   ArrowDownRight, ArrowUpRight, RotateCcw, AlertTriangle,
-  Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key
+  Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key,
+  Building2, Globe, Layers
 } from "lucide-react";
 import { adminService, hardwareService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
@@ -16,7 +17,13 @@ interface AdminConsoleViewProps {
 const DENOMINATIONS = [200, 100, 50, 20, 10, 5, 1];
 
 export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, onLogout }) => {
-  const [activeSection, setActiveSection] = useState<"vault" | "users" | "analytics" | "audit" | "hardware">("vault");
+  const isSuperAdmin = Boolean(adminUser?.is_superadmin || adminUser?.rol === "SUPERADMIN" || adminUser?.rol === "SUPERADMINISTRADOR");
+  const [activeSection, setActiveSection] = useState<"network" | "vault" | "users" | "analytics" | "audit" | "hardware">(
+    isSuperAdmin ? "network" : "vault"
+  );
+  const [superMetrics, setSuperMetrics] = useState<any>(null);
+  const [initializingAll, setInitializingAll] = useState<boolean>(false);
+  const [selectedAtmFilter, setSelectedAtmFilter] = useState<string>("all");
   const [auditFilter, setAuditFilter] = useState<"all" | "withdrawals" | "deposits" | "system">("all");
   const [metrics, setMetrics] = useState<any>(null);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -66,10 +73,54 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
     try {
       const data = await adminService.getMetrics();
       setMetrics(data);
+      const superData = await adminService.getSuperMetrics();
+      setSuperMetrics(superData);
       const hw = await hardwareService.getStatus();
       setHardwareStatus(hw);
     } catch (err: any) {
       console.error("Error fetching metrics:", err);
+    }
+  };
+
+  const handleInitializeAllVaults = async () => {
+    setInitializingAll(true);
+    setFeedbackMsg(null);
+    try {
+      const res = await adminService.initializeAllVaults();
+      setFeedbackMsg({
+        type: "success",
+        text: res.mensaje || "Se inicializaron todos los cajeros de la red simultáneamente."
+      });
+      await fetchMetrics();
+    } catch (err: any) {
+      setFeedbackMsg({
+        type: "error",
+        text: err?.response?.data?.detail || "Error al inicializar la red de cajeros."
+      });
+    } finally {
+      setInitializingAll(false);
+    }
+  };
+
+  const handleInitializeSingleAtm = async (atmId: string) => {
+    setFeedbackMsg(null);
+    try {
+      const res = await adminService.initializeVault(initBills, atmId);
+      setFeedbackMsg({ type: "success", text: res.mensaje || `Bóveda de ${atmId} inicializada.` });
+      await fetchMetrics();
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: err?.response?.data?.detail || `Error al inicializar ${atmId}.` });
+    }
+  };
+
+  const handleResetSingleAtm = async (atmId: string) => {
+    setFeedbackMsg(null);
+    try {
+      const res = await adminService.resetVault(atmId);
+      setFeedbackMsg({ type: "success", text: res.mensaje || `Bóveda de ${atmId} reiniciada a cero.` });
+      await fetchMetrics();
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: err?.response?.data?.detail || `Error al reiniciar ${atmId}.` });
     }
   };
 
@@ -316,6 +367,20 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
           </div>
 
           <nav className="mt-2.5 lg:mt-6 flex lg:flex-col gap-1.5 lg:space-y-1.5 overflow-x-auto lg:overflow-x-visible pb-1 lg:pb-0 scrollbar-none">
+            {/* Botón Red Multicajero (Superadmin) */}
+            <button
+              type="button"
+              onClick={() => { setActiveSection("network"); setFeedbackMsg(null); }}
+              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
+                activeSection === "network"
+                  ? "bg-purple-600 text-white shadow-md font-black"
+                  : "text-purple-300 hover:bg-discord-surface hover:text-white bg-purple-950/40 border border-purple-800/40"
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5 lg:w-5 lg:h-5 text-purple-300" />
+              <span>Red Multicajero {isSuperAdmin ? "★" : ""}</span>
+            </button>
+
             <button
               type="button"
               onClick={() => { setActiveSection("vault"); setFeedbackMsg(null); }}
@@ -473,6 +538,280 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
         )}
 
         {/* SECTION 1: BOVEDA & ARQUEO */}
+        {/* SECCIÓN 0: RED MULTICAJERO GLOBAL (SUPERADMIN) */}
+        {activeSection === "network" && (
+          <div className="space-y-4 lg:space-y-6">
+            {/* Header del Modo Superadministrador */}
+            <div className="p-4 lg:p-5 rounded-2xl bg-gradient-to-r from-purple-950/80 via-discord-surface to-discord-surface border border-purple-700/60 shadow-lg flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                    Nivel Superadministrador
+                  </span>
+                  <span className="text-xs text-discord-textMuted font-mono">
+                    Red Central SQL en Tiempo Real
+                  </span>
+                </div>
+                <h2 className="text-lg lg:text-xl font-black text-white mt-1 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-purple-400" />
+                  <span>Centro de Control Maestro de Red Multicajero</span>
+                </h2>
+                <p className="text-xs text-discord-textMuted mt-0.5 max-w-2xl">
+                  Supervise simultáneamente todos los cajeros de la red bancaria. Cada cajero opera de forma independiente mientras sincronizan datos contables en SQL y la nube.
+                </p>
+              </div>
+
+              {/* Botón Maestro para Inicializar Todos los Cajeros Simultáneamente */}
+              <button
+                type="button"
+                onClick={handleInitializeAllVaults}
+                disabled={initializingAll}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs lg:text-sm transition-all shadow-glow active:scale-95 border border-purple-400"
+              >
+                <Layers className={`w-4 h-4 ${initializingAll ? "animate-spin" : ""}`} />
+                <span>{initializingAll ? "Inicializando Todos..." : "🚀 Inicializar Todos los Cajeros Simultáneamente"}</span>
+              </button>
+            </div>
+
+            {/* Tarjetas de Métricas Globales de la Red */}
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Cajeros en Red</span>
+                <span className="text-xl lg:text-2xl font-black text-white font-mono mt-1 block">
+                  {superMetrics?.total_cajeros || metrics?.cajeros?.length || 3}
+                </span>
+                <span className="text-[10px] text-discord-textMuted">Terminales registradas</span>
+              </div>
+
+              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Cajeros Operativos</span>
+                <span className="text-xl lg:text-2xl font-black text-emerald-400 font-mono mt-1 block">
+                  {superMetrics?.cajeros_operativos || 0} / {superMetrics?.total_cajeros || 3}
+                </span>
+                <span className="text-[10px] text-discord-textMuted">Con bóveda activa</span>
+              </div>
+
+              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Liquidez Global</span>
+                <span className="text-xl lg:text-2xl font-black text-discord-green font-mono mt-1 block truncate">
+                  Q{(superMetrics?.boveda_total_red || 0).toFixed(2)}
+                </span>
+                <span className="text-[10px] text-discord-textMuted">Total en todas las bóvedas</span>
+              </div>
+
+              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Total Salidas</span>
+                <span className="text-xl lg:text-2xl font-black text-rose-400 font-mono mt-1 block truncate">
+                  Q{(superMetrics?.salidas_totales_red || 0).toFixed(2)}
+                </span>
+                <span className="text-[10px] text-discord-textMuted">{superMetrics?.conteo_salidas_red || 0} retiros en red</span>
+              </div>
+
+              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Total Entradas</span>
+                <span className="text-xl lg:text-2xl font-black text-purple-400 font-mono mt-1 block truncate">
+                  Q{(superMetrics?.entradas_totales_red || 0).toFixed(2)}
+                </span>
+                <span className="text-[10px] text-discord-textMuted">{superMetrics?.conteo_entradas_red || 0} depósitos en red</span>
+              </div>
+
+              <div className="p-3 lg:p-4 rounded-xl bg-discord-surface border border-discord-hover">
+                <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Superusuarios</span>
+                <span className="text-xl lg:text-2xl font-black text-purple-300 font-mono mt-1 block">
+                  {superMetrics?.superusuarios_count || metrics?.superusuarios_count || 1}
+                </span>
+                <span className="text-[10px] text-purple-300">Cuentas maestras</span>
+              </div>
+            </div>
+
+            {/* Grid de Cajeros Individuales */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-discord-blurple" />
+                  <span>Estado Individual por Cajero Automático</span>
+                </h3>
+                <span className="text-xs text-discord-textMuted">
+                  Cada cajero mantiene su bóveda física desacoplada
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(superMetrics?.cajeros || metrics?.cajeros || []).map((c: any) => {
+                  const isReady = c.is_initialized && c.total_boveda > 0;
+                  return (
+                    <div
+                      key={c.id_cajero}
+                      className="p-4 rounded-2xl bg-discord-surface border border-discord-hover hover:border-discord-blurple/50 transition-all flex flex-col justify-between space-y-3 shadow-md"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-xs font-mono font-bold text-discord-blurple block">
+                              {c.id_cajero}
+                            </span>
+                            <h4 className="text-sm font-black text-white leading-tight mt-0.5">
+                              {c.nombre}
+                            </h4>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${
+                              isReady
+                                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                                : "bg-amber-500/20 text-amber-400 border-amber-500/40"
+                            }`}
+                          >
+                            {isReady ? "Operativo" : "Bóveda Q0.00"}
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] text-discord-textMuted mt-1">
+                          📍 {c.ubicacion || "Ubicación central"}
+                        </p>
+                      </div>
+
+                      {/* Métricas del cajero individual */}
+                      <div className="p-3 rounded-xl bg-discord-sidebar border border-discord-hover space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-discord-textMuted">Saldo en Bóveda:</span>
+                          <span className="font-mono font-black text-white text-sm">
+                            Q{c.total_boveda?.toFixed(2) || "0.00"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-discord-textMuted">Salidas (Retiros):</span>
+                          <span className="font-mono font-bold text-rose-400">
+                            Q{c.total_salidas?.toFixed(2) || "0.00"} ({c.conteo_salidas || 0})
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-discord-textMuted">Entradas (Depósitos):</span>
+                          <span className="font-mono font-bold text-purple-400">
+                            Q{c.total_entradas?.toFixed(2) || "0.00"} ({c.conteo_entradas || 0})
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-discord-hover">
+                          <span className="text-discord-textMuted">Total Operaciones:</span>
+                          <span className="font-mono font-bold text-white">
+                            {c.total_transacciones || 0}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Acciones para este cajero individual */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleInitializeSingleAtm(c.id_cajero)}
+                          className="flex-1 py-2 rounded-lg bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold text-[11px] transition-all shadow-xs text-center"
+                        >
+                          Inicializar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleResetSingleAtm(c.id_cajero)}
+                          className="px-2.5 py-2 rounded-lg bg-discord-red/20 hover:bg-discord-red text-discord-red hover:text-white font-bold text-[11px] border border-discord-red/40 transition-all text-center"
+                          title="Vaciar bóveda a Q0.00"
+                        >
+                          Vaciar
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bitácora Consolidada Multicajero en Tiempo Real */}
+            <div className="p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-md">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-black text-white flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-purple-400" />
+                    <span>Flujo de Transacciones Global en Toda la Red</span>
+                  </h3>
+                  <p className="text-xs text-discord-textMuted">
+                    Monitoreo en vivo de retiros, depósitos y transferencias interbancarias entre cajeros
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-discord-textMuted font-bold">Filtrar por Cajero:</span>
+                  <select
+                    value={selectedAtmFilter}
+                    onChange={(e) => setSelectedAtmFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg bg-discord-sidebar border border-discord-hover text-white font-bold text-xs outline-none"
+                  >
+                    <option value="all">Todos los Cajeros de la Red</option>
+                    <option value="ATM-001">ATM-001 (Sede Central)</option>
+                    <option value="ATM-002">ATM-002 (Sucursal Zona 1)</option>
+                    <option value="ATM-003">ATM-003 (Miraflores Express)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto max-h-[400px]">
+                <table className="w-full text-left text-xs">
+                  <thead className="sticky top-0 bg-discord-surface border-b border-discord-hover text-discord-textMuted font-bold uppercase">
+                    <tr>
+                      <th className="py-2.5 px-3">Cajero</th>
+                      <th className="py-2.5 px-3">Folio</th>
+                      <th className="py-2.5 px-3">Fecha y Hora</th>
+                      <th className="py-2.5 px-3">Cliente / Remitente</th>
+                      <th className="py-2.5 px-3">Tipo Operación</th>
+                      <th className="py-2.5 px-3">Destinatario</th>
+                      <th className="py-2.5 px-3 text-right">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-discord-hover">
+                    {(superMetrics?.transacciones_recientes || metrics?.transacciones || [])
+                      .filter((tx: any) => selectedAtmFilter === "all" || (tx.id_cajero || "ATM-001") === selectedAtmFilter)
+                      .map((tx: any) => {
+                        const isRetiro = tx.tipo === "RETIRO";
+                        const isTransfer = tx.tipo === "DEPOSITO_A_TERCERO";
+                        return (
+                          <tr key={tx.id_transaccion} className="hover:bg-discord-sidebar/60 transition-colors">
+                            <td className="py-2.5 px-3 font-mono font-bold text-discord-blurple">
+                              {tx.id_cajero || "ATM-001"}
+                            </td>
+                            <td className="py-2.5 px-3 font-mono text-discord-textMuted">
+                              #{tx.id_transaccion}
+                            </td>
+                            <td className="py-2.5 px-3 text-discord-textMuted font-mono">
+                              {tx.fecha_hora}
+                            </td>
+                            <td className="py-2.5 px-3 font-bold text-white">
+                              {tx.nombre_usuario}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border ${
+                                  isRetiro
+                                    ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                                    : isTransfer
+                                    ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                    : "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                }`}
+                              >
+                                {isTransfer ? "Transf. a Tercero" : tx.tipo}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 font-semibold text-purple-200">
+                              {tx.nombre_destinatario ? `${tx.nombre_destinatario} (ID: ${tx.id_cuenta_destino})` : "-"}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-white">
+                              Q{tx.monto?.toFixed(2)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeSection === "vault" && (
           <div className="space-y-4 lg:space-y-6">
             <div className="p-4 lg:p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-md">
@@ -631,6 +970,22 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
         {/* SECTION 2: USUARIOS */}
         {activeSection === "users" && (
           <div className="p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-md">
+            {/* Superusuario Info Badge */}
+            <div className="mb-4 p-3.5 rounded-xl bg-purple-950/30 border border-purple-700/50 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5">
+                <Shield className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                <div>
+                  <span className="font-bold text-white block">Área de Superusuarios y Cuentas Maestras</span>
+                  <span className="text-discord-textMuted text-[11px]">
+                    {metrics?.superusuarios_count || 1} cuenta(s) de Superadministrador activas en la red. Aisladas del catálogo de empleados de sucursal.
+                  </span>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-lg bg-purple-900/60 text-purple-200 font-mono font-bold text-xs border border-purple-700">
+                🛡️ {metrics?.superusuarios_count || 1} Superusuario(s)
+              </span>
+            </div>
+
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-black text-white">Catálogo Maestro de Usuarios & Empleados</h2>
@@ -654,6 +1009,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                   <tr className="border-b border-discord-hover text-discord-textMuted font-bold uppercase">
                     <th className="py-2.5 px-3">ID</th>
                     <th className="py-2.5 px-3">Empleado</th>
+                    <th className="py-2.5 px-3">ID Cuenta (8 Dígitos)</th>
                     <th className="py-2.5 px-3">Tarjeta (16 dígitos)</th>
                     <th className="py-2.5 px-3">Saldo</th>
                     <th className="py-2.5 px-3">Límite Diario</th>
@@ -669,6 +1025,11 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                       <td className="py-3 px-3 font-mono font-bold text-white">{u.id_usuario}</td>
                       <td className="py-3 px-3 font-bold text-white">
                         {u.nombre_completo}
+                      </td>
+                      <td className="py-3 px-3 font-mono font-bold text-purple-300">
+                        <span className="bg-purple-950/60 text-purple-300 px-2 py-0.5 rounded border border-purple-800">
+                          {u.id_cuenta_bancaria || "N/A"}
+                        </span>
                         {u.rol === "ADMINISTRADOR" && (
                           <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-amber-950 text-amber-400 font-bold border border-amber-800">
                             ADMIN

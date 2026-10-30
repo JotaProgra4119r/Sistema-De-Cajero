@@ -1,4 +1,4 @@
-﻿from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -29,6 +29,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 def get_current_admin(current_user: Usuario = Depends(get_current_user)) -> Usuario:
-    if current_user.rol.nombre_rol != "ADMINISTRADOR":
+    if current_user.rol.nombre_rol not in ["ADMINISTRADOR", "SUPERADMIN", "SUPERADMINISTRADOR"]:
         raise HTTPException(status_code=403, detail="Se requieren privilegios de Administrador para esta acción.")
+    return current_user
+
+def get_current_superadmin(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+    if current_user.rol.nombre_rol not in ["SUPERADMIN", "SUPERADMINISTRADOR"]:
+        raise HTTPException(status_code=403, detail="Se requieren privilegios de Superadministrador para esta acción.")
     return current_user

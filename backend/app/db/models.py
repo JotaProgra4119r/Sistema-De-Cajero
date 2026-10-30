@@ -1,7 +1,8 @@
-﻿from database.models import (
+from database.models import (
     Role,
     Usuario,
     Tarjeta,
+    Cajero,
     DenominacionCajero,
     ArqueoCajero,
     Transaccion,
@@ -13,6 +14,7 @@ __all__ = [
     "Role",
     "Usuario",
     "Tarjeta",
+    "Cajero",
     "DenominacionCajero",
     "ArqueoCajero",
     "Transaccion",
