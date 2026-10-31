@@ -53,7 +53,7 @@ def test_transacciones_txt_format():
     for line in lines:
         parts = line.split("|")
         assert len(parts) == 6 # ID_TX | TIMESTAMP | ID_USUARIO | TIPO | MONTO | DESGLOSE_JSON
-        assert parts[3] in ["RETIRO", "DEPOSITO", "DEPOSITO_A_TERCERO"]
+        assert parts[3] in ["RETIRO", "DEPOSITO", "DEPOSITO_A_TERCERO", "TRANSFERENCIA_INTERBANCARIA"]
         assert float(parts[4]) > 0.0
 
 def test_auditoria_txt_format():

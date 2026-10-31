@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = 'HS256'
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     
+    # Parámetros del Protocolo de Conexión Interbancaria (TCP 5000 / UDP 5005)
+    INTERBANK_TCP_PORT: int = 5000
+    INTERBANK_UDP_PORT: int = 5005
+    BANK_CODE: str = "BANC02"
+    BANK_NAME: str = "Banco G&T Estudiantil"
+    BANK_DAILY_LIMIT: float = 25000.00
+    
     SERIAL_PORT: str = 'COM3' if sys.platform == 'win32' else '/dev/ttyUSB0'
     SERIAL_BAUDRATE: int = 115200
     ESP32_IP: str = '192.168.1.50'

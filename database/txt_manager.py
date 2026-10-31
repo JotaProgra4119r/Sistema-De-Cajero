@@ -134,6 +134,25 @@ class TxtStorageManager:
             if lines_cajeros:
                 self._write_file_all_paths("cajeros_red.txt", "\n".join(lines_cajeros) + "\n", mode="w")
 
+            # 7. bancos_red.txt y transferencias_interbancarias.txt (Protocolo Interbancario TCP 5000 / UDP 5005)
+            from database.models import BancoRed, TransferenciaBancaria
+            bancos = db.query(BancoRed).order_by(BancoRed.codigo_banco.asc()).all()
+            lines_bancos = []
+            for b in bancos:
+                prop_flag = "1" if b.es_propio else "0"
+                act_flag = "1" if b.activo else "0"
+                lines_bancos.append(f"{b.id_banco}|{b.codigo_banco}|{b.nombre_banco}|{b.ip}|{b.puerto}|{prop_flag}|{float(b.limite_diario):.2f}|{float(b.transferido_hoy):.2f}|{act_flag}")
+            if lines_bancos:
+                self._write_file_all_paths("bancos_red.txt", "\n".join(lines_bancos) + "\n", mode="w")
+
+            inter_txs = db.query(TransferenciaBancaria).order_by(TransferenciaBancaria.fecha_creacion.asc()).all()
+            lines_inter = []
+            for itx in inter_txs:
+                ts = itx.fecha_creacion.strftime("%Y-%m-%d %H:%M:%S") if itx.fecha_creacion else ""
+                lines_inter.append(f"{itx.id_transferencia}|{ts}|{itx.token_transferencia}|{itx.banco_origen}|{itx.cuenta_origen}|{itx.nombre_origen}|{itx.banco_destino}|{itx.cuenta_destino}|{itx.nombre_destino}|{float(itx.monto):.2f}|{itx.estado}")
+            if lines_inter:
+                self._write_file_all_paths("transferencias_interbancarias.txt", "\n".join(lines_inter) + "\n", mode="w")
+
     async def sync_cajeros(self, db: Session):
         """Sincroniza y persiste el estado actual de los cajeros en `cajeros_red.txt`."""
         async with self.lock:

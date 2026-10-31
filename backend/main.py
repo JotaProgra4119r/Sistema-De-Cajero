@@ -9,7 +9,8 @@ from backend.app.db.database import SessionLocal
 from backend.app.storage_txt.txt_manager import txt_manager
 from backend.app.hardware.serial_controller import serial_controller
 from backend.app.api.ws import ws_manager
-from backend.app.api import auth, user, admin, hardware, ws
+from backend.app.api import auth, user, admin, hardware, ws, interbank
+from backend.app.services.interbank_service import interbank_manager
 from agents import swarm_manager, event_bus
 
 @asynccontextmanager
@@ -36,8 +37,19 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(event_bus.publish("hardware.event", evt))
     serial_controller.register_callback(on_hardware_event)
 
+    # Iniciar servidores del protocolo interbancario de red (TCP 5000 / UDP 5005)
+    try:
+        await interbank_manager.start()
+        print(f"[INTERBANK] Red Interbancaria en línea: TCP {settings.INTERBANK_TCP_PORT} / UDP {settings.INTERBANK_UDP_PORT}")
+    except Exception as e:
+        print(f"[INTERBANK WARNING] No se pudo iniciar el protocolo interbancario: {e}")
+
     yield
     print("[BACKEND] Apagando servicios bancarios.")
+    try:
+        await interbank_manager.stop()
+    except Exception:
+        pass
 
 app = FastAPI(
     title="Sistema Bancario y Cajero Automático Embebido API",
@@ -61,6 +73,7 @@ app.include_router(user.router)
 app.include_router(admin.router)
 app.include_router(hardware.router)
 app.include_router(ws.router)
+app.include_router(interbank.router)
 
 @app.get("/health")
 def health_check():

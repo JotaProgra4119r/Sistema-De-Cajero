@@ -6,7 +6,7 @@ import {
   Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key,
   Building2, Globe, Layers, X
 } from "lucide-react";
-import { adminService, hardwareService } from "../services/api";
+import { adminService, hardwareService, interbankService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
 
 interface AdminConsoleViewProps {
@@ -18,12 +18,25 @@ const DENOMINATIONS = [200, 100, 50, 20, 10, 5, 1];
 
 export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, onLogout }) => {
   const isSuperAdmin = Boolean(adminUser?.is_superadmin || adminUser?.rol === "SUPERADMIN" || adminUser?.rol === "SUPERADMINISTRADOR");
-  const [activeSection, setActiveSection] = useState<"network" | "vault" | "users" | "analytics" | "audit" | "hardware">(
+  const [activeSection, setActiveSection] = useState<"network" | "interbank" | "vault" | "users" | "analytics" | "audit" | "hardware">(
     isSuperAdmin ? "network" : "vault"
   );
   const [superMetrics, setSuperMetrics] = useState<any>(null);
   const [drilldownAtm, setDrilldownAtm] = useState<any | null>(null);
   const [loadingDrilldown, setLoadingDrilldown] = useState<boolean>(false);
+
+  // Red Interbancaria (TCP 5000 / UDP 5005)
+  const [interbankStatus, setInterbankStatus] = useState<any>(null);
+  const [interbankBanks, setInterbankBanks] = useState<any[]>([]);
+  const [interbankTransfers, setInterbankTransfers] = useState<any[]>([]);
+  const [scanningInterbank, setScanningInterbank] = useState<boolean>(false);
+  const [pingingBankCode, setPingingBankCode] = useState<string | null>(null);
+  const [showAddBankModal, setShowAddBankModal] = useState<boolean>(false);
+  const [manualBankCode, setManualBankCode] = useState<string>("");
+  const [manualBankName, setManualBankName] = useState<string>("");
+  const [manualBankIp, setManualBankIp] = useState<string>("");
+  const [manualBankPort, setManualBankPort] = useState<string>("5000");
+  const [manualBankLimit, setManualBankLimit] = useState<string>("25000.00");
 
   useEffect(() => {
     if (!isSuperAdmin && activeSection === "network") {
@@ -123,6 +136,74 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
       setHardwareStatus(hw);
     } catch (err: any) {
       console.error("Error fetching metrics:", err);
+    }
+  };
+
+  const fetchInterbankData = async () => {
+    try {
+      const [st, bks, txs] = await Promise.all([
+        interbankService.getStatus(),
+        interbankService.getBanks(),
+        interbankService.getTransfersHistory()
+      ]);
+      setInterbankStatus(st);
+      setInterbankBanks(bks);
+      setInterbankTransfers(txs);
+    } catch (e) {
+      console.error("Error fetching interbank data:", e);
+    }
+  };
+
+  const handleScanInterbankNetwork = async () => {
+    setScanningInterbank(true);
+    setFeedbackMsg(null);
+    try {
+      const res = await interbankService.scanNetwork();
+      await fetchInterbankData();
+      const cnt = res?.bancos_detectados?.length || 0;
+      setFeedbackMsg({ type: "success", text: `Escaneo de red finalizado. ${cnt} bancos registrados/detectados.` });
+    } catch (e: any) {
+      setFeedbackMsg({ type: "error", text: "Error escaneando la subred interbancaria." });
+    } finally {
+      setScanningInterbank(false);
+    }
+  };
+
+  const handlePingBank = async (bank: any) => {
+    setPingingBankCode(bank.codigo_banco);
+    try {
+      await interbankService.verifyAccount(bank.codigo_banco, "PING_TEST");
+      await fetchInterbankData();
+      setFeedbackMsg({ type: "success", text: `Respuesta de ${bank.codigo_banco}: Conexión activa en ${bank.ip}:${bank.puerto}` });
+    } catch (e: any) {
+      setFeedbackMsg({ type: "error", text: `Sin respuesta de ${bank.codigo_banco} en ${bank.ip}:${bank.puerto}` });
+    } finally {
+      setPingingBankCode(null);
+    }
+  };
+
+  const handleSaveManualBank = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualBankCode.trim() || !manualBankIp.trim()) {
+      setFeedbackMsg({ type: "error", text: "Código e IP son obligatorios." });
+      return;
+    }
+    try {
+      await interbankService.upsertBank({
+        codigo_banco: manualBankCode.trim().toUpperCase(),
+        nombre_banco: manualBankName.trim() || `Banco ${manualBankCode.trim().toUpperCase()}`,
+        ip: manualBankIp.trim(),
+        puerto: parseInt(manualBankPort) || 5000,
+        limite_diario: parseFloat(manualBankLimit) || 25000.00
+      });
+      setFeedbackMsg({ type: "success", text: `Banco ${manualBankCode.trim()} guardado exitosamente.` });
+      setShowAddBankModal(false);
+      setManualBankCode("");
+      setManualBankName("");
+      setManualBankIp("");
+      await fetchInterbankData();
+    } catch (e: any) {
+      setFeedbackMsg({ type: "error", text: "Error guardando configuración de banco." });
     }
   };
 
@@ -426,6 +507,20 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 <span>Red Multicajero ★</span>
               </button>
             )}
+
+            {/* Botón Red Interbancaria TCP 5000 / UDP 5005 */}
+            <button
+              type="button"
+              onClick={() => { setActiveSection("interbank"); setFeedbackMsg(null); fetchInterbankData(); }}
+              className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-bold text-xs lg:text-sm transition-all whitespace-nowrap ${
+                activeSection === "interbank"
+                  ? "bg-blue-600 text-white shadow-md font-black"
+                  : "text-blue-300 hover:bg-discord-surface hover:text-white bg-blue-950/40 border border-blue-800/40"
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5 lg:w-5 lg:h-5 text-cyan-400" />
+              <span>Red Interbancaria (5000)</span>
+            </button>
 
             <button
               type="button"
@@ -1061,6 +1156,280 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeSection === "interbank" && (
+          <div className="space-y-4 lg:space-y-6">
+            {/* Header del Protocolo Interbancario */}
+            <div className="p-4 lg:p-6 bg-discord-surface rounded-2xl border border-blue-800/80 shadow-md">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-cyan-400">
+                    <Globe className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-base lg:text-xl font-black text-white flex items-center gap-2">
+                      <span>Red de Bancos Estudiantiles Interconectados</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-900/60 text-cyan-300 border border-blue-700">
+                        TCP 5000 / UDP 5005
+                      </span>
+                    </h2>
+                    <p className="text-xs text-discord-textMuted mt-0.5">
+                      Protocolo unificado JSON por línea con autodescubrimiento UDP broadcast y tokens compartidos TRF.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleScanInterbankNetwork}
+                    disabled={scanningInterbank}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md active:scale-95 border border-blue-400 disabled:opacity-50"
+                  >
+                    <Radio className={`w-4 h-4 ${scanningInterbank ? "animate-spin" : ""}`} />
+                    <span>{scanningInterbank ? "Escaneando LAN..." : "📡 Escanear Red Local"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowAddBankModal(true)}
+                    className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textNormal border border-discord-hover text-xs font-bold transition-all active:scale-95"
+                  >
+                    <Plus className="w-4 h-4 text-emerald-400" />
+                    <span>Agregar Banco / IP</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={fetchInterbankData}
+                    className="p-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white border border-discord-hover transition-all"
+                    title="Actualizar datos"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Fila de Tarjetas de Estado del Nodo Propio */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-discord-hover">
+                <div className="p-3 rounded-xl bg-discord-sidebar/80 border border-blue-900/40">
+                  <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Identificador Local</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-base font-black text-cyan-300 font-mono">BANC02</span>
+                    <span className="text-xs text-white font-bold truncate">Banco G&T Estudiantil</span>
+                  </div>
+                  <span className="text-[10px] text-discord-textMuted">Nodo Propio en Sistema</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-discord-sidebar/80 border border-blue-900/40">
+                  <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Socket & Escucha</span>
+                  <div className="text-sm font-black text-white font-mono mt-1">
+                    {interbankStatus?.ip_local || "127.0.0.1"}
+                  </div>
+                  <div className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>TCP: 5000 | UDP: 5005 (0.0.0.0)</span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-discord-sidebar/80 border border-blue-900/40">
+                  <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Cupo Disponible Hoy</span>
+                  <div className="text-base font-black text-discord-green font-mono mt-1">
+                    Q{Number(interbankStatus?.cupo_disponible || 25000).toFixed(2)}
+                  </div>
+                  <span className="text-[10px] text-discord-textMuted">Límite Diario: Q25,000.00</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-discord-sidebar/80 border border-blue-900/40">
+                  <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Transferido Hoy</span>
+                  <div className="text-base font-black text-amber-300 font-mono mt-1">
+                    Q{Number(interbankStatus?.transferido_hoy || 0).toFixed(2)}
+                  </div>
+                  <span className="text-[10px] text-discord-textMuted">Reinicio a las 00:00 UTC</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Listado de Nodos Bancarios Registrados y Detectados */}
+            <div className="p-4 lg:p-6 bg-discord-surface rounded-2xl border border-discord-hover shadow-md">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm lg:text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-cyan-400" />
+                  <span>Nodos y Bancos Estudiantiles Conectados ({interbankBanks.length})</span>
+                </h3>
+                <span className="text-xs text-discord-textMuted">
+                  Haga clic en "Ping" para probar conectividad en puerto 5000
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {interbankBanks.map((b: any) => {
+                  const isPinging = pingingBankCode === b.codigo_banco;
+                  return (
+                    <div
+                      key={b.id_banco || b.codigo_banco}
+                      className={`p-4 rounded-xl border transition-all flex flex-col justify-between space-y-3 ${
+                        b.es_propio
+                          ? "bg-blue-950/30 border-blue-600/60"
+                          : "bg-discord-sidebar border-discord-hover hover:border-discord-hover"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-xs font-mono font-black text-cyan-400 block">
+                              {b.codigo_banco} {b.es_propio && <span className="text-[10px] text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-700/60 ml-1">NUESTRO BANCO</span>}
+                            </span>
+                            <h4 className="text-sm font-black text-white mt-0.5">
+                              {b.nombre_banco}
+                            </h4>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                              b.activo
+                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                                : "bg-gray-500/20 text-gray-400"
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span>En Red</span>
+                          </span>
+                        </div>
+
+                        <div className="mt-2.5 space-y-1 text-xs font-mono">
+                          <div className="flex justify-between text-discord-textMuted">
+                            <span>Dirección IP:</span>
+                            <strong className="text-white">{b.ip}:{b.puerto}</strong>
+                          </div>
+                          <div className="flex justify-between text-discord-textMuted">
+                            <span>Cupo Disponible:</span>
+                            <strong className="text-discord-green">Q{Number(b.cupo_disponible).toFixed(2)}</strong>
+                          </div>
+                          <div className="flex justify-between text-discord-textMuted">
+                            <span>Transferido Hoy:</span>
+                            <span className="text-white">Q{Number(b.transferido_hoy).toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-discord-hover flex gap-2">
+                        {!b.es_propio && (
+                          <button
+                            type="button"
+                            onClick={() => handlePingBank(b)}
+                            disabled={isPinging}
+                            className="flex-1 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-hover text-white text-xs font-bold transition-all border border-discord-hover flex items-center justify-center gap-1.5"
+                          >
+                            <Radio className={`w-3.5 h-3.5 text-cyan-400 ${isPinging ? "animate-spin" : ""}`} />
+                            <span>{isPinging ? "Probando..." : "Ping TCP 5000"}</span>
+                          </button>
+                        )}
+                        <span className="text-[10px] text-discord-textMuted my-auto">
+                          Límite: Q{Number(b.limite_diario).toFixed(0)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Histórico de Transferencias Interbancarias y Tokens TRF */}
+            <div className="p-4 lg:p-6 bg-discord-surface rounded-2xl border border-discord-hover shadow-md">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm lg:text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-emerald-400" />
+                    <span>Registro de Transferencias Interbancarias y Tokens TRF ({interbankTransfers.length})</span>
+                  </h3>
+                  <p className="text-xs text-discord-textMuted mt-0.5">
+                    Tokens compartidos y conciliados entre bancos estudiantiles de la red.
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-discord-hover text-discord-textMuted uppercase font-bold text-[10px]">
+                      <th className="pb-2.5">Token Compartido</th>
+                      <th className="pb-2.5">Origen</th>
+                      <th className="pb-2.5">Destino</th>
+                      <th className="pb-2.5">Beneficiario</th>
+                      <th className="pb-2.5 text-right">Monto</th>
+                      <th className="pb-2.5 text-center">Estado</th>
+                      <th className="pb-2.5">Fecha</th>
+                      <th className="pb-2.5 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-discord-hover/50 font-mono">
+                    {interbankTransfers.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-6 text-center text-discord-textMuted font-sans">
+                          No se han registrado transferencias interbancarias aún. Realice una transferencia o espere recibir una desde otro banco en TCP 5000.
+                        </td>
+                      </tr>
+                    ) : (
+                      interbankTransfers.map((tx: any) => (
+                        <tr key={tx.id_transferencia || tx.token_transferencia} className="hover:bg-discord-hover/30 transition-colors">
+                          <td className="py-3 font-bold text-cyan-300">
+                            {tx.token_transferencia}
+                          </td>
+                          <td className="py-3">
+                            <span className="font-bold text-white">{tx.banco_origen}</span>
+                            <span className="text-[10px] text-discord-textMuted block font-sans">{tx.nombre_origen}</span>
+                          </td>
+                          <td className="py-3">
+                            <span className="font-bold text-white">{tx.banco_destino}</span>
+                            <span className="text-[10px] text-discord-textMuted block font-mono">{tx.cuenta_destino}</span>
+                          </td>
+                          <td className="py-3 font-sans font-bold text-white truncate max-w-[140px]">
+                            {tx.nombre_destino}
+                          </td>
+                          <td className="py-3 text-right font-black text-discord-green text-sm">
+                            Q{Number(tx.monto).toFixed(2)}
+                          </td>
+                          <td className="py-3 text-center">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                              {tx.estado}
+                            </span>
+                          </td>
+                          <td className="py-3 text-discord-textMuted text-[11px] font-sans">
+                            {tx.fecha_creacion ? new Date(tx.fecha_creacion).toLocaleString() : "Reciente"}
+                          </td>
+                          <td className="py-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveVoucher({
+                                  id: tx.token_transferencia,
+                                  tipo: "TRANSFERENCIA_INTERBANCARIA",
+                                  titulo: "COMPROBANTE DE CONCILIACIÓN INTERBANCARIA",
+                                  cliente: tx.nombre_origen,
+                                  tarjeta: tx.cuenta_origen,
+                                  monto: tx.monto,
+                                  destinatario_nombre: tx.nombre_destino,
+                                  destinatario_cuenta: tx.cuenta_destino,
+                                  banco_destino: tx.banco_destino,
+                                  token_transferencia: tx.token_transferencia,
+                                  detalles_extra: tx.concepto || "Transferencia Interbancaria",
+                                  fecha_hora: tx.fecha_creacion || new Date().toLocaleString()
+                                });
+                              }}
+                              className="px-2.5 py-1 rounded bg-discord-sidebar hover:bg-discord-hover text-white text-[11px] font-bold border border-discord-hover transition-all"
+                            >
+                              Voucher
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
 
@@ -2427,6 +2796,116 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 Crear Empleado
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: AGREGAR / EDITAR BANCO MANUALMENTE */}
+      {showAddBankModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full p-6 bg-discord-surface rounded-2xl border border-discord-hover shadow-2xl">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-discord-hover">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Globe className="w-5 h-5 text-cyan-400" />
+                <span>Registrar Nodo de Banco Externo</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddBankModal(false)}
+                className="text-discord-textMuted hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveManualBank} className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-discord-textMuted block mb-1">
+                  Código de Banco (ej. BANC01, BANC03):
+                </label>
+                <input
+                  type="text"
+                  value={manualBankCode}
+                  onChange={(e) => setManualBankCode(e.target.value.toUpperCase())}
+                  placeholder="BANC01"
+                  required
+                  className="w-full px-3 py-2 rounded-xl bg-discord-sidebar border border-discord-hover font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-discord-textMuted block mb-1">
+                  Nombre del Banco / Grupo:
+                </label>
+                <input
+                  type="text"
+                  value={manualBankName}
+                  onChange={(e) => setManualBankName(e.target.value)}
+                  placeholder="NEXUSBANK"
+                  required
+                  className="w-full px-3 py-2 rounded-xl bg-discord-sidebar border border-discord-hover text-sm text-white focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2">
+                  <label className="text-xs font-bold text-discord-textMuted block mb-1">
+                    Dirección IP (LAN / Radmin):
+                  </label>
+                  <input
+                    type="text"
+                    value={manualBankIp}
+                    onChange={(e) => setManualBankIp(e.target.value)}
+                    placeholder="10.219.19.9 o 26.121.70.247"
+                    required
+                    className="w-full px-3 py-2 rounded-xl bg-discord-sidebar border border-discord-hover font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-discord-textMuted block mb-1">
+                    Puerto TCP:
+                  </label>
+                  <input
+                    type="number"
+                    value={manualBankPort}
+                    onChange={(e) => setManualBankPort(e.target.value)}
+                    placeholder="5000"
+                    required
+                    className="w-full px-3 py-2 rounded-xl bg-discord-sidebar border border-discord-hover font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-discord-textMuted block mb-1">
+                  Límite Diario Coordinado (Q):
+                </label>
+                <input
+                  type="number"
+                  value={manualBankLimit}
+                  onChange={(e) => setManualBankLimit(e.target.value)}
+                  placeholder="25000.00"
+                  className="w-full px-3 py-2 rounded-xl bg-discord-sidebar border border-discord-hover font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-discord-hover">
+                <button
+                  type="button"
+                  onClick={() => setShowAddBankModal(false)}
+                  className="px-4 py-2 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted text-xs font-bold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs shadow-md active:scale-95 transition-all"
+                >
+                  Guardar Banco
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

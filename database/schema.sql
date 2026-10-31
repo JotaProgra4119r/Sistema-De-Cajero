@@ -138,16 +138,13 @@ CREATE TABLE IF NOT EXISTS transacciones (
     id_transaccion INT AUTO_INCREMENT PRIMARY KEY,
     id_cajero VARCHAR(20) DEFAULT 'ATM-001',
     id_usuario INT NOT NULL,
-    tipo_transaccion VARCHAR(30) NOT NULL, -- RETIRO | DEPOSITO | DEPOSITO_A_TERCERO
+    tipo_transaccion VARCHAR(30) NOT NULL, -- RETIRO | DEPOSITO | DEPOSITO_A_TERCERO | TRANSFERENCIA_INTERBANCARIA
     monto DECIMAL(12,2) NOT NULL,
     fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     desglose_billetes JSON NOT NULL,
     id_cuenta_destino VARCHAR(20) NULL,
     nombre_destinatario VARCHAR(100) NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE
-) ENGINE=InnoDB;
-    fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    desglose_billetes JSON NOT NULL,
+    token_transferencia VARCHAR(40) NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
@@ -199,11 +196,58 @@ WHERE t.tipo_transaccion = 'RETIRO';
 CREATE OR REPLACE VIEW depositos AS
 SELECT 
     t.id_transaccion,
+    t.id_cajero,
     t.id_usuario,
     u.nombre_completo AS cliente,
     t.monto,
+    t.tipo_transaccion,
+    t.id_cuenta_destino,
+    t.nombre_destinatario,
+    t.token_transferencia,
     t.fecha_hora,
     t.desglose_billetes
 FROM transacciones t
 JOIN usuarios u ON t.id_usuario = u.id_usuario
-WHERE t.tipo_transaccion = 'DEPOSITO';
+WHERE t.tipo_transaccion IN ('DEPOSITO', 'DEPOSITO_A_TERCERO', 'TRANSFERENCIA_INTERBANCARIA');
+
+-- -----------------------------------------------------------------------------
+-- 10. TABLA: bancos_red (Protocolo Interbancario TCP 5000 / UDP 5005)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bancos_red (
+    id_banco INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_banco VARCHAR(15) NOT NULL UNIQUE,
+    nombre_banco VARCHAR(100) NOT NULL,
+    ip VARCHAR(50) NOT NULL DEFAULT '127.0.0.1',
+    puerto INT NOT NULL DEFAULT 5000,
+    es_propio BOOLEAN NOT NULL DEFAULT FALSE,
+    limite_diario DECIMAL(12,2) NOT NULL DEFAULT 25000.00,
+    transferido_hoy DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    fecha_ultimo_reinicio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB;
+
+INSERT INTO bancos_red (id_banco, codigo_banco, nombre_banco, ip, puerto, es_propio, limite_diario, transferido_hoy) VALUES
+(1, 'BANC02', 'Banco G&T Estudiantil', '127.0.0.1', 5000, TRUE, 25000.00, 0.00),
+(2, 'BANC01', 'NEXUSBANK', '10.219.19.9', 5000, FALSE, 25000.00, 0.00);
+
+-- -----------------------------------------------------------------------------
+-- 11. TABLA: transferencias_bancarias (Tokens Compartidos y Conciliación)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS transferencias_bancarias (
+    id_transferencia INT AUTO_INCREMENT PRIMARY KEY,
+    token_transferencia VARCHAR(40) NOT NULL,
+    tipo_transferencia VARCHAR(20) NOT NULL DEFAULT 'INTERBANCARIA',
+    banco_origen VARCHAR(15) NOT NULL,
+    cuenta_origen VARCHAR(20) NOT NULL,
+    nombre_origen VARCHAR(100) NOT NULL,
+    banco_destino VARCHAR(15) NOT NULL,
+    cuenta_destino VARCHAR(20) NOT NULL,
+    nombre_destino VARCHAR(100) NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    concepto VARCHAR(200) NULL,
+    cupo_restante_banco_origen DECIMAL(12,2) NULL,
+    cupo_restante_banco_destino DECIMAL(12,2) NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'APROBADA',
+    fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_token_transferencia (token_transferencia)
+) ENGINE=InnoDB;

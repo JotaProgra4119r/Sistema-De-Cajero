@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Wallet, LogOut, CheckCircle2, AlertTriangle, ArrowDownRight,
   ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote, Archive,
-  HelpCircle, X, Printer
+  HelpCircle, X, Printer, Globe, Send, Radio
 } from "lucide-react";
 import { QuetzalBillCard } from "../components/QuetzalBillCard";
-import { userService } from "../services/api";
+import { userService, interbankService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
 
 interface UserDashboardViewProps {
@@ -29,8 +29,17 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0
   });
 
-  // Deposit state & Transfer to Other Account
-  const [depositMode, setDepositMode] = useState<"own" | "third_party">("own");
+  // Deposit state & Transfer to Other Account / Interbank
+  const [depositMode, setDepositMode] = useState<"own" | "third_party" | "interbank">("own");
+  const [availableBanks, setAvailableBanks] = useState<any[]>([]);
+  const [selectedBankCode, setSelectedBankCode] = useState<string>("");
+  const [targetAccountInterbank, setTargetAccountInterbank] = useState<string>("");
+  const [interbankVerifiedUser, setInterbankVerifiedUser] = useState<any | null>(null);
+  const [interbankVerifying, setInterbankVerifying] = useState<boolean>(false);
+  const [interbankVerifyError, setInterbankVerifyError] = useState<string | null>(null);
+  const [interbankAmount, setInterbankAmount] = useState<string>("");
+  const [interbankConcepto, setInterbankConcepto] = useState<string>("Pago Interbancario");
+  const [isScanningNetwork, setIsScanningNetwork] = useState<boolean>(false);
   const [targetAccountId, setTargetAccountId] = useState<string>("");
   const [targetUserData, setTargetUserData] = useState<{ id_cuenta: string; nombre_completo: string } | null>(null);
   const [targetLookupLoading, setTargetLookupLoading] = useState<boolean>(false);
@@ -128,7 +137,132 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   useEffect(() => {
     reloadData();
     loadDeletedRecords();
+    loadBanks();
   }, []);
+
+  const loadBanks = async () => {
+    try {
+      const b = await interbankService.getBanks();
+      setAvailableBanks(b);
+      const other = b.find((x: any) => !x.es_propio);
+      if (other && !selectedBankCode) {
+        setSelectedBankCode(other.codigo_banco);
+      }
+    } catch (e) {
+      console.error("Error loading banks:", e);
+    }
+  };
+
+  const handleScanNetwork = async () => {
+    resetInactivity();
+    setIsScanningNetwork(true);
+    setFeedbackMessage(null);
+    try {
+      const res = await interbankService.scanNetwork();
+      await loadBanks();
+      const count = res?.bancos_detectados?.length || 0;
+      setFeedbackMessage({ type: "success", text: `Escaneo de red completado. ${count} bancos detectados en LAN / Wi-Fi.` });
+    } catch (e: any) {
+      setFeedbackMessage({ type: "error", text: "Error al emitir broadcast UDP 5005 o escanear la subred." });
+    } finally {
+      setIsScanningNetwork(false);
+    }
+  };
+
+  const handleVerifyInterbankAccount = async () => {
+    resetInactivity();
+    setInterbankVerifyError(null);
+    setInterbankVerifiedUser(null);
+    if (!selectedBankCode) {
+      setInterbankVerifyError("Seleccione un banco destino.");
+      return;
+    }
+    const cleanAcc = targetAccountInterbank.trim();
+    if (cleanAcc.length < 4) {
+      setInterbankVerifyError("Ingrese el número de cuenta o tarjeta a verificar.");
+      return;
+    }
+    setInterbankVerifying(true);
+    try {
+      const res = await interbankService.verifyAccount(selectedBankCode, cleanAcc);
+      if (res?.codigo === "00" && res?.datos?.existe) {
+        setInterbankVerifiedUser(res.datos);
+        setInterbankVerifyError(null);
+      } else {
+        setInterbankVerifyError(res?.mensaje || "La cuenta no existe en el banco seleccionado (Código 14).");
+      }
+    } catch (err: any) {
+      setInterbankVerifyError(err?.response?.data?.detail || "Error de comunicación TCP con el banco destino.");
+    } finally {
+      setInterbankVerifying(false);
+    }
+  };
+
+  const handleExecuteInterbankTransfer = async () => {
+    resetInactivity();
+    setFeedbackMessage(null);
+    const amount = parseFloat(interbankAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setFeedbackMessage({ type: "error", text: "Ingrese un monto numérico positivo mayor a 0." });
+      return;
+    }
+    if (amount > (userSummary.saldo_actual || 0)) {
+      setFeedbackMessage({ type: "error", text: `Saldo insuficiente. Saldo disponible: Q${Number(userSummary.saldo_actual).toFixed(2)}` });
+      return;
+    }
+    if (!selectedBankCode) {
+      setFeedbackMessage({ type: "error", text: "Seleccione un banco destino." });
+      return;
+    }
+    if (!targetAccountInterbank.trim()) {
+      setFeedbackMessage({ type: "error", text: "Ingrese el número de cuenta destino." });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await interbankService.transfer(
+        selectedBankCode,
+        targetAccountInterbank.trim(),
+        amount,
+        interbankConcepto || "Transferencia Interbancaria",
+        userSummary.id_cajero || "ATM-001"
+      );
+      setFeedbackMessage({
+        type: "success",
+        text: `¡Transferencia exitosa! Token compartido: ${res.tokenTransferencia}`
+      });
+      setActiveVoucher({
+        id: `TRF-${Date.now().toString().slice(-6)}`,
+        tipo: "TRANSFERENCIA_INTERBANCARIA",
+        titulo: "COMPROBANTE DE TRANSFERENCIA INTERBANCARIA",
+        cliente: userSummary.nombre_completo,
+        tarjeta: userSummary.tarjeta,
+        monto: amount,
+        saldo_anterior: userSummary.saldo_actual,
+        nuevo_saldo: res.saldo_restante,
+        destinatario_nombre: res.destinatario,
+        destinatario_cuenta: res.cuenta_destino,
+        banco_destino: res.banco_destino,
+        token_transferencia: res.tokenTransferencia,
+        fecha_hora: res.fecha || new Date().toLocaleString(),
+        cajero_origen: userSummary.id_cajero || "ATM-001"
+      });
+      setTargetAccountInterbank("");
+      setInterbankVerifiedUser(null);
+      setInterbankAmount("");
+      setInterbankConcepto("Pago Interbancario");
+      await reloadData();
+      await loadBanks();
+    } catch (err: any) {
+      setFeedbackMessage({
+        type: "error",
+        text: err?.response?.data?.detail || "Error al procesar la transferencia interbancaria."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Compute withdrawal sum
   const totalSelectedWithdraw = Object.entries(selectedBills).reduce(
@@ -695,8 +829,8 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                   </h2>
                 </div>
 
-                {/* Sub-selector de Modalidad: Cuenta Propia vs Otra Cuenta */}
-                <div className="grid grid-cols-2 gap-2 mb-3 flex-shrink-0">
+                {/* Sub-selector de Modalidad: Cuenta Propia vs Otra Cuenta vs Interbancario */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3 flex-shrink-0">
                   <button
                     type="button"
                     onClick={() => {
@@ -710,7 +844,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                         : "bg-discord-sidebar text-discord-textMuted border-discord-hover hover:text-white"
                     }`}
                   >
-                    <span>💵 Depósito a Cuenta Propia</span>
+                    <span>💵 Cuenta Propia</span>
                   </button>
                   <button
                     type="button"
@@ -725,7 +859,24 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                         : "bg-discord-sidebar text-discord-textMuted border-discord-hover hover:text-white"
                     }`}
                   >
-                    <span>🔄 Depósito a Otra Cuenta (Red Nube)</span>
+                    <span>🔄 Otra Cuenta (SQL)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDepositMode("interbank");
+                      setFeedbackMessage(null);
+                      resetInactivity();
+                      loadBanks();
+                    }}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border ${
+                      depositMode === "interbank"
+                        ? "bg-blue-600 text-white border-blue-400 shadow-sm font-black"
+                        : "bg-discord-sidebar text-discord-textMuted border-discord-hover hover:text-white"
+                    }`}
+                  >
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>🌐 Interbancario (TCP 5000)</span>
                   </button>
                 </div>
 
@@ -789,75 +940,226 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                   </div>
                 )}
 
-                <p className="text-xs text-discord-textMuted mb-2 flex-shrink-0">
-                  {depositMode === "third_party"
-                    ? "Ingrese el efectivo en billetes que desea acreditar a la cuenta del destinatario:"
-                    : "Introduzca los billetes por ranura receptora o seleccione piezas por denominación oficial:"}
-                </p>
+                {depositMode === "interbank" ? (
+                  <div className="flex-1 flex flex-col justify-between overflow-y-auto pr-1 space-y-3">
+                    <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-700/60 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-blue-200 flex items-center gap-1.5">
+                          <Globe className="w-4 h-4 text-cyan-400" />
+                          <span>Banco Destino en Red Local (TCP 5000 / UDP 5005)</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleScanNetwork}
+                          disabled={isScanningNetwork}
+                          className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+                        >
+                          <Radio className={`w-3.5 h-3.5 ${isScanningNetwork ? "animate-spin" : ""}`} />
+                          <span>{isScanningNetwork ? "Escaneando..." : "Escanear Red"}</span>
+                        </button>
+                      </div>
 
-                {/* Quick preset buttons for deposit */}
-                <div className="flex flex-wrap items-center gap-2 mb-2.5 p-2 rounded-xl bg-discord-sidebar/70 border border-discord-hover flex-shrink-0">
-                  <span className="text-xs font-bold text-discord-textMuted mr-1">Carga Rápida:</span>
-                  <button
-                    type="button"
-                    onClick={() => addPresetDeposit(50)}
-                    className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-emerald-400 dark:border-emerald-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
-                  >
-                    +Q50
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetDeposit(100)}
-                    className="px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-950 border border-sky-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-cyan-400 dark:border-cyan-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
-                  >
-                    +Q100
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetDeposit(200)}
-                    className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-amber-400 dark:border-amber-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
-                  >
-                    +Q200
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetDeposit(500)}
-                    className="px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-950 border border-purple-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-purple-400 dark:border-purple-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
-                  >
-                    +Q500
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetDeposit(1000)}
-                    className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-950 border border-blue-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-discord-blurple dark:border-discord-blurple/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
-                  >
-                    +Q1000
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearDeposit}
-                    className="ml-auto px-2.5 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-red/20 text-xs font-bold text-discord-red border border-discord-red/40 transition-all"
-                  >
-                    Limpiar
-                  </button>
-                </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[11px] font-bold text-discord-textMuted block mb-1">
+                            Seleccionar Banco Destino:
+                          </label>
+                          <select
+                            value={selectedBankCode}
+                            onChange={(e) => {
+                              setSelectedBankCode(e.target.value);
+                              setInterbankVerifiedUser(null);
+                              setInterbankVerifyError(null);
+                            }}
+                            className="w-full px-3 py-2 rounded-lg bg-discord-surface border border-blue-700 font-bold text-xs text-white focus:outline-none"
+                          >
+                            {availableBanks.filter((b) => !b.es_propio).map((b) => (
+                              <option key={b.codigo_banco} value={b.codigo_banco}>
+                                {b.codigo_banco} - {b.nombre_banco} ({b.ip}:{b.puerto})
+                              </option>
+                            ))}
+                            {availableBanks.filter((b) => !b.es_propio).length === 0 && (
+                              <option value="BANC01">BANC01 - NEXUSBANK (10.219.19.9:5000)</option>
+                            )}
+                          </select>
+                        </div>
 
-                <div className="text-[10px] font-bold text-discord-textMuted uppercase tracking-wider mb-1.5 flex-shrink-0">
-                  Alimentador de Billetes Oficiales (7 Denominaciones):
-                </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-discord-textMuted block mb-1">
+                            Cupo Diario Disponible del Banco:
+                          </label>
+                          <div className="px-3 py-2 rounded-lg bg-discord-surface border border-discord-hover font-mono text-xs font-bold text-emerald-400">
+                            Q{Number(availableBanks.find((b) => b.codigo_banco === selectedBankCode)?.cupo_disponible || 25000).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="grid grid-cols-2 gap-2 flex-1 min-h-[220px] overflow-y-auto pr-1 pb-3">
-                  {DENOMINATIONS.map((d) => (
-                    <QuetzalBillCard
-                      key={d}
-                      denom={d}
-                      count={depositBills[d] || 0}
-                      stock={999}
-                      onIncrement={() => handleDepositBillChange(d, 1)}
-                      onDecrement={() => handleDepositBillChange(d, -1)}
-                    />
-                  ))}
-                </div>
+                      {/* Cuenta Destino y Verificación */}
+                      <div>
+                        <label className="text-[11px] font-bold text-discord-textMuted block mb-1">
+                          Número de Cuenta o Tarjeta en el Banco Destino:
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={targetAccountInterbank}
+                            onChange={(e) => {
+                              setTargetAccountInterbank(e.target.value);
+                              setInterbankVerifiedUser(null);
+                              setInterbankVerifyError(null);
+                            }}
+                            placeholder="Ej. 10014528 o 2002000001"
+                            className="flex-1 px-3 py-2 rounded-lg bg-discord-surface border border-blue-700 font-mono text-xs font-bold text-white tracking-wider outline-none focus:border-cyan-400"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyInterbankAccount}
+                            disabled={interbankVerifying || !targetAccountInterbank.trim()}
+                            className="px-3.5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+                          >
+                            <span>{interbankVerifying ? "Verificando..." : "Verificar Titular"}</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {interbankVerifyError && (
+                        <div className="p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                          <span>{interbankVerifyError}</span>
+                        </div>
+                      )}
+
+                      {interbankVerifiedUser && (
+                        <div className="p-2.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                            <div>
+                              <span className="font-bold text-white block">{interbankVerifiedUser.nombreTitular || "Titular Confirmado"}</span>
+                              <span className="text-[10px] text-emerald-200 font-mono">
+                                {interbankVerifiedUser.codigoBanco} | Cuenta: {interbankVerifiedUser.numeroCuenta}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] uppercase font-black bg-emerald-500/30 text-emerald-200 px-2 py-0.5 rounded">
+                            Verificado OK
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Monto y Concepto */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-blue-900/60">
+                        <div>
+                          <label className="text-[11px] font-bold text-discord-textMuted block mb-1">
+                            Monto a Transferir (Q):
+                          </label>
+                          <div className="flex items-center bg-discord-surface px-3 py-1.5 rounded-lg border border-blue-700">
+                            <span className="text-base font-black text-discord-green mr-1.5">Q.</span>
+                            <input
+                              type="number"
+                              value={interbankAmount}
+                              onChange={(e) => {
+                                setInterbankAmount(e.target.value);
+                                resetInactivity();
+                              }}
+                              placeholder="0.00"
+                              className="w-full bg-transparent font-mono text-base font-bold text-white focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-bold text-discord-textMuted block mb-1">
+                            Concepto del Pago:
+                          </label>
+                          <input
+                            type="text"
+                            value={interbankConcepto}
+                            onChange={(e) => setInterbankConcepto(e.target.value)}
+                            placeholder="Ej. Pago servicios"
+                            className="w-full px-3 py-2 rounded-lg bg-discord-surface border border-discord-hover font-sans text-xs text-white focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-cyan-200/80 bg-blue-900/30 p-2 rounded-lg border border-blue-800/40 flex items-center gap-1.5">
+                        <Send className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                        <span>Se emitirá el paquete TCP 5000 oficial generando el token <strong>TRF-YYYYMMDD-XXXXXX</strong> y coordinando límites.</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-discord-textMuted mb-2 flex-shrink-0">
+                      {depositMode === "third_party"
+                        ? "Ingrese el efectivo en billetes que desea acreditar a la cuenta del destinatario:"
+                        : "Introduzca los billetes por ranura receptora o seleccione piezas por denominación oficial:"}
+                    </p>
+
+                    {/* Quick preset buttons for deposit */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2.5 p-2 rounded-xl bg-discord-sidebar/70 border border-discord-hover flex-shrink-0">
+                      <span className="text-xs font-bold text-discord-textMuted mr-1">Carga Rápida:</span>
+                      <button
+                        type="button"
+                        onClick={() => addPresetDeposit(50)}
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-emerald-400 dark:border-emerald-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                      >
+                        +Q50
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addPresetDeposit(100)}
+                        className="px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-950 border border-sky-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-cyan-400 dark:border-cyan-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                      >
+                        +Q100
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addPresetDeposit(200)}
+                        className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-amber-400 dark:border-amber-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                      >
+                        +Q200
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addPresetDeposit(500)}
+                        className="px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-950 border border-purple-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-purple-400 dark:border-purple-800/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                      >
+                        +Q500
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addPresetDeposit(1000)}
+                        className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-950 border border-blue-400 dark:bg-discord-sidebar dark:hover:bg-discord-hover dark:text-discord-blurple dark:border-discord-blurple/60 transition-all hover:scale-105 active:scale-95 shadow-xs font-bold text-xs"
+                      >
+                        +Q1000
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearDeposit}
+                        className="ml-auto px-2.5 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-red/20 text-xs font-bold text-discord-red border border-discord-red/40 transition-all"
+                      >
+                        Limpiar
+                      </button>
+                    </div>
+
+                    <div className="text-[10px] font-bold text-discord-textMuted uppercase tracking-wider mb-1.5 flex-shrink-0">
+                      Alimentador de Billetes Oficiales (7 Denominaciones):
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 flex-1 min-h-[220px] overflow-y-auto pr-1 pb-3">
+                      {DENOMINATIONS.map((d) => (
+                        <QuetzalBillCard
+                          key={d}
+                          denom={d}
+                          count={depositBills[d] || 0}
+                          stock={999}
+                          onIncrement={() => handleDepositBillChange(d, 1)}
+                          onDecrement={() => handleDepositBillChange(d, -1)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -984,76 +1286,168 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
         {/* COLUMN 3 (Right, 3 cols) */}
         <div className="col-span-1 lg:col-span-3 flex flex-col justify-between p-4 lg:p-5 bg-discord-surface rounded-2xl border border-discord-hover shadow-kiosk overflow-y-auto">
           {activeTab === "deposit" ? (
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
-                Validación Reactiva de Depósito
-              </div>
-              <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-discord-textMuted">Piezas Introducidas:</span>
-                  <span className="font-mono font-bold text-white text-base">
-                    {totalDepositPieces} billete{totalDepositPieces !== 1 ? "s" : ""}
-                  </span>
+            depositMode === "interbank" ? (
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-cyan-400" />
+                  <span>Resumen Interbancario (TCP 5000)</span>
+                </div>
+                <div className="p-4 rounded-xl bg-discord-sidebar border border-blue-800/80 space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-discord-textMuted">Banco Receptor:</span>
+                    <span className="font-bold text-white uppercase text-right truncate max-w-[160px]">
+                      {availableBanks.find((b) => b.codigo_banco === selectedBankCode)?.nombre_banco || selectedBankCode || "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-discord-textMuted">Titular Verificado:</span>
+                    <span className="font-bold text-emerald-400 truncate max-w-[150px]">
+                      {interbankVerifiedUser?.nombreTitular || "Pendiente de verificar"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-discord-textMuted">Cuenta Destino:</span>
+                    <span className="font-mono font-bold text-white">
+                      {targetAccountInterbank || "---"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-discord-hover">
+                    <span className="text-discord-textMuted">Monto a Enviar:</span>
+                    <span className="font-mono font-black text-lg text-discord-green">
+                      Q{parseFloat(interbankAmount || "0").toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-discord-textMuted">Saldo Disponible:</span>
+                    <span className="font-mono font-bold text-white">
+                      Q{Number(userSummary.saldo_actual || 0).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* Estado de validación */}
+                  <div
+                    className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
+                      interbankVerifiedUser && parseFloat(interbankAmount) > 0 && parseFloat(interbankAmount) <= (userSummary.saldo_actual || 0)
+                        ? "bg-discord-green/20 border-discord-green text-discord-green"
+                        : "bg-discord-sidebar border-discord-hover text-discord-textMuted"
+                    }`}
+                  >
+                    {interbankVerifiedUser && parseFloat(interbankAmount) > 0 && parseFloat(interbankAmount) <= (userSummary.saldo_actual || 0) ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Listo para emitir transferencia</span>
+                      </>
+                    ) : !interbankVerifiedUser ? (
+                      <span>Verifique el titular en destino</span>
+                    ) : parseFloat(interbankAmount) > (userSummary.saldo_actual || 0) ? (
+                      <span>Saldo insuficiente en cuenta</span>
+                    ) : (
+                      <span>Ingrese monto a transferir</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-discord-textMuted">Total a Acreditar:</span>
-                  <span className="font-mono font-bold text-base text-discord-green">
-                    Q{totalSelectedDeposit.toFixed(2)}
-                  </span>
-                </div>
-
-                <div
-                  className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
-                    totalSelectedDeposit > 0
-                      ? "bg-discord-green/20 border-discord-green text-discord-green"
-                      : "bg-discord-sidebar border-discord-hover text-discord-textMuted"
-                  }`}
-                >
-                  {totalSelectedDeposit > 0 ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Listo para acreditación</span>
-                    </>
-                  ) : (
-                    <span>Inserte o seleccione billetes</span>
-                  )}
+                <div className="mt-4 space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleExecuteInterbankTransfer}
+                    disabled={
+                      loading ||
+                      !interbankVerifiedUser ||
+                      !interbankAmount ||
+                      parseFloat(interbankAmount) <= 0 ||
+                      parseFloat(interbankAmount) > (userSummary.saldo_actual || 0)
+                    }
+                    className={`w-full py-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
+                      !loading &&
+                      interbankVerifiedUser &&
+                      parseFloat(interbankAmount) > 0 &&
+                      parseFloat(interbankAmount) <= (userSummary.saldo_actual || 0)
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-glow active:scale-95"
+                        : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
+                    }`}
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>{loading ? "Procesando en Red TCP 5000..." : "Transferir y Generar Token TRF"}</span>
+                  </button>
                 </div>
               </div>
+            ) : (
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">
+                  Validación Reactiva de Depósito
+                </div>
+                <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-discord-textMuted">Piezas Introducidas:</span>
+                    <span className="font-mono font-bold text-white text-base">
+                      {totalDepositPieces} billete{totalDepositPieces !== 1 ? "s" : ""}
+                    </span>
+                  </div>
 
-              <div className="mt-4 space-y-2">
-                <button
-                  type="button"
-                  onClick={handleExecuteDeposit}
-                  disabled={
-                    totalSelectedDeposit <= 0 ||
-                    loading ||
-                    (depositMode === "third_party" && !targetUserData)
-                  }
-                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
-                    totalSelectedDeposit > 0 && !loading && (depositMode !== "third_party" || targetUserData)
-                      ? depositMode === "third_party"
-                        ? "bg-purple-600 hover:bg-purple-500 text-white shadow-glow active:scale-95"
-                        : "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
-                      : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
-                  }`}
-                >
-                  {loading
-                    ? "Acreditando..."
-                    : depositMode === "third_party"
-                    ? (targetUserData ? "Confirmar Transferencia / Depósito" : "Verifique Destinatario Primero")
-                    : "Confirmar Depósito"}
-                </button>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-discord-textMuted">Total a Acreditar:</span>
+                    <span className="font-mono font-bold text-base text-discord-green">
+                      Q{totalSelectedDeposit.toFixed(2)}
+                    </span>
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={clearDeposit}
-                  className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
-                >
-                  Limpiar Alimentador
-                </button>
+                  <div
+                    className={`p-2.5 rounded-lg border text-center text-xs font-bold flex items-center justify-center gap-1.5 ${
+                      totalSelectedDeposit > 0
+                        ? "bg-discord-green/20 border-discord-green text-discord-green"
+                        : "bg-discord-sidebar border-discord-hover text-discord-textMuted"
+                    }`}
+                  >
+                    {totalSelectedDeposit > 0 ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Listo para acreditación</span>
+                      </>
+                    ) : (
+                      <span>Inserte o seleccione billetes</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleExecuteDeposit}
+                    disabled={
+                      totalSelectedDeposit <= 0 ||
+                      loading ||
+                      (depositMode === "third_party" && !targetUserData)
+                    }
+                    className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md ${
+                      totalSelectedDeposit > 0 && !loading && (depositMode !== "third_party" || targetUserData)
+                        ? depositMode === "third_party"
+                          ? "bg-purple-600 hover:bg-purple-500 text-white shadow-glow active:scale-95"
+                          : "bg-discord-green hover:bg-emerald-400 text-black shadow-glow active:scale-95"
+                        : "bg-discord-sidebar text-gray-500 border border-discord-hover cursor-not-allowed"
+                    }`}
+                  >
+                    {loading
+                      ? "Acreditando..."
+                      : depositMode === "third_party"
+                      ? (targetUserData ? "Confirmar Transferencia / Depósito" : "Verifique Destinatario Primero")
+                      : "Confirmar Depósito"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={clearDeposit}
+                    className="w-full py-2.5 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white font-bold text-xs border border-discord-hover transition-all"
+                  >
+                    Limpiar Alimentador
+                  </button>
+                </div>
               </div>
-            </div>
+            )
           ) : (
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-discord-textMuted mb-2">

@@ -283,6 +283,46 @@ export const adminService = {
   },
 };
 
+export const interbankService = {
+  getStatus: async () => {
+    const res = await apiClient.get("/api/interbank/status");
+    return res.data;
+  },
+  getBanks: async () => {
+    const res = await apiClient.get("/api/interbank/banks");
+    return res.data;
+  },
+  scanNetwork: async () => {
+    const res = await apiClient.post("/api/interbank/scan");
+    return res.data;
+  },
+  verifyAccount: async (bankCode: string, accountNumber: string) => {
+    const res = await apiClient.post("/api/interbank/verify", {
+      bank_code: bankCode,
+      account_number: accountNumber,
+    });
+    return res.data;
+  },
+  transfer: async (targetBankCode: string, targetAccount: string, amount: number, concepto?: string, cajeroId?: string) => {
+    const res = await apiClient.post("/api/interbank/transfer", {
+      target_bank_code: targetBankCode,
+      target_account: targetAccount,
+      amount,
+      concepto,
+      cajero_id: cajeroId || localStorage.getItem("active_atm_id") || "ATM-001",
+    });
+    return res.data;
+  },
+  getTransfersHistory: async () => {
+    const res = await apiClient.get("/api/interbank/transfers");
+    return res.data;
+  },
+  upsertBank: async (bankData: { codigo_banco: string; nombre_banco: string; ip: string; puerto: number; limite_diario: number }) => {
+    const res = await apiClient.post("/api/interbank/banks/upsert", bankData);
+    return res.data;
+  },
+};
+
 export const hardwareService = {
   getStatus: async () => {
     const res = await apiClient.get("/api/hardware/status");

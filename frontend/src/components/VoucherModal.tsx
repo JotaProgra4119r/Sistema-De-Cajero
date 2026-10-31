@@ -3,7 +3,7 @@ import { Printer, X, ShieldCheck, Building2, Banknote } from "lucide-react";
 
 export interface VoucherData {
   id: string | number;
-  tipo: "RETIRO" | "DEPOSITO" | "AUDITORIA" | "INICIALIZACION" | "DEPOSITO_A_TERCERO" | "TRANSFERENCIA";
+  tipo: "RETIRO" | "DEPOSITO" | "AUDITORIA" | "INICIALIZACION" | "DEPOSITO_A_TERCERO" | "TRANSFERENCIA" | "TRANSFERENCIA_INTERBANCARIA";
   titulo?: string;
   cliente: string;
   tarjeta?: string;
@@ -16,6 +16,8 @@ export interface VoucherData {
   detalles_extra?: string;
   destinatario_nombre?: string;
   destinatario_cuenta?: string;
+  token_transferencia?: string;
+  banco_destino?: string;
   cajero_origen?: string;
   items_auditoria?: any[];
   ultimos_movimientos?: Array<{
@@ -252,6 +254,18 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
                 <span className="text-gray-600">ID / Token de Cuenta:</span>
                 <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded font-black tracking-widest">{voucher.destinatario_cuenta}</span>
               </div>
+              {voucher.banco_destino && (
+                <div className="flex justify-between items-center text-[11px] font-mono mt-0.5">
+                  <span className="text-gray-600">Banco Receptor:</span>
+                  <span className="font-bold text-blue-900">{voucher.banco_destino}</span>
+                </div>
+              )}
+              {voucher.token_transferencia && (
+                <div className="mt-1.5 pt-1.5 border-t border-blue-200 flex justify-between items-center text-xs font-mono">
+                  <span className="font-bold text-gray-700">Token Compartido:</span>
+                  <span className="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded font-black tracking-wider border border-emerald-300">{voucher.token_transferencia}</span>
+                </div>
+              )}
               {voucher.cajero_origen && (
                 <div className="flex justify-between items-center text-[10px] text-gray-500 font-mono mt-1 pt-1 border-t border-blue-200">
                   <span>Terminal Origen:</span>

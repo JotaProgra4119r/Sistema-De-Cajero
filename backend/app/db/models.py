@@ -7,7 +7,9 @@ from database.models import (
     ArqueoCajero,
     Transaccion,
     LogAuditoria,
-    RegistroEliminado
+    RegistroEliminado,
+    BancoRed,
+    TransferenciaBancaria
 )
 
 __all__ = [
@@ -19,5 +21,7 @@ __all__ = [
     "ArqueoCajero",
     "Transaccion",
     "LogAuditoria",
-    "RegistroEliminado"
+    "RegistroEliminado",
+    "BancoRed",
+    "TransferenciaBancaria"
 ]

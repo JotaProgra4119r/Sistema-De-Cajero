@@ -13,7 +13,8 @@ import hashlib
 from sqlalchemy import text
 from database.connection import engine, SessionLocal, Base
 from database.models import (
-    Role, Usuario, Tarjeta, Cajero, DenominacionCajero, ArqueoCajero, LogAuditoria, RegistroEliminado
+    Role, Usuario, Tarjeta, Cajero, DenominacionCajero, ArqueoCajero, LogAuditoria, RegistroEliminado,
+    BancoRed, TransferenciaBancaria
 )
 
 def get_pin_hash(pin: str) -> str:
@@ -29,6 +30,7 @@ def migrate_existing_schema(db):
         "ALTER TABLE transacciones ADD COLUMN id_cajero VARCHAR(20) DEFAULT 'ATM-001'",
         "ALTER TABLE transacciones ADD COLUMN id_cuenta_destino VARCHAR(20)",
         "ALTER TABLE transacciones ADD COLUMN nombre_destinatario VARCHAR(100)",
+        "ALTER TABLE transacciones ADD COLUMN token_transferencia VARCHAR(40)",
         "ALTER TABLE cajeros ADD COLUMN codigo_cajero VARCHAR(10) DEFAULT '1234'",
         "ALTER TABLE cajeros ADD COLUMN en_linea BOOLEAN DEFAULT 0",
         "ALTER TABLE cajeros ADD COLUMN sesion_activa_id VARCHAR(100)",
@@ -274,6 +276,34 @@ def init_db():
             print("[DATABASE] Vistas SQL 'retiros' y 'depositos' registradas exitosamente.")
         except Exception as v_err:
             print(f"[DATABASE] Nota sobre creación de vistas: {v_err}")
+
+        # 8. Seed Red Interbancaria (Protocolo TCP 5000 / UDP 5005)
+        bancos_seed = [
+            ("BANC02", "Banco G&T Estudiantil", "127.0.0.1", 5000, True, 25000.00),
+            ("BANC01", "NEXUSBANK", "10.219.19.9", 5000, False, 25000.00),
+        ]
+        for cod, nom, ip, port, propio, lim in bancos_seed:
+            banco = db.query(BancoRed).filter(BancoRed.codigo_banco == cod).first()
+            if not banco:
+                db.add(BancoRed(
+                    codigo_banco=cod,
+                    nombre_banco=nom,
+                    ip=ip,
+                    puerto=port,
+                    es_propio=propio,
+                    limite_diario=lim,
+                    transferido_hoy=0.00,
+                    fecha_ultimo_reinicio=datetime.now(timezone.utc),
+                    activo=True
+                ))
+            else:
+                banco.nombre_banco = nom
+                banco.puerto = port
+                banco.limite_diario = lim
+                if propio:
+                    banco.es_propio = True
+        db.commit()
+        print("[DATABASE] Red Interbancaria (BANC02 y BANC01) sincronizada.")
 
         print("[DATABASE] Base de datos relacional y red de cajeros inicializada correctamente.")
     except Exception as e:

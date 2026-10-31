@@ -1,5 +1,8 @@
-ATM-001|Cajero Central - Sede Principal (Zona 10)|1234|7ma Avenida 12-34, Zona 10, Ciudad de Guatemala|ACTIVO|1|1|3970.00|2026-10-30 05:53:51
+ATM-001|Cajero Central - Sede Principal (Zona 10)|1234|7ma Avenida 12-34, Zona 10, Ciudad de Guatemala|ACTIVO|1|1|3970.00|2026-10-31 16:31:58
 ATM-002|Cajero Express - Sucursal Zona 1|1234|6ta Avenida 4-20, Centro Histórico, Zona 1|ACTIVO|0|1|3870.00|
 ATM-003|Cajero Miraflores - Centro Comercial|1234|Calzada Roosevelt, C.C. Miraflores, Local K-12|ACTIVO|0|1|3870.00|
 ATM-004|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-10-30 05:43:06
-ATM-005|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|0|0.00|2026-10-30 05:53:51
+ATM-005|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-10-30 05:53:51
+ATM-006|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-10-31 16:13:31
+ATM-007|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-10-31 16:14:13
+ATM-008|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|0|0.00|2026-10-31 16:31:58
