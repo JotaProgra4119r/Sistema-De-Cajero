@@ -227,8 +227,9 @@ CREATE TABLE IF NOT EXISTS bancos_red (
 ) ENGINE=InnoDB;
 
 INSERT INTO bancos_red (id_banco, codigo_banco, nombre_banco, ip, puerto, es_propio, limite_diario, transferido_hoy) VALUES
-(1, 'BANC02', 'Banco G&T Estudiantil', '127.0.0.1', 5000, TRUE, 25000.00, 0.00),
-(2, 'BANC01', 'NEXUSBANK', '10.219.19.9', 5000, FALSE, 25000.00, 0.00);
+(1, 'BANC02', 'Banco Nacional Inzano GYT', '127.0.0.1', 5000, TRUE, 25000.00, 0.00),
+(2, 'NETGEAR', 'NETGEAR Interbank', '127.0.0.1', 5000, FALSE, 25000.00, 0.00),
+(3, 'BANC01', 'NEXUSBANK', '10.219.19.9', 5000, FALSE, 25000.00, 0.00);
 
 -- -----------------------------------------------------------------------------
 -- 11. TABLA: transferencias_bancarias (Tokens Compartidos y Conciliación)

@@ -297,7 +297,7 @@ class InterbankProtocolManager:
                     "timestamp": timestamp,
                     "datos": {
                         "tokenTransferencia": token,
-                        "bancoDestino": settings.BANK_CODE,
+                        "bancoDestino": payload.get("bancoDestino") or settings.BANK_CODE,
                         "cuentaDestino": existing_tx.cuenta_destino,
                         "nombreDestino": existing_tx.nombre_destino,
                         "monto": float(existing_tx.monto),
@@ -435,7 +435,7 @@ class InterbankProtocolManager:
                     "timestamp": timestamp,
                     "datos": {
                         "tokenTransferencia": token,
-                        "bancoDestino": settings.BANK_CODE,
+                        "bancoDestino": payload.get("bancoDestino") or settings.BANK_CODE,
                         "cuentaDestino": cuenta_destino,
                         "nombreDestino": user_dest.nombre_completo,
                         "monto": monto,
@@ -452,6 +452,36 @@ class InterbankProtocolManager:
                     "mensaje": f"Error interno al asentar la transferencia: {str(ex)}",
                     "timestamp": timestamp
                 }
+
+        # ---------------------------------------------------------------------
+        # OPERACIÓN D: IB_ESTADO_TRANSFERENCIA (Conciliación y Verificación de Estado)
+        # ---------------------------------------------------------------------
+        elif tipo == "IB_ESTADO_TRANSFERENCIA":
+            token = str(payload.get("tokenTransferencia", "")).strip()
+            tx = db.query(TransferenciaBancaria).filter(TransferenciaBancaria.token_transferencia == token).first()
+            if not tx:
+                return {
+                    "tipo": "RESP_OK",
+                    "idMensaje": msg_id,
+                    "codigo": "25",
+                    "mensaje": "Transferencia no registrada; no confirma rechazo ni autoriza devolución.",
+                    "timestamp": timestamp,
+                    "datos": {}
+                }
+            return {
+                "tipo": "RESP_OK",
+                "idMensaje": msg_id,
+                "codigo": "00",
+                "mensaje": f"Estado de la transferencia {token}: {tx.estado}",
+                "timestamp": timestamp,
+                "datos": {
+                    "tokenTransferencia": tx.token_transferencia,
+                    "monto": float(tx.monto),
+                    "bancoDestino": payload.get("bancoDestino") or tx.banco_destino or settings.BANK_CODE,
+                    "cuentaDestino": tx.cuenta_destino,
+                    "estado": tx.estado
+                }
+            }
 
         # ---------------------------------------------------------------------
         # COMANDO DESCONOCIDO
@@ -749,9 +779,18 @@ class InterbankProtocolManager:
         if amount > cupo_disponible_dest:
             return {"success": False, "codigo": "65", "mensaje": f"El banco destino {banco_dest.nombre_banco} no cuenta con cupo diario suficiente (Cupo: Q{cupo_disponible_dest:.2f})."}
 
-        # Generar token compartido
+        # Generar token compartido (estrictamente compatible con regex ^TRF-\d{8}-\d{6}$)
         token = self.generate_transfer_token()
         msg_id = f"TRFMSG-{random.randint(100000, 999999)}"
+
+        # Sanitizar cuenta origen y destino a formato numérico (1 a 20 dígitos requerido por protocolo)
+        cuenta_origen_digits = "".join(filter(str.isdigit, str(sender.id_cuenta_bancaria or "")))
+        if not cuenta_origen_digits or len(cuenta_origen_digits) > 20:
+            cuenta_origen_digits = f"{10000000 + sender.id_usuario}"
+
+        cuenta_destino_digits = "".join(filter(str.isdigit, str(target_account or "")))
+        if not cuenta_destino_digits:
+            cuenta_destino_digits = str(target_account).strip()
 
         payload = {
             "tipo": "IB_TRANSFERIR",
@@ -760,10 +799,11 @@ class InterbankProtocolManager:
             "timestamp": get_utc_now_str(),
             "tokenTransferencia": token,
             "bancoOrigen": settings.BANK_CODE,
-            "cuentaOrigen": sender.id_cuenta_bancaria or str(sender.id_usuario),
+            "nombreBancoOrigen": settings.BANK_NAME,
+            "cuentaOrigen": cuenta_origen_digits,
             "nombreOrigen": sender.nombre_completo,
             "bancoDestino": target_bank_code,
-            "cuentaDestino": target_account,
+            "cuentaDestino": cuenta_destino_digits,
             "nombreDestino": "",
             "monto": amount,
             "concepto": concepto
@@ -889,6 +929,7 @@ class InterbankProtocolManager:
             known_banks = db.query(BancoRed).filter(BancoRed.es_propio == False).all()
             # Asegurarse de probar IPs por defecto si no están
             test_targets = [
+                ("NETGEAR", "NETGEAR Interbank", "127.0.0.1", 5000),
                 ("BANC01", "NEXUSBANK", "10.219.19.9", 5000),
                 ("BANC01_RADMIN", "NEXUSBANK (Radmin)", "26.121.70.247", 5000),
             ]

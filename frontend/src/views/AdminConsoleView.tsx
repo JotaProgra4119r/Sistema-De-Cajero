@@ -1218,7 +1218,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                   <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Identificador Local</span>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-base font-black text-cyan-300 font-mono">BANC02</span>
-                    <span className="text-xs text-white font-bold truncate">Banco G&T Estudiantil</span>
+                    <span className="text-xs text-white font-bold truncate">{interbankStatus?.nombre_banco || "Banco Nacional Inzano GYT"}</span>
                   </div>
                   <span className="text-[10px] text-discord-textMuted">Nodo Propio en Sistema</span>
                 </div>

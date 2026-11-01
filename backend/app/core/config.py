@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     INTERBANK_TCP_PORT: int = 5000
     INTERBANK_UDP_PORT: int = 5005
     BANK_CODE: str = "BANC02"
-    BANK_NAME: str = "Banco G&T Estudiantil"
+    BANK_NAME: str = "Banco Nacional Inzano GYT"
     BANK_DAILY_LIMIT: float = 25000.00
     
     SERIAL_PORT: str = 'COM3' if sys.platform == 'win32' else '/dev/ttyUSB0'

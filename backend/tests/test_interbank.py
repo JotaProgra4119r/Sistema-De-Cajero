@@ -9,12 +9,14 @@ from backend.app.db.models import Usuario, BancoRed, TransferenciaBancaria, Tran
 from backend.app.services.interbank_service import interbank_manager
 from backend.app.core.config import settings
 
+import re
+import random
 import uuid
 
 client = TestClient(app)
 
-# Token global de prueba para evaluar primero creación y luego replay attack
-SHARED_TEST_TOKEN = f"TRF-20261031-{uuid.uuid4().hex[:6].upper()}"
+# Token global de prueba para evaluar primero creación y luego replay attack (estrictamente ^TRF-\d{8}-\d{6}$)
+SHARED_TEST_TOKEN = f"TRF-20261031-{random.randint(100000, 999999)}"
 
 def test_tcp_ping():
     """Prueba que IB_PING responda con codigo '00', estado 'EN_LINEA' y cupo disponible."""
@@ -219,6 +221,7 @@ def test_api_interbank_status_and_banks():
     banks_list = resp_banks.json()
     assert isinstance(banks_list, list)
     assert any(b["codigo_banco"] == settings.BANK_CODE for b in banks_list)
+    assert any(b["codigo_banco"] == "NETGEAR" for b in banks_list)
     assert any(b["codigo_banco"] == "BANC01" for b in banks_list)
 
 def test_api_interbank_verify_local_account():
@@ -239,3 +242,32 @@ def test_api_interbank_verify_local_account():
     data = resp.json()
     assert data["codigo"] == "00"
     assert data["datos"]["existe"] is True
+
+def test_token_format_matches_protocol_regex():
+    """Valida que los tokens generados cumplan la expresión regular ^TRF-\\d{8}-\\d{6}$ del protocolo."""
+    token = interbank_manager.generate_transfer_token()
+    assert re.match(r"^TRF-\d{8}-\d{6}$", token) is not None
+    assert len(token) == 19
+
+def test_tcp_estado_transferencia_conciliacion():
+    """Prueba que IB_ESTADO_TRANSFERENCIA permita consultar el estado de una transferencia para conciliación."""
+    async def _run():
+        db = SessionLocal()
+        try:
+            req = {
+                "tipo": "IB_ESTADO_TRANSFERENCIA",
+                "idMensaje": "TEST-ESTADO-01",
+                "timestamp": "2026-10-31 12:15:00",
+                "bancoOrigen": "BANC01",
+                "bancoDestino": settings.BANK_CODE,
+                "tokenTransferencia": SHARED_TEST_TOKEN
+            }
+            res = await interbank_manager._process_tcp_request("IB_ESTADO_TRANSFERENCIA", req, "TEST-ESTADO-01", "10.219.19.9", db)
+            assert res["tipo"] == "RESP_OK"
+            assert res["codigo"] == "00"
+            assert res["datos"]["tokenTransferencia"] == SHARED_TEST_TOKEN
+            assert res["datos"]["estado"] == "APROBADA"
+            assert res["datos"]["monto"] == 150.00
+        finally:
+            db.close()
+    asyncio.run(_run())

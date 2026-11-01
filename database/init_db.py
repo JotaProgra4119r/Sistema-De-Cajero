@@ -279,7 +279,8 @@ def init_db():
 
         # 8. Seed Red Interbancaria (Protocolo TCP 5000 / UDP 5005)
         bancos_seed = [
-            ("BANC02", "Banco G&T Estudiantil", "127.0.0.1", 5000, True, 25000.00),
+            ("BANC02", "Banco Nacional Inzano GYT", "127.0.0.1", 5000, True, 25000.00),
+            ("NETGEAR", "NETGEAR Interbank", "127.0.0.1", 5000, False, 25000.00),
             ("BANC01", "NEXUSBANK", "10.219.19.9", 5000, False, 25000.00),
         ]
         for cod, nom, ip, port, propio, lim in bancos_seed:
@@ -303,7 +304,7 @@ def init_db():
                 if propio:
                     banco.es_propio = True
         db.commit()
-        print("[DATABASE] Red Interbancaria (BANC02 y BANC01) sincronizada.")
+        print("[DATABASE] Red Interbancaria (BANC02, NETGEAR y BANC01) sincronizada.")
 
         print("[DATABASE] Base de datos relacional y red de cajeros inicializada correctamente.")
     except Exception as e:

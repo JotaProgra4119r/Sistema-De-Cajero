@@ -199,7 +199,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucher, onClose }) 
             <div className="flex items-center justify-center gap-2 mb-1">
               <Building2 className="w-5 h-5 text-gray-900" />
               <span className="text-base font-black tracking-wider uppercase">
-                ATM KIOSK G&T
+                Banco Nacional Inzano GYT
               </span>
             </div>
             <div className="text-[10px] text-gray-600 font-sans uppercase font-bold tracking-tight">
