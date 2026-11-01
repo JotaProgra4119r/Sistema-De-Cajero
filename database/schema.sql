@@ -99,7 +99,8 @@ CREATE TABLE IF NOT EXISTS cajeros (
 INSERT INTO cajeros (id_cajero, nombre, ubicacion, estado, is_initialized, codigo_cajero, en_linea) VALUES
 ('ATM-001', 'Cajero Central - Sede Principal (Zona 10)', '7ma Avenida 12-34, Zona 10, Ciudad de Guatemala', 'ACTIVO', FALSE, '1234', FALSE),
 ('ATM-002', 'Cajero Express - Sucursal Zona 1', '6ta Avenida 4-20, Centro Histórico, Zona 1', 'ACTIVO', FALSE, '1234', FALSE),
-('ATM-003', 'Cajero Miraflores - Centro Comercial', 'Calzada Roosevelt, C.C. Miraflores, Local K-12', 'ACTIVO', FALSE, '1234', FALSE);
+('ATM-003', 'Cajero Miraflores - Centro Comercial', 'Calzada Roosevelt, C.C. Miraflores, Local K-12', 'ACTIVO', FALSE, '1234', FALSE),
+('ATM-004', 'Cajero ATM 4 - Sucursal Inzano', '12 Calle 5-45, Zona 9, Plaza Inzano', 'ACTIVO', TRUE, '000', FALSE);
 
 -- -----------------------------------------------------------------------------
 -- 4. TABLA: denominaciones_cajero (Inventario Físico de Billetes en Bóveda por Cajero)
@@ -114,11 +115,12 @@ CREATE TABLE IF NOT EXISTS denominaciones_cajero (
     FOREIGN KEY (id_cajero) REFERENCES cajeros(id_cajero) ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Carga inicial en Quetzales: Instalación limpia con bóvedas vacías (Q0.00)
+-- Carga inicial en Quetzales: Instalación limpia con bóvedas vacías para ATM 1..3 y fondos iniciales para ATM 4
 INSERT INTO denominaciones_cajero (id_cajero, denominacion, cantidad_billetes) VALUES   
 ('ATM-001', 200, 0), ('ATM-001', 100, 0), ('ATM-001', 50, 0), ('ATM-001', 20, 0), ('ATM-001', 10, 0), ('ATM-001', 5, 0), ('ATM-001', 1, 0),
 ('ATM-002', 200, 0), ('ATM-002', 100, 0), ('ATM-002', 50, 0), ('ATM-002', 20, 0), ('ATM-002', 10, 0), ('ATM-002', 5, 0), ('ATM-002', 1, 0),
-('ATM-003', 200, 0), ('ATM-003', 100, 0), ('ATM-003', 50, 0), ('ATM-003', 20, 0), ('ATM-003', 10, 0), ('ATM-003', 5, 0), ('ATM-003', 1, 0);
+('ATM-003', 200, 0), ('ATM-003', 100, 0), ('ATM-003', 50, 0), ('ATM-003', 20, 0), ('ATM-003', 10, 0), ('ATM-003', 5, 0), ('ATM-003', 1, 0),
+('ATM-004', 200, 20), ('ATM-004', 100, 25), ('ATM-004', 50, 20), ('ATM-004', 20, 50), ('ATM-004', 10, 50), ('ATM-004', 5, 50), ('ATM-004', 1, 100);
 
 -- -----------------------------------------------------------------------------
 -- 5. TABLA: arqueos_cajero (Auditoría de Cargas e Inicializaciones de Bóveda)

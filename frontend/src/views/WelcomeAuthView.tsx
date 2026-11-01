@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Lock, UserCheck, CreditCard, Clock, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Lock, UserCheck, CreditCard, Clock, AlertCircle, Eye, EyeOff, RefreshCw, Cloud, CheckCircle2 } from "lucide-react";
 import { VirtualKeypad } from "../components/VirtualKeypad";
 import { HardwareBadges } from "../components/HardwareBadges";
 import { AccessibilityToolbar } from "../components/AccessibilityToolbar";
-import { authService } from "../services/api";
+import { authService, syncService } from "../services/api";
 
 interface WelcomeAuthViewProps {
   onLoginSuccess: (userData: any, isAdmin: boolean) => void;
@@ -30,6 +30,30 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   const [rfidScannedNotification, setRfidScannedNotification] = useState<string | null>(null);
   const [activeAtm, setActiveAtm] = useState<string>(() => localStorage.getItem("active_atm_id") || "ATM-001");
   const [atmName, setAtmName] = useState<string>("Cajero Central - Zona 10");
+  const [syncing, setSyncing] = useState<boolean>(false);
+  const [syncNotification, setSyncNotification] = useState<string | null>(null);
+
+  const handleExecuteSync = async () => {
+    setSyncing(true);
+    setSyncNotification(null);
+    try {
+      await syncService.executeSync();
+      setSyncNotification("Bases de datos sincronizadas con el servidor en línea exitosamente.");
+      const tokRes = await authService.getTokenPreview(activeAtm);
+      setDynamicTokenPreview(tokRes.token);
+      if (tokRes.cajero_nombre) setAtmName(tokRes.cajero_nombre);
+      if (tokRes.vault_total !== undefined) {
+        setVaultTotal(tokRes.vault_total);
+        setVaultEmpty(tokRes.vault_empty ?? tokRes.vault_total <= 0);
+      }
+      setTimeout(() => setSyncNotification(null), 4000);
+    } catch {
+      setSyncNotification("Aviso: Servidor en la nube en reposo o sin conexión directa en este instante.");
+      setTimeout(() => setSyncNotification(null), 4000);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Auto-populate when physical RFID card is detected
   useEffect(() => {
@@ -237,7 +261,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   return (
     <div className="w-full h-full flex flex-col justify-between bg-discord-base p-3 md:p-4 lg:p-5 text-discord-textNormal select-none overflow-y-auto">
       {/* Active ATM Status Banner */}
-      <div className="mb-2 p-2 rounded-xl bg-discord-sidebar border border-discord-hover flex items-center justify-between text-xs">
+      <div className="mb-2 p-2 rounded-xl bg-discord-sidebar border border-discord-hover flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-discord-blurple animate-pulse" />
           <span className="font-bold text-discord-textPure uppercase">🏧 {activeAtm}:</span>
@@ -253,8 +277,40 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
               🟢 En Servicio (Q{vaultTotal.toFixed(2)})
             </span>
           )}
+
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open_atm_identification_modal"))}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-discord-surface hover:bg-discord-hover text-discord-blurple hover:text-white font-bold text-[11px] border border-discord-hover transition-all"
+            title="Cambiar o enlazar terminal de cajero (ATM-001 a ATM-004 o registrar nuevo)"
+          >
+            <RefreshCw className="w-3 h-3" />
+            <span>Cambiar Cajero</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExecuteSync}
+            disabled={syncing}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 font-bold text-[11px] border border-emerald-700/50 transition-all"
+            title="Sincronizar datos y transacciones con el servidor en línea (Render)"
+          >
+            <Cloud className={`w-3 h-3 ${syncing ? "animate-spin" : ""}`} />
+            <span>{syncing ? "Sincronizando..." : "Sincronizar Nube"}</span>
+          </button>
         </div>
       </div>
+
+      {/* Sync Notification Banner */}
+      {syncNotification && (
+        <div className="mb-2 p-2 rounded-xl bg-blue-950/50 border border-blue-500/40 text-blue-300 text-xs font-bold flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+            <span>{syncNotification}</span>
+          </div>
+          <span className="text-[10px] bg-blue-800/60 text-white px-2 py-0.5 rounded font-mono">SYNC OK</span>
+        </div>
+      )}
 
       {/* RFID Scan Toast Notification */}
       {rfidScannedNotification && (

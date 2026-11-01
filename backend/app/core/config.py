@@ -37,9 +37,11 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:8000",
-        "http://127.0.0.1:8000"
+        "http://127.0.0.1:8000",
+        "https://sistema-de-cajero.onrender.com"
     ]
     ALLOW_DEMO_MFA: bool = True
+    CLOUD_SERVER_URL: str = os.getenv("CLOUD_SERVER_URL", "https://sistema-de-cajero.onrender.com")
 
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
 

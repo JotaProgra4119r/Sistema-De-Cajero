@@ -93,11 +93,12 @@ def init_db():
 
         # 2. Seed Red Multicajero (Cajeros Independientes)
         atms_seed = [
-            ("ATM-001", "Cajero Central - Sede Principal (Zona 10)", "7ma Avenida 12-34, Zona 10, Ciudad de Guatemala"),
-            ("ATM-002", "Cajero Express - Sucursal Zona 1", "6ta Avenida 4-20, Centro Histórico, Zona 1"),
-            ("ATM-003", "Cajero Miraflores - Centro Comercial", "Calzada Roosevelt, C.C. Miraflores, Local K-12"),
+            ("ATM-001", "Cajero Central - Sede Principal (Zona 10)", "7ma Avenida 12-34, Zona 10, Ciudad de Guatemala", "1234", False),
+            ("ATM-002", "Cajero Express - Sucursal Zona 1", "6ta Avenida 4-20, Centro Histórico, Zona 1", "1234", False),
+            ("ATM-003", "Cajero Miraflores - Centro Comercial", "Calzada Roosevelt, C.C. Miraflores, Local K-12", "1234", False),
+            ("ATM-004", "Cajero ATM 4 - Sucursal Inzano", "12 Calle 5-45, Zona 9, Plaza Inzano", "000", True),
         ]
-        for atm_id, name, location in atms_seed:
+        for atm_id, name, location, code, initialized in atms_seed:
             existing_atm = db.query(Cajero).filter(Cajero.id_cajero == atm_id).first()
             if not existing_atm:
                 db.add(Cajero(
@@ -105,13 +106,14 @@ def init_db():
                     nombre=name,
                     ubicacion=location,
                     estado="ACTIVO",
-                    is_initialized=False,
-                    codigo_cajero="1234",
+                    is_initialized=initialized,
+                    codigo_cajero=code,
                     en_linea=False
                 ))
             else:
-                if not existing_atm.codigo_cajero:
-                    existing_atm.codigo_cajero = "1234"
+                existing_atm.codigo_cajero = code
+                if initialized and not existing_atm.is_initialized:
+                    existing_atm.is_initialized = True
         db.commit()
 
         # 3. Seed Local Admin User
@@ -222,6 +224,7 @@ def init_db():
 
         # 6. Seed Denominaciones por Cajero (Inventario Físico Independiente)
         denominaciones_list = [200, 100, 50, 20, 10, 5, 1]
+        starter_map = {200: 20, 100: 25, 50: 20, 20: 50, 10: 50, 5: 50, 1: 100}
         all_cajeros = db.query(Cajero).all()
         for cajero in all_cajeros:
             for denom in denominaciones_list:
@@ -229,12 +232,15 @@ def init_db():
                     DenominacionCajero.id_cajero == cajero.id_cajero,
                     DenominacionCajero.denominacion == denom
                 ).first()
+                init_qty = starter_map.get(denom, 0) if cajero.id_cajero == "ATM-004" else 0
                 if not rec:
                     db.add(DenominacionCajero(
                         id_cajero=cajero.id_cajero,
                         denominacion=denom,
-                        cantidad_billetes=0
+                        cantidad_billetes=init_qty
                     ))
+                elif cajero.id_cajero == "ATM-004" and rec.cantidad_billetes == 0:
+                    rec.cantidad_billetes = init_qty
         db.commit()
 
         # 7. Crear o actualizar Vistas SQL 'retiros' y 'depositos' para SQL Server / Workbench

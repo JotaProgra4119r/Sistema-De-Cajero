@@ -1,995 +1,179 @@
-1|2026-10-07 13:33:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-2|2026-10-07 13:38:45|1|ALTA_EMPLEADO|Registro de nuevo empleado Prueba 1 con tarjeta 1111111111111111, saldo Q1000.00, límite Q2000.00.
-3|2026-10-07 13:39:26|1|ALTA_EMPLEADO|Registro de nuevo empleado Prueba 2 con tarjeta 2111111111111111, saldo Q1000.00, límite Q2000.00.
-4|2026-10-07 13:50:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-5|2026-10-07 13:50:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-6|2026-10-07 13:50:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-7|2026-10-07 13:50:13|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}. Foto: security_tx_2_1791402613.jpg
-8|2026-10-07 13:50:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-9|2026-10-07 13:50:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-10|2026-10-07 13:50:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-11|2026-10-07 13:50:13|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-12|2026-10-07 13:50:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-13|2026-10-07 13:50:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-14|2026-10-07 13:50:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-15|2026-10-07 13:50:14|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-16|2026-10-07 13:50:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-17|2026-10-07 13:50:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-18|2026-10-07 13:50:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-19|2026-10-07 13:50:14|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791402614555, saldo Q800.00, límite Q1000.00.
-21|2026-10-07 13:50:14|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791402614719, saldo Q750.00, límite Q1000.00.
-23|2026-10-07 13:56:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-24|2026-10-07 13:56:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-25|2026-10-07 13:56:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-26|2026-10-07 13:56:14|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-27|2026-10-07 13:56:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-28|2026-10-07 13:56:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-29|2026-10-07 13:56:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-30|2026-10-07 13:56:14|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-31|2026-10-07 13:56:14|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-32|2026-10-07 13:56:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-33|2026-10-07 13:56:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-34|2026-10-07 13:56:15|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-35|2026-10-07 13:56:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-36|2026-10-07 13:56:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-37|2026-10-07 13:56:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-38|2026-10-07 13:56:15|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791402975806, saldo Q800.00, límite Q1000.00.
-40|2026-10-07 13:56:15|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791402975956, saldo Q750.00, límite Q1000.00.
-42|2026-10-07 13:58:31|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-43|2026-10-07 13:58:31|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-44|2026-10-07 13:58:31|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-45|2026-10-07 13:58:32|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-46|2026-10-07 13:58:32|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-47|2026-10-07 13:58:32|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-48|2026-10-07 13:58:32|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-49|2026-10-07 13:58:32|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-50|2026-10-07 13:58:32|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-51|2026-10-07 13:58:32|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-52|2026-10-07 13:58:32|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-53|2026-10-07 13:58:33|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-54|2026-10-07 13:58:33|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-55|2026-10-07 13:58:33|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-56|2026-10-07 13:58:33|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-57|2026-10-07 13:58:33|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791403113649, saldo Q800.00, límite Q1000.00.
-59|2026-10-07 13:58:33|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-60|2026-10-07 13:58:33|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-61|2026-10-07 13:58:33|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-62|2026-10-07 13:58:34|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791403114048, saldo Q750.00, límite Q1000.00.
-64|2026-10-07 14:14:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-65|2026-10-07 14:14:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-66|2026-10-07 14:14:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-67|2026-10-07 14:14:19|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-68|2026-10-07 14:14:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-69|2026-10-07 14:14:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-70|2026-10-07 14:14:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-71|2026-10-07 14:14:19|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-72|2026-10-07 14:14:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-73|2026-10-07 14:14:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-74|2026-10-07 14:14:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-75|2026-10-07 14:14:20|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-76|2026-10-07 14:14:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-77|2026-10-07 14:14:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-78|2026-10-07 14:14:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-79|2026-10-07 14:14:20|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791404060334, saldo Q800.00, límite Q1000.00.
-81|2026-10-07 14:14:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-82|2026-10-07 14:14:20|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-83|2026-10-07 14:14:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-84|2026-10-07 14:14:20|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791404060734, saldo Q750.00, límite Q1000.00.
-86|2026-10-07 14:14:55|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-87|2026-10-07 14:14:55|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-88|2026-10-07 14:14:55|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-89|2026-10-07 14:14:56|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-90|2026-10-07 14:14:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-91|2026-10-07 14:14:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-92|2026-10-07 14:14:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-93|2026-10-07 14:14:56|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-94|2026-10-07 14:14:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-95|2026-10-07 14:14:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-96|2026-10-07 14:14:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-97|2026-10-07 14:14:57|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-98|2026-10-07 14:14:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-99|2026-10-07 14:14:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-100|2026-10-07 14:14:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-101|2026-10-07 14:14:57|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791404097585, saldo Q800.00, límite Q1000.00.
-103|2026-10-07 14:14:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-104|2026-10-07 14:14:57|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-105|2026-10-07 14:14:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-106|2026-10-07 14:14:57|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791404097934, saldo Q750.00, límite Q1000.00.
-108|2026-10-07 14:19:18|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-109|2026-10-07 14:20:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-110|2026-10-07 14:51:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-111|2026-10-07 14:51:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-112|2026-10-07 14:51:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-113|2026-10-07 14:51:20|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-114|2026-10-07 14:51:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-115|2026-10-07 14:51:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-116|2026-10-07 14:51:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-117|2026-10-07 14:51:20|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-118|2026-10-07 14:51:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-119|2026-10-07 14:51:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-120|2026-10-07 14:51:20|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-121|2026-10-07 14:51:21|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-122|2026-10-07 14:51:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-123|2026-10-07 14:51:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-124|2026-10-07 14:51:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-125|2026-10-07 14:51:21|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791406281535, saldo Q800.00, límite Q1000.00.
-127|2026-10-07 14:51:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-128|2026-10-07 14:51:21|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-129|2026-10-07 14:51:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-130|2026-10-07 14:51:21|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791406281911, saldo Q750.00, límite Q1000.00.
-132|2026-10-07 15:04:06|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-133|2026-10-07 15:04:06|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-134|2026-10-07 15:04:06|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-135|2026-10-07 15:04:07|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-136|2026-10-07 15:04:07|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-137|2026-10-07 15:04:07|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-138|2026-10-07 15:04:07|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-139|2026-10-07 15:04:07|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-140|2026-10-07 15:04:07|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-141|2026-10-07 15:04:07|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-142|2026-10-07 15:04:07|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-143|2026-10-07 15:04:07|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-144|2026-10-07 15:04:07|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-145|2026-10-07 15:04:08|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-146|2026-10-07 15:04:08|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-147|2026-10-07 15:04:08|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791407048236, saldo Q800.00, límite Q1000.00.
-149|2026-10-07 15:04:08|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-150|2026-10-07 15:04:08|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-151|2026-10-07 15:04:08|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-152|2026-10-07 15:04:08|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791407048619, saldo Q750.00, límite Q1000.00.
-154|2026-10-07 15:05:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-155|2026-10-07 15:05:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-156|2026-10-07 15:05:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-157|2026-10-07 15:05:16|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-158|2026-10-07 15:05:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-159|2026-10-07 15:05:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-160|2026-10-07 15:05:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-161|2026-10-07 15:05:16|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-162|2026-10-07 15:05:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-163|2026-10-07 15:05:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-164|2026-10-07 15:05:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-165|2026-10-07 15:05:16|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-166|2026-10-07 15:05:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-167|2026-10-07 15:05:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-168|2026-10-07 15:05:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-169|2026-10-07 15:05:17|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791407117258, saldo Q800.00, límite Q1000.00.
-171|2026-10-07 15:05:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-172|2026-10-07 15:05:17|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-173|2026-10-07 15:05:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-174|2026-10-07 15:05:17|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791407117610, saldo Q750.00, límite Q1000.00.
-176|2026-10-07 15:23:38|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-177|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-178|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-179|2026-10-07 15:23:39|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-180|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-181|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-182|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-183|2026-10-07 15:23:39|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-184|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-185|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-186|2026-10-07 15:23:39|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-187|2026-10-07 15:23:40|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-188|2026-10-07 15:23:40|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-189|2026-10-07 15:23:40|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-190|2026-10-07 15:23:40|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-191|2026-10-07 15:23:40|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791408220754, saldo Q800.00, límite Q1000.00.
-193|2026-10-07 15:23:40|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-194|2026-10-07 15:23:40|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-195|2026-10-07 15:23:41|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-196|2026-10-07 15:23:41|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791408221164, saldo Q750.00, límite Q1000.00.
-198|2026-10-07 15:37:15|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-199|2026-10-07 15:37:19|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-200|2026-10-07 15:37:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-201|2026-10-07 15:37:24|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-202|2026-10-07 15:37:34|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q10000.00. Consumos diarios reiniciados a cero.
-203|2026-10-07 15:45:33|3|RETIRO_EFECTIVO|Retiro exitoso de Q1200.00 con desglose {'200': 6}.
-204|2026-10-07 15:45:43|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q250.00 desglosado: {'50': 5}.
-205|2026-10-07 15:46:31|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q60.00 desglosado: {'20': 3}.
-206|2026-10-07 15:46:41|4|RETIRO_EFECTIVO|Retiro exitoso de Q250.00 con desglose {'50': 5}.
-207|2026-10-07 15:46:46|4|DEPOSITO_EFECTIVO|Depósito exitoso de Q100.00 desglosado: {'100': 1}.
-20|2026-10-07 19:50:14|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 9). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-22|2026-10-07 19:50:14|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 10). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-39|2026-10-07 19:56:15|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 11). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-41|2026-10-07 19:56:15|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 12). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-58|2026-10-07 19:58:33|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 13). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-63|2026-10-07 19:58:34|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 14). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-80|2026-10-07 20:14:20|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 15). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-85|2026-10-07 20:14:20|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 16). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-102|2026-10-07 20:14:57|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 17). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-107|2026-10-07 20:14:57|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 18). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-126|2026-10-07 20:51:21|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 19). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-131|2026-10-07 20:51:21|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 20). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-148|2026-10-07 21:04:08|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 21). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-153|2026-10-07 21:04:08|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 22). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-170|2026-10-07 21:05:17|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 23). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-175|2026-10-07 21:05:17|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 24). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-192|2026-10-07 21:23:40|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 25). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-197|2026-10-07 21:23:41|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 26). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-208|2026-10-10 15:39:27|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-209|2026-10-10 15:39:27|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-210|2026-10-10 15:39:27|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-211|2026-10-10 15:39:27|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-212|2026-10-10 15:39:28|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-213|2026-10-10 15:39:28|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-214|2026-10-10 15:39:28|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-215|2026-10-10 15:39:28|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-216|2026-10-10 15:39:28|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-217|2026-10-10 15:39:28|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-218|2026-10-10 15:39:28|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-219|2026-10-10 15:39:28|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-220|2026-10-10 15:39:28|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-221|2026-10-10 15:39:29|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-222|2026-10-10 15:39:29|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-223|2026-10-10 15:39:29|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791668369210, saldo Q800.00, límite Q1000.00.
-225|2026-10-10 15:39:29|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-226|2026-10-10 15:39:29|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-227|2026-10-10 15:39:29|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-228|2026-10-10 15:39:29|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791668369612, saldo Q750.00, límite Q1000.00.
-230|2026-10-10 15:42:48|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-231|2026-10-10 15:42:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-232|2026-10-10 15:42:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-233|2026-10-10 15:42:49|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-234|2026-10-10 15:42:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-235|2026-10-10 15:42:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-236|2026-10-10 15:42:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-237|2026-10-10 15:42:49|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-238|2026-10-10 15:42:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-239|2026-10-10 15:42:49|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-240|2026-10-10 15:42:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-241|2026-10-10 15:42:50|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-242|2026-10-10 15:42:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-243|2026-10-10 15:42:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-244|2026-10-10 15:42:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-245|2026-10-10 15:42:50|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791668570851, saldo Q800.00, límite Q1000.00.
-247|2026-10-10 15:42:50|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-248|2026-10-10 15:42:51|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-249|2026-10-10 15:42:51|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-250|2026-10-10 15:42:51|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791668571308, saldo Q750.00, límite Q1000.00.
-252|2026-10-10 15:57:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-253|2026-10-10 15:57:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-254|2026-10-10 15:57:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-255|2026-10-10 15:57:03|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-256|2026-10-10 15:57:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-257|2026-10-10 15:57:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-258|2026-10-10 15:57:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-259|2026-10-10 15:57:04|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-260|2026-10-10 15:57:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-261|2026-10-10 15:57:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-262|2026-10-10 15:57:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-263|2026-10-10 15:57:04|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-264|2026-10-10 15:57:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-265|2026-10-10 15:57:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-266|2026-10-10 15:57:05|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-267|2026-10-10 15:57:05|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791669425181, saldo Q800.00, límite Q1000.00.
-269|2026-10-10 15:57:05|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-270|2026-10-10 15:57:05|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-271|2026-10-10 15:57:05|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-272|2026-10-10 15:57:05|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791669425659, saldo Q750.00, límite Q1000.00.
-274|2026-10-10 15:57:33|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-275|2026-10-10 15:57:33|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-276|2026-10-10 15:57:34|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-277|2026-10-10 15:57:34|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-278|2026-10-10 15:57:34|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-279|2026-10-10 15:57:34|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-280|2026-10-10 15:57:34|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-281|2026-10-10 15:57:34|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-282|2026-10-10 15:57:34|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-283|2026-10-10 15:57:34|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-284|2026-10-10 15:57:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-285|2026-10-10 15:57:35|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-286|2026-10-10 15:57:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-287|2026-10-10 15:57:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-288|2026-10-10 15:57:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-289|2026-10-10 15:57:35|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791669455862, saldo Q800.00, límite Q1000.00.
-291|2026-10-10 15:57:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-292|2026-10-10 15:57:36|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-293|2026-10-10 15:57:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-294|2026-10-10 15:57:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-295|2026-10-10 15:57:36|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791669456327, saldo Q750.00, límite Q1000.00.
-297|2026-10-10 15:57:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-298|2026-10-10 15:57:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-299|2026-10-10 15:57:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-300|2026-10-10 15:57:57|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-301|2026-10-10 15:57:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-302|2026-10-10 15:57:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-303|2026-10-10 15:57:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-304|2026-10-10 15:57:57|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-305|2026-10-10 15:57:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-306|2026-10-10 15:57:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-307|2026-10-10 15:57:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-308|2026-10-10 15:57:58|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-309|2026-10-10 15:57:58|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-310|2026-10-10 15:57:58|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-311|2026-10-10 15:57:58|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-312|2026-10-10 15:57:58|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791669478419, saldo Q800.00, límite Q1000.00.
-314|2026-10-10 15:57:58|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-315|2026-10-10 15:57:58|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-316|2026-10-10 15:57:58|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-317|2026-10-10 15:57:58|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-318|2026-10-10 15:57:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-319|2026-10-10 15:57:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-320|2026-10-10 15:57:59|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791669479036, saldo Q750.00, límite Q1000.00.
-322|2026-10-10 15:59:54|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-323|2026-10-10 15:59:55|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-324|2026-10-10 15:59:55|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-325|2026-10-10 15:59:55|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-326|2026-10-10 15:59:55|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-327|2026-10-10 15:59:55|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-328|2026-10-10 15:59:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-329|2026-10-10 15:59:56|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-330|2026-10-10 15:59:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-331|2026-10-10 15:59:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-332|2026-10-10 15:59:56|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-333|2026-10-10 15:59:57|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-334|2026-10-10 15:59:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-335|2026-10-10 15:59:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-336|2026-10-10 15:59:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-337|2026-10-10 15:59:57|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791669597576, saldo Q800.00, límite Q1000.00.
-339|2026-10-10 15:59:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-340|2026-10-10 15:59:57|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-341|2026-10-10 15:59:57|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-342|2026-10-10 15:59:58|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-343|2026-10-10 15:59:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-344|2026-10-10 15:59:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-345|2026-10-10 15:59:58|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791669598514, saldo Q750.00, límite Q1000.00.
-347|2026-10-10 16:01:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-348|2026-10-10 16:01:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-349|2026-10-10 16:01:21|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-350|2026-10-10 16:01:22|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-351|2026-10-10 16:01:22|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-352|2026-10-10 16:01:22|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-353|2026-10-10 16:01:22|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-354|2026-10-10 16:01:22|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-355|2026-10-10 16:01:22|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-356|2026-10-10 16:01:22|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-357|2026-10-10 16:01:22|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-358|2026-10-10 16:01:23|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-359|2026-10-10 16:01:23|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-360|2026-10-10 16:01:23|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-361|2026-10-10 16:01:23|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-362|2026-10-10 16:01:23|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791669683590, saldo Q800.00, límite Q1000.00.
-364|2026-10-10 16:01:23|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-365|2026-10-10 16:01:23|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-366|2026-10-10 16:01:23|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-367|2026-10-10 16:01:24|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-368|2026-10-10 16:01:24|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-369|2026-10-10 16:01:24|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-370|2026-10-10 16:01:24|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791669684257, saldo Q750.00, límite Q1000.00.
-372|2026-10-10 16:10:41|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-373|2026-10-10 16:10:41|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-374|2026-10-10 16:10:41|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-375|2026-10-10 16:10:42|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-376|2026-10-10 16:10:42|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-377|2026-10-10 16:10:42|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-378|2026-10-10 16:10:42|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-379|2026-10-10 16:10:42|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-380|2026-10-10 16:10:42|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-381|2026-10-10 16:10:42|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-382|2026-10-10 16:10:42|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-383|2026-10-10 16:10:43|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-384|2026-10-10 16:10:43|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-385|2026-10-10 16:10:43|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-386|2026-10-10 16:10:43|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-387|2026-10-10 16:10:43|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791670243648, saldo Q800.00, límite Q1000.00.
-389|2026-10-10 16:10:43|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-390|2026-10-10 16:10:43|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-391|2026-10-10 16:10:43|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-392|2026-10-10 16:10:44|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-393|2026-10-10 16:10:44|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-394|2026-10-10 16:10:44|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-395|2026-10-10 16:10:44|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791670244302, saldo Q750.00, límite Q1000.00.
-397|2026-10-10 16:40:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-398|2026-10-10 16:40:16|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-399|2026-10-10 16:40:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-400|2026-10-10 16:40:17|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-401|2026-10-10 16:40:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-402|2026-10-10 16:40:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-403|2026-10-10 16:40:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-404|2026-10-10 16:40:17|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-405|2026-10-10 16:40:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-406|2026-10-10 16:40:17|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-407|2026-10-10 16:40:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-408|2026-10-10 16:40:18|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-409|2026-10-10 16:40:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-410|2026-10-10 16:40:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-411|2026-10-10 16:40:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-412|2026-10-10 16:40:18|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791672018869, saldo Q800.00, límite Q1000.00.
-414|2026-10-10 16:40:18|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-415|2026-10-10 16:40:19|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-416|2026-10-10 16:40:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-417|2026-10-10 16:40:19|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-418|2026-10-10 16:40:19|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-419|2026-10-10 16:40:19|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-420|2026-10-10 16:40:19|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791672019467, saldo Q750.00, límite Q1000.00.
-422|2026-10-10 16:51:53|3|RETIRO_EFECTIVO|Retiro exitoso de Q200.00 con desglose {'200': 1}.
-423|2026-10-10 17:18:45|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-424|2026-10-10 17:18:45|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-425|2026-10-10 17:18:45|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-426|2026-10-10 17:18:46|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-427|2026-10-10 17:18:46|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-428|2026-10-10 17:18:46|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-429|2026-10-10 17:18:46|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-430|2026-10-10 17:18:46|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-431|2026-10-10 17:18:46|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-432|2026-10-10 17:18:46|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-433|2026-10-10 17:18:47|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-434|2026-10-10 17:18:47|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-435|2026-10-10 17:18:47|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-436|2026-10-10 17:18:47|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-437|2026-10-10 17:18:47|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-438|2026-10-10 17:18:48|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791674328024, saldo Q800.00, límite Q1000.00.
-440|2026-10-10 17:18:48|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-441|2026-10-10 17:18:48|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-442|2026-10-10 17:18:48|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-443|2026-10-10 17:18:48|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-444|2026-10-10 17:18:48|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-445|2026-10-10 17:18:48|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-446|2026-10-10 17:18:48|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791674328760, saldo Q750.00, límite Q1000.00.
-448|2026-10-10 17:42:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-449|2026-10-10 17:42:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-450|2026-10-10 17:42:03|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-451|2026-10-10 17:42:04|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-452|2026-10-10 17:42:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-453|2026-10-10 17:42:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-454|2026-10-10 17:42:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-455|2026-10-10 17:42:04|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-456|2026-10-10 17:42:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-457|2026-10-10 17:42:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-458|2026-10-10 17:42:04|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-459|2026-10-10 17:42:05|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-460|2026-10-10 17:42:05|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-461|2026-10-10 17:42:05|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-462|2026-10-10 17:42:05|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-463|2026-10-10 17:42:05|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791675725783, saldo Q800.00, límite Q1000.00.
-465|2026-10-10 17:42:05|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-466|2026-10-10 17:42:05|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-467|2026-10-10 17:42:06|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-468|2026-10-10 17:42:06|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-469|2026-10-10 17:42:06|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-470|2026-10-10 17:42:06|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-471|2026-10-10 17:42:06|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791675726429, saldo Q750.00, límite Q1000.00.
-473|2026-10-10 17:59:11|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-474|2026-10-10 17:59:11|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-475|2026-10-10 17:59:11|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-476|2026-10-10 17:59:11|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-477|2026-10-10 17:59:11|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-478|2026-10-10 17:59:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-479|2026-10-10 17:59:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-480|2026-10-10 17:59:12|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-481|2026-10-10 17:59:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-482|2026-10-10 17:59:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-483|2026-10-10 17:59:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-484|2026-10-10 17:59:12|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-485|2026-10-10 17:59:12|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-486|2026-10-10 17:59:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-487|2026-10-10 17:59:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-488|2026-10-10 17:59:13|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791676753326, saldo Q800.00, límite Q1000.00.
-490|2026-10-10 17:59:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-491|2026-10-10 17:59:13|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-492|2026-10-10 17:59:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-493|2026-10-10 17:59:13|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-494|2026-10-10 17:59:13|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-495|2026-10-10 17:59:13|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-496|2026-10-10 17:59:14|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791676753998, saldo Q750.00, límite Q1000.00.
-498|2026-10-10 18:06:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-499|2026-10-10 18:06:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-500|2026-10-10 18:06:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-501|2026-10-10 18:06:35|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-502|2026-10-10 18:06:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-503|2026-10-10 18:06:35|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-504|2026-10-10 18:06:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-505|2026-10-10 18:06:36|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-506|2026-10-10 18:06:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-507|2026-10-10 18:06:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-508|2026-10-10 18:06:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-509|2026-10-10 18:06:37|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-510|2026-10-10 18:06:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-511|2026-10-10 18:06:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-512|2026-10-10 18:06:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-513|2026-10-10 18:06:37|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701791677197655, saldo Q800.00, límite Q1000.00.
-515|2026-10-10 18:06:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-516|2026-10-10 18:06:37|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-517|2026-10-10 18:06:38|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-518|2026-10-10 18:06:38|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-519|2026-10-10 18:06:38|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-520|2026-10-10 18:06:38|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-521|2026-10-10 18:06:38|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801791677198651, saldo Q750.00, límite Q1000.00.
-224|2026-10-10 21:39:29|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 27). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-229|2026-10-10 21:39:29|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 28). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-246|2026-10-10 21:42:50|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 29). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-251|2026-10-10 21:42:51|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 30). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-268|2026-10-10 21:57:05|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 31). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-273|2026-10-10 21:57:05|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 32). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-290|2026-10-10 21:57:35|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 33). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-296|2026-10-10 21:57:36|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 34). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-313|2026-10-10 21:57:58|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 35). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-321|2026-10-10 21:57:59|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 36). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-338|2026-10-10 21:59:57|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 37). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-346|2026-10-10 21:59:58|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 38). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-363|2026-10-10 22:01:23|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 39). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-371|2026-10-10 22:01:24|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 40). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-388|2026-10-10 22:10:43|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 41). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-396|2026-10-10 22:10:44|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 42). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-413|2026-10-10 22:40:18|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 43). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-421|2026-10-10 22:40:19|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 44). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-439|2026-10-10 23:18:48|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 45). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-447|2026-10-10 23:18:48|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 46). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-464|2026-10-10 23:42:05|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 47). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-472|2026-10-10 23:42:06|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 48). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-489|2026-10-10 23:59:13|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 49). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-497|2026-10-10 23:59:14|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 50). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-514|2026-10-11 00:06:37|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 51). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-522|2026-10-11 00:06:38|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 52). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-523|2026-10-29 22:37:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-524|2026-10-29 22:37:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-525|2026-10-29 22:37:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-526|2026-10-29 22:37:36|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 con desglose {'100': 1, '20': 1, '1': 3}.
-527|2026-10-29 22:37:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-528|2026-10-29 22:37:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-529|2026-10-29 22:37:36|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-530|2026-10-29 22:37:37|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 desglosado: {'200': 2, '50': 2}.
-531|2026-10-29 22:37:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-532|2026-10-29 22:37:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-533|2026-10-29 22:37:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-534|2026-10-29 22:37:37|2|FALLO_DISPENSACION_FISICA|Error en hardware: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-535|2026-10-29 22:37:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-536|2026-10-29 22:37:37|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-537|2026-10-29 22:37:38|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-538|2026-10-29 22:37:38|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja con tarjeta 7701793335058105, saldo Q800.00, límite Q1000.00.
-540|2026-10-29 22:37:38|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-541|2026-10-29 22:37:38|1|REINICIO_BOVEDA|Reinicio de bodega a cero (Q0.00). Todas las existencias de billetes y acumuladores diarios del cajero fueron restablecidos a cero.
-542|2026-10-29 22:37:38|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-543|2026-10-29 22:37:38|1|INICIALIZACION_BOVEDA|Inicialización diaria completada con Q9350.00. Consumos diarios reiniciados a cero.
-544|2026-10-29 22:37:38|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-545|2026-10-29 22:37:38|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-546|2026-10-29 22:37:38|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense con tarjeta 8801793335058683, saldo Q750.00, límite Q1000.00.
-548|2026-10-29 22:47:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-549|2026-10-29 22:47:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-550|2026-10-29 22:47:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-551|2026-10-29 22:47:06|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-552|2026-10-29 22:47:06|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-553|2026-10-29 22:47:06|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-554|2026-10-29 22:47:06|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-555|2026-10-29 22:47:06|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-556|2026-10-29 22:47:06|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-557|2026-10-29 22:47:06|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-558|2026-10-29 22:47:07|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-559|2026-10-29 22:47:07|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-560|2026-10-29 22:47:07|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-561|2026-10-29 22:47:07|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-562|2026-10-29 22:47:07|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-563|2026-10-29 22:47:07|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 94200961) con tarjeta 7701793335627917, saldo Q800.00, límite Q1000.00.
-564|2026-10-29 22:47:07|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 56). Motivo: Fin de contrato laboral.
-565|2026-10-29 22:47:08|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-566|2026-10-29 22:47:08|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-567|2026-10-29 22:47:08|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-568|2026-10-29 22:47:08|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-569|2026-10-29 22:47:08|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-570|2026-10-29 22:47:08|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-571|2026-10-29 22:47:08|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 35811416) con tarjeta 8801793335628636, saldo Q750.00, límite Q1000.00.
-572|2026-10-29 22:47:08|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 57). Motivo: Auditoria de cumplimiento regulatorio.
-573|2026-10-29 22:47:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-574|2026-10-29 22:47:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-575|2026-10-29 22:47:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-576|2026-10-29 22:47:39|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-577|2026-10-29 22:47:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-578|2026-10-29 22:47:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-579|2026-10-29 22:47:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-580|2026-10-29 22:47:39|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-581|2026-10-29 22:47:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-582|2026-10-29 22:47:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-583|2026-10-29 22:47:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-584|2026-10-29 22:47:40|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-585|2026-10-29 22:47:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-586|2026-10-29 22:47:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-587|2026-10-29 22:47:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-588|2026-10-29 22:47:40|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 25991310) con tarjeta 7701793335660636, saldo Q800.00, límite Q1000.00.
-589|2026-10-29 22:47:40|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 58). Motivo: Fin de contrato laboral.
-590|2026-10-29 22:47:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-591|2026-10-29 22:47:40|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-592|2026-10-29 22:47:41|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-593|2026-10-29 22:47:41|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-594|2026-10-29 22:47:41|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-595|2026-10-29 22:47:41|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-596|2026-10-29 22:47:41|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 46750163) con tarjeta 8801793335661337, saldo Q750.00, límite Q1000.00.
-597|2026-10-29 22:47:41|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 59). Motivo: Auditoria de cumplimiento regulatorio.
-598|2026-10-29 22:47:41|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-599|2026-10-29 22:47:41|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-600|2026-10-29 22:47:41|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 3 cajeros con Q3870.00 c/u (Total Red: Q11610.00).
-601|2026-10-29 22:47:41|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-602|2026-10-29 22:47:41|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 89196332) con tarjeta 2817849393316673, saldo Q500.00, límite Q1000.00.
-603|2026-10-29 22:55:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-604|2026-10-29 22:55:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-605|2026-10-29 22:55:16|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-606|2026-10-29 22:55:16|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-607|2026-10-29 22:55:16|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-608|2026-10-29 22:55:16|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-609|2026-10-29 22:55:16|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-610|2026-10-29 22:55:16|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-611|2026-10-29 22:55:17|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-612|2026-10-29 22:55:17|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-613|2026-10-29 22:55:17|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-614|2026-10-29 22:55:17|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-615|2026-10-29 22:55:17|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-616|2026-10-29 22:55:17|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-617|2026-10-29 22:55:18|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-618|2026-10-29 22:55:18|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 38332607) con tarjeta 7701793336118189, saldo Q800.00, límite Q1000.00.
-619|2026-10-29 22:55:18|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 61). Motivo: Fin de contrato laboral.
-620|2026-10-29 22:55:18|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-621|2026-10-29 22:55:18|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-622|2026-10-29 22:55:18|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-623|2026-10-29 22:55:18|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-624|2026-10-29 22:55:18|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-625|2026-10-29 22:55:18|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-626|2026-10-29 22:55:19|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 80214692) con tarjeta 8801793336119045, saldo Q750.00, límite Q1000.00.
-627|2026-10-29 22:55:19|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 62). Motivo: Auditoria de cumplimiento regulatorio.
-628|2026-10-29 22:55:19|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-629|2026-10-29 22:55:19|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-630|2026-10-29 22:55:19|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 3 cajeros con Q3870.00 c/u (Total Red: Q11610.00).
-631|2026-10-29 22:55:19|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-632|2026-10-29 22:55:19|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 77221372) con tarjeta 2817278574542363, saldo Q500.00, límite Q1000.00.
-633|2026-10-29 22:55:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-634|2026-10-29 22:55:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-635|2026-10-29 22:55:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-636|2026-10-29 22:55:37|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-637|2026-10-29 22:55:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-638|2026-10-29 22:55:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-639|2026-10-29 22:55:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-640|2026-10-29 22:55:38|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-641|2026-10-29 22:55:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-642|2026-10-29 22:55:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-643|2026-10-29 22:55:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-644|2026-10-29 22:55:38|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-645|2026-10-29 22:55:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-646|2026-10-29 22:55:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-647|2026-10-29 22:55:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-648|2026-10-29 22:55:39|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 90414853) con tarjeta 7701793336139356, saldo Q800.00, límite Q1000.00.
-649|2026-10-29 22:55:39|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 64). Motivo: Fin de contrato laboral.
-650|2026-10-29 22:55:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-651|2026-10-29 22:55:39|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-652|2026-10-29 22:55:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-653|2026-10-29 22:55:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-654|2026-10-29 22:55:39|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-655|2026-10-29 22:55:39|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-656|2026-10-29 22:55:40|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 20546094) con tarjeta 8801793336140051, saldo Q750.00, límite Q1000.00.
-657|2026-10-29 22:55:40|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 65). Motivo: Auditoria de cumplimiento regulatorio.
-658|2026-10-29 22:55:40|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-659|2026-10-29 22:55:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-660|2026-10-29 22:55:40|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 3 cajeros con Q3870.00 c/u (Total Red: Q11610.00).
-661|2026-10-29 22:55:40|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-662|2026-10-29 22:55:40|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 53011809) con tarjeta 1021065892360113, saldo Q500.00, límite Q1000.00.
-663|2026-10-29 23:42:28|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-664|2026-10-29 23:42:28|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-665|2026-10-29 23:42:28|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-666|2026-10-29 23:42:28|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-667|2026-10-29 23:42:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-668|2026-10-29 23:42:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-669|2026-10-29 23:42:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-670|2026-10-29 23:42:29|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-671|2026-10-29 23:42:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-672|2026-10-29 23:42:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-673|2026-10-29 23:42:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-674|2026-10-29 23:42:30|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-675|2026-10-29 23:42:30|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-676|2026-10-29 23:42:30|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-677|2026-10-29 23:42:30|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-678|2026-10-29 23:42:30|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 70169580) con tarjeta 7701793338950638, saldo Q800.00, límite Q1000.00.
-679|2026-10-29 23:42:30|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 67). Motivo: Fin de contrato laboral.
-680|2026-10-29 23:42:30|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-681|2026-10-29 23:42:30|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-682|2026-10-29 23:42:31|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-683|2026-10-29 23:42:31|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-684|2026-10-29 23:42:31|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-685|2026-10-29 23:42:31|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-686|2026-10-29 23:42:31|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 80257232) con tarjeta 8801793338951402, saldo Q750.00, límite Q1000.00.
-687|2026-10-29 23:42:31|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 68). Motivo: Auditoria de cumplimiento regulatorio.
-688|2026-10-29 23:42:31|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-689|2026-10-29 23:42:31|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-690|2026-10-29 23:42:31|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 3 cajeros con Q3870.00 c/u (Total Red: Q11610.00).
-691|2026-10-29 23:42:31|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-692|2026-10-29 23:42:31|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 73408665) con tarjeta 2136259336404396, saldo Q500.00, límite Q1000.00.
-693|2026-10-29 23:43:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-694|2026-10-29 23:43:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-695|2026-10-29 23:43:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-696|2026-10-29 23:43:03|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-697|2026-10-29 23:43:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-698|2026-10-29 23:43:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-699|2026-10-29 23:43:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-700|2026-10-29 23:43:03|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-701|2026-10-29 23:43:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-702|2026-10-29 23:43:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-703|2026-10-29 23:43:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-704|2026-10-29 23:43:04|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-705|2026-10-29 23:43:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-706|2026-10-29 23:43:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-707|2026-10-29 23:43:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-708|2026-10-29 23:43:05|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 28807482) con tarjeta 7701793338985388, saldo Q800.00, límite Q1000.00.
-709|2026-10-29 23:43:05|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 70). Motivo: Fin de contrato laboral.
-710|2026-10-29 23:43:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-711|2026-10-29 23:43:05|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-712|2026-10-29 23:43:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-713|2026-10-29 23:43:06|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-714|2026-10-29 23:43:06|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-715|2026-10-29 23:43:06|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-716|2026-10-29 23:43:06|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 44524079) con tarjeta 8801793338986283, saldo Q750.00, límite Q1000.00.
-717|2026-10-29 23:43:06|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 71). Motivo: Auditoria de cumplimiento regulatorio.
-718|2026-10-29 23:43:06|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-719|2026-10-29 23:43:06|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-720|2026-10-29 23:43:06|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 3 cajeros con Q3870.00 c/u (Total Red: Q11610.00).
-721|2026-10-29 23:43:06|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-722|2026-10-29 23:43:06|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 80230197) con tarjeta 3249340295699722, saldo Q500.00, límite Q1000.00.
-727|2026-10-29 23:53:47|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-728|2026-10-29 23:53:47|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-729|2026-10-29 23:53:47|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-730|2026-10-29 23:53:48|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-731|2026-10-29 23:53:48|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-732|2026-10-29 23:53:48|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-733|2026-10-29 23:53:48|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-734|2026-10-29 23:53:48|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-735|2026-10-29 23:53:48|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-736|2026-10-29 23:53:48|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-737|2026-10-29 23:53:48|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-738|2026-10-29 23:53:49|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-739|2026-10-29 23:53:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-740|2026-10-29 23:53:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-741|2026-10-29 23:53:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-742|2026-10-29 23:53:49|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 35077454) con tarjeta 7701793339629701, saldo Q800.00, límite Q1000.00.
-743|2026-10-29 23:53:49|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 73). Motivo: Fin de contrato laboral.
-744|2026-10-29 23:53:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-745|2026-10-29 23:53:49|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-746|2026-10-29 23:53:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-747|2026-10-29 23:53:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-748|2026-10-29 23:53:50|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-749|2026-10-29 23:53:50|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-750|2026-10-29 23:53:50|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 51485585) con tarjeta 8801793339630480, saldo Q750.00, límite Q1000.00.
-751|2026-10-29 23:53:50|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 74). Motivo: Auditoria de cumplimiento regulatorio.
-752|2026-10-29 23:53:50|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-753|2026-10-29 23:53:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-754|2026-10-29 23:53:50|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 4 cajeros con Q3870.00 c/u (Total Red: Q15480.00).
-755|2026-10-29 23:53:50|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-756|2026-10-29 23:53:51|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 46730500) con tarjeta 3000175699521778, saldo Q500.00, límite Q1000.00.
-539|2026-10-30 04:37:38|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID 53). Motivo: Fin de contrato laboral. Saldo preservado: Q800.00.
-547|2026-10-30 04:37:38|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID 54). Motivo: Auditoria de cumplimiento regulatorio. Saldo preservado: Q750.00.
-723|2026-10-30 05:43:06||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-004 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-724|2026-10-30 05:43:06||ATM_SESION_DESCONECTADA|Cajero ATM-004 (Cajero de José Javier) apagado / desconectado formalmente.
-725|2026-10-30 05:43:06||ATM_SESION_CONECTADA|Cajero ATM-004 (Cajero de José Javier) conectado y enlazado a sesión 10aded95...
-726|2026-10-30 05:43:07||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 89f36112...
-757|2026-10-30 05:53:51||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-005 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-758|2026-10-30 05:53:51||ATM_SESION_DESCONECTADA|Cajero ATM-005 (Cajero de José Javier) apagado / desconectado formalmente.
-759|2026-10-30 05:53:51||ATM_SESION_CONECTADA|Cajero ATM-005 (Cajero de José Javier) conectado y enlazado a sesión 200b94e0...
-760|2026-10-30 05:53:51||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión ffc5c954...
-761|2026-10-31 10:13:26|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-762|2026-10-31 10:13:26|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-763|2026-10-31 10:13:27|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-764|2026-10-31 10:13:27|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-765|2026-10-31 10:13:27|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-766|2026-10-31 10:13:27|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-767|2026-10-31 10:13:27|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-768|2026-10-31 10:13:28|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-769|2026-10-31 10:13:28|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-770|2026-10-31 10:13:28|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-771|2026-10-31 10:13:28|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-772|2026-10-31 10:13:28|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-773|2026-10-31 10:13:28|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-774|2026-10-31 10:13:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-775|2026-10-31 10:13:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-776|2026-10-31 10:13:29|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 23141037) con tarjeta 7701793463209377, saldo Q800.00, límite Q1000.00.
-777|2026-10-31 10:13:29|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 76). Motivo: Fin de contrato laboral.
-778|2026-10-31 10:13:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-779|2026-10-31 10:13:29|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-780|2026-10-31 10:13:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-781|2026-10-31 10:13:29|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-782|2026-10-31 10:13:30|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-783|2026-10-31 10:13:30|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-784|2026-10-31 10:13:30|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 52666072) con tarjeta 8801793463210408, saldo Q750.00, límite Q1000.00.
-785|2026-10-31 10:13:30|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 77). Motivo: Auditoria de cumplimiento regulatorio.
-786|2026-10-31 10:13:30|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-787|2026-10-31 10:13:30|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-788|2026-10-31 10:13:30|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 5 cajeros con Q3870.00 c/u (Total Red: Q19350.00).
-789|2026-10-31 10:13:31|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-790|2026-10-31 10:13:31|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 65081393) con tarjeta 9089134104613157, saldo Q500.00, límite Q1000.00.
-795|2026-10-31 10:14:09|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-796|2026-10-31 10:14:09|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-797|2026-10-31 10:14:09|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-798|2026-10-31 10:14:10|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-799|2026-10-31 10:14:10|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-800|2026-10-31 10:14:10|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-801|2026-10-31 10:14:10|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-802|2026-10-31 10:14:10|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-803|2026-10-31 10:14:10|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-804|2026-10-31 10:14:10|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-805|2026-10-31 10:14:11|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-806|2026-10-31 10:14:11|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-807|2026-10-31 10:14:11|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-808|2026-10-31 10:14:11|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-809|2026-10-31 10:14:11|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-810|2026-10-31 10:14:12|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 79034932) con tarjeta 7701793463252027, saldo Q800.00, límite Q1000.00.
-811|2026-10-31 10:14:12|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 79). Motivo: Fin de contrato laboral.
-812|2026-10-31 10:14:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-813|2026-10-31 10:14:12|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-814|2026-10-31 10:14:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-815|2026-10-31 10:14:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-816|2026-10-31 10:14:12|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-817|2026-10-31 10:14:12|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-818|2026-10-31 10:14:12|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 78314576) con tarjeta 8801793463252896, saldo Q750.00, límite Q1000.00.
-819|2026-10-31 10:14:12|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 80). Motivo: Auditoria de cumplimiento regulatorio.
-820|2026-10-31 10:14:13|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-821|2026-10-31 10:14:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-822|2026-10-31 10:14:13|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 6 cajeros con Q3870.00 c/u (Total Red: Q23220.00).
-823|2026-10-31 10:14:13|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-824|2026-10-31 10:14:13|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 62228599) con tarjeta 3087414129166388, saldo Q500.00, límite Q1000.00.
-829|2026-10-31 10:31:54|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-830|2026-10-31 10:31:54|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-831|2026-10-31 10:31:54|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-832|2026-10-31 10:31:55|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-833|2026-10-31 10:31:55|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-834|2026-10-31 10:31:55|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-835|2026-10-31 10:31:55|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-836|2026-10-31 10:31:55|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-837|2026-10-31 10:31:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-838|2026-10-31 10:31:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-839|2026-10-31 10:31:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-840|2026-10-31 10:31:56|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-841|2026-10-31 10:31:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-842|2026-10-31 10:31:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-843|2026-10-31 10:31:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-844|2026-10-31 10:31:57|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 54504758) con tarjeta 7701793464317340, saldo Q800.00, límite Q1000.00.
-845|2026-10-31 10:31:57|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 82). Motivo: Fin de contrato laboral.
-846|2026-10-31 10:31:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-847|2026-10-31 10:31:57|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-848|2026-10-31 10:31:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-849|2026-10-31 10:31:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-850|2026-10-31 10:31:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-851|2026-10-31 10:31:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-852|2026-10-31 10:31:58|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 17327618) con tarjeta 8801793464318207, saldo Q750.00, límite Q1000.00.
-853|2026-10-31 10:31:58|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 83). Motivo: Auditoria de cumplimiento regulatorio.
-854|2026-10-31 10:31:58|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-855|2026-10-31 10:31:58|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-856|2026-10-31 10:31:58|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 7 cajeros con Q3870.00 c/u (Total Red: Q27090.00).
-857|2026-10-31 10:31:58|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-858|2026-10-31 10:31:58|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 18066179) con tarjeta 8712225910645287, saldo Q500.00, límite Q1000.00.
-791|2026-10-31 16:13:31||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-006 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-792|2026-10-31 16:13:31||ATM_SESION_DESCONECTADA|Cajero ATM-006 (Cajero de José Javier) apagado / desconectado formalmente.
-793|2026-10-31 16:13:31||ATM_SESION_CONECTADA|Cajero ATM-006 (Cajero de José Javier) conectado y enlazado a sesión 4af4133b...
-794|2026-10-31 16:13:31||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 0cb37daf...
-825|2026-10-31 16:14:13||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-007 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-826|2026-10-31 16:14:13||ATM_SESION_DESCONECTADA|Cajero ATM-007 (Cajero de José Javier) apagado / desconectado formalmente.
-827|2026-10-31 16:14:13||ATM_SESION_CONECTADA|Cajero ATM-007 (Cajero de José Javier) conectado y enlazado a sesión 2fa6967b...
-828|2026-10-31 16:14:13||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión d6c9698f...
-859|2026-10-31 16:31:58||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-008 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-860|2026-10-31 16:31:58||ATM_SESION_DESCONECTADA|Cajero ATM-008 (Cajero de José Javier) apagado / desconectado formalmente.
-861|2026-10-31 16:31:58||ATM_SESION_CONECTADA|Cajero ATM-008 (Cajero de José Javier) conectado y enlazado a sesión 7ab20019...
-862|2026-10-31 16:31:58||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión a6993f70...
-863|2026-10-31 20:44:00|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-864|2026-10-31 20:44:00|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-865|2026-10-31 20:44:00|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-866|2026-10-31 20:44:01|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-867|2026-10-31 20:44:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-868|2026-10-31 20:44:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-869|2026-10-31 20:44:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-870|2026-10-31 20:44:01|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-871|2026-10-31 20:44:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-872|2026-10-31 20:44:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-873|2026-10-31 20:44:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-874|2026-10-31 20:44:02|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-875|2026-10-31 20:44:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-876|2026-10-31 20:44:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-877|2026-10-31 20:44:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-878|2026-10-31 20:44:03|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 64687177) con tarjeta 7701793501043585, saldo Q800.00, límite Q1000.00.
-879|2026-10-31 20:44:03|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 85). Motivo: Fin de contrato laboral.
-880|2026-10-31 20:44:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-881|2026-10-31 20:44:03|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-882|2026-10-31 20:44:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-883|2026-10-31 20:44:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-884|2026-10-31 20:44:04|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-885|2026-10-31 20:44:04|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-886|2026-10-31 20:44:04|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 17263696) con tarjeta 8801793501044874, saldo Q750.00, límite Q1000.00.
-887|2026-10-31 20:44:04|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 86). Motivo: Auditoria de cumplimiento regulatorio.
-888|2026-10-31 20:44:05|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-889|2026-10-31 20:44:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-890|2026-10-31 20:44:05|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 8 cajeros con Q3870.00 c/u (Total Red: Q30960.00).
-891|2026-10-31 20:44:05|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-892|2026-10-31 20:44:05|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 85573786) con tarjeta 2106991002282024, saldo Q500.00, límite Q1000.00.
-897|2026-10-31 20:44:21|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-898|2026-10-31 20:44:22|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-899|2026-10-31 20:44:22|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-900|2026-10-31 20:44:22|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-901|2026-10-31 20:44:22|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-902|2026-10-31 20:44:23|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-903|2026-10-31 20:44:23|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-904|2026-10-31 20:44:23|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-905|2026-10-31 20:44:23|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-906|2026-10-31 20:44:23|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-907|2026-10-31 20:44:23|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-908|2026-10-31 20:44:24|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-909|2026-10-31 20:44:24|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-910|2026-10-31 20:44:24|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-911|2026-10-31 20:44:24|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-912|2026-10-31 20:44:25|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 16673367) con tarjeta 7701793501065095, saldo Q800.00, límite Q1000.00.
-913|2026-10-31 20:44:25|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 88). Motivo: Fin de contrato laboral.
-914|2026-10-31 20:44:25|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-915|2026-10-31 20:44:25|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-916|2026-10-31 20:44:25|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-917|2026-10-31 20:44:25|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-918|2026-10-31 20:44:26|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-919|2026-10-31 20:44:26|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-920|2026-10-31 20:44:26|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 18123646) con tarjeta 8801793501066293, saldo Q750.00, límite Q1000.00.
-921|2026-10-31 20:44:26|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 89). Motivo: Auditoria de cumplimiento regulatorio.
-922|2026-10-31 20:44:26|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-923|2026-10-31 20:44:26|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-924|2026-10-31 20:44:26|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 9 cajeros con Q3870.00 c/u (Total Red: Q34830.00).
-925|2026-10-31 20:44:27|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-926|2026-10-31 20:44:27|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 77620740) con tarjeta 1366846263489610, saldo Q500.00, límite Q1000.00.
-931|2026-10-31 20:58:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-932|2026-10-31 20:58:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-933|2026-10-31 20:58:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-934|2026-10-31 20:58:13|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-935|2026-10-31 20:58:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-936|2026-10-31 20:58:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-937|2026-10-31 20:58:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-938|2026-10-31 20:58:13|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-939|2026-10-31 20:58:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-940|2026-10-31 20:58:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-941|2026-10-31 20:58:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-942|2026-10-31 20:58:14|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-943|2026-10-31 20:58:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-944|2026-10-31 20:58:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-945|2026-10-31 20:58:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-946|2026-10-31 20:58:15|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 31008539) con tarjeta 7701793501895605, saldo Q800.00, límite Q1000.00.
-947|2026-10-31 20:58:15|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 91). Motivo: Fin de contrato laboral.
-948|2026-10-31 20:58:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-949|2026-10-31 20:58:15|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-950|2026-10-31 20:58:16|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-951|2026-10-31 20:58:16|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-952|2026-10-31 20:58:16|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-953|2026-10-31 20:58:16|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-954|2026-10-31 20:58:16|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 70780020) con tarjeta 8801793501896705, saldo Q750.00, límite Q1000.00.
-955|2026-10-31 20:58:16|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 92). Motivo: Auditoria de cumplimiento regulatorio.
-956|2026-10-31 20:58:16|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-957|2026-10-31 20:58:17|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-958|2026-10-31 20:58:17|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 10 cajeros con Q3870.00 c/u (Total Red: Q38700.00).
-959|2026-10-31 20:58:17|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-960|2026-10-31 20:58:17|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 30340018) con tarjeta 2368336729973921, saldo Q500.00, límite Q1000.00.
-965|2026-10-31 20:58:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-966|2026-10-31 20:58:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-967|2026-10-31 20:58:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-968|2026-10-31 20:58:38|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
-969|2026-10-31 20:58:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-970|2026-10-31 20:58:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-971|2026-10-31 20:58:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-972|2026-10-31 20:58:39|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
-973|2026-10-31 20:58:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-974|2026-10-31 20:58:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-975|2026-10-31 20:58:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-976|2026-10-31 20:58:40|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
-977|2026-10-31 20:58:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-978|2026-10-31 20:58:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-979|2026-10-31 20:58:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-980|2026-10-31 20:58:41|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 86468816) con tarjeta 7701793501921070, saldo Q800.00, límite Q1000.00.
-981|2026-10-31 20:58:41|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 94). Motivo: Fin de contrato laboral.
-982|2026-10-31 20:58:41|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-983|2026-10-31 20:58:41|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
-984|2026-10-31 20:58:41|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-985|2026-10-31 20:58:41|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-986|2026-10-31 20:58:42|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-987|2026-10-31 20:58:42|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
-988|2026-10-31 20:58:42|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
-989|2026-10-31 20:58:42|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 75332273) con tarjeta 8801793501922377, saldo Q750.00, límite Q1000.00.
-990|2026-10-31 20:58:42|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 95). Motivo: Auditoria de cumplimiento regulatorio.
-991|2026-10-31 20:58:42|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
-992|2026-10-31 20:58:42|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
-993|2026-10-31 20:58:42|55|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 11 cajeros con Q3870.00 c/u (Total Red: Q42570.00).
-893|2026-11-01 02:44:05||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-009 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-894|2026-11-01 02:44:05||ATM_SESION_DESCONECTADA|Cajero ATM-009 (Cajero de José Javier) apagado / desconectado formalmente.
-895|2026-11-01 02:44:05||ATM_SESION_CONECTADA|Cajero ATM-009 (Cajero de José Javier) conectado y enlazado a sesión 9cb2bee0...
-896|2026-11-01 02:44:05||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión a82c8b42...
-927|2026-11-01 02:44:27||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-010 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-928|2026-11-01 02:44:27||ATM_SESION_DESCONECTADA|Cajero ATM-010 (Cajero de José Javier) apagado / desconectado formalmente.
-929|2026-11-01 02:44:27||ATM_SESION_CONECTADA|Cajero ATM-010 (Cajero de José Javier) conectado y enlazado a sesión ed708969...
-930|2026-11-01 02:44:27||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 167ff024...
-961|2026-11-01 02:58:17||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-011 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
-962|2026-11-01 02:58:17||ATM_SESION_DESCONECTADA|Cajero ATM-011 (Cajero de José Javier) apagado / desconectado formalmente.
-963|2026-11-01 02:58:17||ATM_SESION_CONECTADA|Cajero ATM-011 (Cajero de José Javier) conectado y enlazado a sesión 8c66c0de...
-964|2026-11-01 02:58:17||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 70ae99bf...
-994|2026-10-31 20:58:43|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
-995|2026-10-31 20:58:43|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 84233560) con tarjeta 2950031637133527, saldo Q500.00, límite Q1000.00.
+1|2026-10-31 21:21:36|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+2|2026-10-31 21:21:36|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+3|2026-10-31 21:21:36|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+4|2026-10-31 21:21:37|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+5|2026-10-31 21:21:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+6|2026-10-31 21:21:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+7|2026-10-31 21:21:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+8|2026-10-31 21:21:37|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+9|2026-10-31 21:21:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+10|2026-10-31 21:21:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+11|2026-10-31 21:21:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+12|2026-10-31 21:21:38|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+13|2026-10-31 21:21:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+14|2026-10-31 21:21:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+15|2026-10-31 21:21:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+16|2026-10-31 21:21:38|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 57284487) con tarjeta 7701793503298704, saldo Q800.00, límite Q1000.00.
+17|2026-10-31 21:21:38|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 8). Motivo: Fin de contrato laboral.
+18|2026-10-31 21:21:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+19|2026-10-31 21:21:38|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+20|2026-10-31 21:21:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+21|2026-10-31 21:21:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+22|2026-10-31 21:21:39|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+23|2026-10-31 21:21:39|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+24|2026-10-31 21:21:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+25|2026-10-31 21:21:39|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 24264749) con tarjeta 8801793503299547, saldo Q750.00, límite Q1000.00.
+26|2026-10-31 21:21:39|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 9). Motivo: Auditoria de cumplimiento regulatorio.
+27|2026-10-31 21:21:39|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+28|2026-10-31 21:21:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+29|2026-10-31 21:21:39|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 3 cajeros con Q3870.00 c/u (Total Red: Q11610.00).
+30|2026-10-31 21:21:39|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+31|2026-10-31 21:21:39|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 65797078) con tarjeta 1106896518575641, saldo Q500.00, límite Q1000.00.
+36|2026-10-31 21:21:48|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+37|2026-10-31 21:21:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+38|2026-10-31 21:21:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+39|2026-10-31 21:21:49|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+40|2026-10-31 21:21:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+41|2026-10-31 21:21:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+42|2026-10-31 21:21:49|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+43|2026-10-31 21:21:50|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+44|2026-10-31 21:21:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+45|2026-10-31 21:21:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+46|2026-10-31 21:21:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+47|2026-10-31 21:21:50|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+48|2026-10-31 21:21:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+49|2026-10-31 21:21:50|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+50|2026-10-31 21:21:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+51|2026-10-31 21:21:51|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 98164587) con tarjeta 7701793503311152, saldo Q800.00, límite Q1000.00.
+52|2026-10-31 21:21:51|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 11). Motivo: Fin de contrato laboral.
+53|2026-10-31 21:21:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+54|2026-10-31 21:21:51|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+55|2026-10-31 21:21:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+56|2026-10-31 21:21:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+57|2026-10-31 21:21:51|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+58|2026-10-31 21:21:51|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+59|2026-10-31 21:21:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+60|2026-10-31 21:21:51|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 30927287) con tarjeta 8801793503311939, saldo Q750.00, límite Q1000.00.
+61|2026-10-31 21:21:51|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 12). Motivo: Auditoria de cumplimiento regulatorio.
+62|2026-10-31 21:21:52|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+63|2026-10-31 21:21:52|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+64|2026-10-31 21:21:52|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 4 cajeros con Q3870.00 c/u (Total Red: Q15480.00).
+65|2026-10-31 21:21:52|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+66|2026-10-31 21:21:52|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 66782501) con tarjeta 2173954892288923, saldo Q500.00, límite Q1000.00.
+75|2026-10-31 23:40:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+76|2026-10-31 23:40:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+77|2026-10-31 23:40:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+78|2026-10-31 23:40:02|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+79|2026-10-31 23:40:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+80|2026-10-31 23:40:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+81|2026-10-31 23:40:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+82|2026-10-31 23:40:03|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+83|2026-10-31 23:40:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+84|2026-10-31 23:40:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+85|2026-10-31 23:40:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+86|2026-10-31 23:40:03|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+87|2026-10-31 23:40:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+88|2026-10-31 23:40:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+89|2026-10-31 23:40:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+90|2026-10-31 23:40:04|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 53188424) con tarjeta 7701793511604397, saldo Q800.00, límite Q1000.00.
+91|2026-10-31 23:40:04|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 14). Motivo: Fin de contrato laboral.
+92|2026-10-31 23:40:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+93|2026-10-31 23:40:04|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+94|2026-10-31 23:40:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+95|2026-10-31 23:40:04|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+96|2026-10-31 23:40:04|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+97|2026-10-31 23:40:04|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+98|2026-10-31 23:40:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+99|2026-10-31 23:40:05|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 49494102) con tarjeta 8801793511605190, saldo Q750.00, límite Q1000.00.
+100|2026-10-31 23:40:05|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 15). Motivo: Auditoria de cumplimiento regulatorio.
+101|2026-10-31 23:40:05|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+102|2026-10-31 23:40:05|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+103|2026-10-31 23:40:05|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 6 cajeros con Q3870.00 c/u (Total Red: Q23220.00).
+104|2026-10-31 23:40:05|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+105|2026-10-31 23:40:05|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 11972567) con tarjeta 1953256919016493, saldo Q500.00, límite Q1000.00.
+110|2026-10-31 23:41:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+111|2026-10-31 23:41:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+112|2026-10-31 23:41:37|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+113|2026-10-31 23:41:38|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+114|2026-10-31 23:41:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+115|2026-10-31 23:41:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+116|2026-10-31 23:41:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+117|2026-10-31 23:41:38|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+118|2026-10-31 23:41:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+119|2026-10-31 23:41:38|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+120|2026-10-31 23:41:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+121|2026-10-31 23:41:39|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+122|2026-10-31 23:41:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+123|2026-10-31 23:41:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+124|2026-10-31 23:41:39|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+125|2026-10-31 23:41:40|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 42197836) con tarjeta 7701793511700044, saldo Q800.00, límite Q1000.00.
+126|2026-10-31 23:41:40|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 17). Motivo: Fin de contrato laboral.
+127|2026-10-31 23:41:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+128|2026-10-31 23:41:40|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+129|2026-10-31 23:41:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+130|2026-10-31 23:41:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+131|2026-10-31 23:41:40|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+132|2026-10-31 23:41:40|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+133|2026-10-31 23:41:40|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+134|2026-10-31 23:41:40|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 12102350) con tarjeta 8801793511700865, saldo Q750.00, límite Q1000.00.
+135|2026-10-31 23:41:40|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 18). Motivo: Auditoria de cumplimiento regulatorio.
+136|2026-10-31 23:41:41|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+137|2026-10-31 23:41:41|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+138|2026-10-31 23:41:41|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 7 cajeros con Q3870.00 c/u (Total Red: Q27090.00).
+139|2026-10-31 23:41:41|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+140|2026-10-31 23:41:41|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 46494576) con tarjeta 1312782037827330, saldo Q500.00, límite Q1000.00.
+145|2026-10-31 23:41:55|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+146|2026-10-31 23:41:55|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+147|2026-10-31 23:41:55|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+148|2026-10-31 23:41:56|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+149|2026-10-31 23:41:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+150|2026-10-31 23:41:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+151|2026-10-31 23:41:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+152|2026-10-31 23:41:56|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+153|2026-10-31 23:41:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+154|2026-10-31 23:41:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+155|2026-10-31 23:41:56|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+156|2026-10-31 23:41:57|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+157|2026-10-31 23:41:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+158|2026-10-31 23:41:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+159|2026-10-31 23:41:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+160|2026-10-31 23:41:57|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 71512246) con tarjeta 7701793511717773, saldo Q800.00, límite Q1000.00.
+161|2026-10-31 23:41:57|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 20). Motivo: Fin de contrato laboral.
+162|2026-10-31 23:41:57|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+163|2026-10-31 23:41:58|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+164|2026-10-31 23:41:58|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+165|2026-10-31 23:41:58|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+166|2026-10-31 23:41:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+167|2026-10-31 23:41:58|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+168|2026-10-31 23:41:58|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+169|2026-10-31 23:41:58|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 83499579) con tarjeta 8801793511718671, saldo Q750.00, límite Q1000.00.
+170|2026-10-31 23:41:58|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 21). Motivo: Auditoria de cumplimiento regulatorio.
+171|2026-10-31 23:41:58|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+172|2026-10-31 23:41:58|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+173|2026-10-31 23:41:59|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 8 cajeros con Q3870.00 c/u (Total Red: Q30960.00).
+174|2026-10-31 23:41:59|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+175|2026-10-31 23:41:59|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 13923414) con tarjeta 1009207596936221, saldo Q500.00, límite Q1000.00.
+32|2026-11-01 03:21:39||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-004 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+33|2026-11-01 03:21:40||ATM_SESION_DESCONECTADA|Cajero ATM-004 (Cajero de José Javier) apagado / desconectado formalmente.
+34|2026-11-01 03:21:40||ATM_SESION_CONECTADA|Cajero ATM-004 (Cajero de José Javier) conectado y enlazado a sesión 62fbd30d...
+35|2026-11-01 03:21:40||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 797061b1...
+67|2026-11-01 03:21:52||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-005 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+68|2026-11-01 03:21:52||ATM_SESION_DESCONECTADA|Cajero ATM-005 (Cajero de José Javier) apagado / desconectado formalmente.
+69|2026-11-01 03:21:52||ATM_SESION_CONECTADA|Cajero ATM-005 (Cajero de José Javier) conectado y enlazado a sesión ad59d711...
+70|2026-11-01 03:21:52||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 2258237a...
+71|2026-11-01 05:39:41||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-006 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+72|2026-11-01 05:39:41||ATM_SESION_DESCONECTADA|Cajero ATM-006 (Cajero de José Javier) apagado / desconectado formalmente.
+73|2026-11-01 05:39:41||ATM_SESION_CONECTADA|Cajero ATM-006 (Cajero de José Javier) conectado y enlazado a sesión 9cf906bb...
+74|2026-11-01 05:39:41||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 07bcf5f9...
+106|2026-11-01 05:40:05||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-007 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+107|2026-11-01 05:40:05||ATM_SESION_DESCONECTADA|Cajero ATM-007 (Cajero de José Javier) apagado / desconectado formalmente.
+108|2026-11-01 05:40:05||ATM_SESION_CONECTADA|Cajero ATM-007 (Cajero de José Javier) conectado y enlazado a sesión b599f6f7...
+109|2026-11-01 05:40:05||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 2170a404...
+141|2026-11-01 05:41:41||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-008 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+142|2026-11-01 05:41:41||ATM_SESION_DESCONECTADA|Cajero ATM-008 (Cajero de José Javier) apagado / desconectado formalmente.
+143|2026-11-01 05:41:41||ATM_SESION_CONECTADA|Cajero ATM-008 (Cajero de José Javier) conectado y enlazado a sesión bf326126...
+144|2026-11-01 05:41:41||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 58ced586...
+176|2026-11-01 05:41:59||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-009 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+177|2026-11-01 05:41:59||ATM_SESION_DESCONECTADA|Cajero ATM-009 (Cajero de José Javier) apagado / desconectado formalmente.
+178|2026-11-01 05:41:59||ATM_SESION_CONECTADA|Cajero ATM-009 (Cajero de José Javier) conectado y enlazado a sesión a5ff6aab...
+179|2026-11-01 05:41:59||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 356b38bf...

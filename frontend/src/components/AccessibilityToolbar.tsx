@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Volume2, VolumeX, Contrast, Type, Keyboard, RotateCcw, ShieldCheck, X } from "lucide-react";
+import { Contrast, Type, Keyboard, RotateCcw, ShieldCheck, X } from "lucide-react";
 import { soundEffects } from "../utils/audioAccessibility";
 import { userService } from "../services/api";
 import { VoucherModal, type VoucherData } from "./VoucherModal";
@@ -13,7 +13,6 @@ export const AccessibilityToolbar: React.FC<AccessibilityToolbarProps> = ({
   onToggleVirtualKeypad,
   showKeypadToggle = true
 }) => {
-  const [audioEnabled, setAudioEnabled] = useState<boolean>(() => soundEffects.isEnabled());
   const [highContrast, setHighContrast] = useState<boolean>(() => localStorage.getItem("atm_high_contrast") === "true");
   const [largeFont, setLargeFont] = useState<boolean>(() => localStorage.getItem("atm_large_font") === "true");
   
@@ -42,11 +41,6 @@ export const AccessibilityToolbar: React.FC<AccessibilityToolbarProps> = ({
     }
     localStorage.setItem("atm_large_font", largeFont ? "true" : "false");
   }, [largeFont]);
-
-  const toggleSound = () => {
-    const next = soundEffects.toggle();
-    setAudioEnabled(next);
-  };
 
   const handleLookupPending = async () => {
     soundEffects.playKeyClick();
@@ -81,22 +75,6 @@ export const AccessibilityToolbar: React.FC<AccessibilityToolbarProps> = ({
         aria-label="Barra de Accesibilidad y Control del Cajero"
         className="flex items-center gap-1.5 sm:gap-2 bg-discord-surface/90 backdrop-blur-md px-2.5 py-1.5 rounded-2xl border border-discord-hover text-xs shadow-lg"
       >
-        {/* Toggle Audio */}
-        <button
-          type="button"
-          onClick={toggleSound}
-          aria-label={audioEnabled ? "Desactivar asistencia sonora" : "Activar asistencia sonora"}
-          title={audioEnabled ? "Sonido activado (clic para silenciar)" : "Sonido silenciado (clic para activar)"}
-          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-bold transition-all ${
-            audioEnabled
-              ? "bg-discord-blurple/20 text-discord-blurple border border-discord-blurple/40"
-              : "bg-discord-sidebar text-discord-textMuted hover:text-white border border-discord-hover"
-          }`}
-        >
-          {audioEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-          <span className="hidden sm:inline">{audioEnabled ? "Audio On" : "Audio Off"}</span>
-        </button>
-
         {/* Toggle High Contrast */}
         <button
           type="button"

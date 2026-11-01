@@ -72,8 +72,8 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
       setErrorMessage("Por favor seleccione un cajero de la lista.");
       return;
     }
-    if (connectCode.trim().length !== 4) {
-      setErrorMessage("El código de seguridad del cajero debe tener exactamente 4 dígitos.");
+    if (connectCode.trim().length < 3 || connectCode.trim().length > 6) {
+      setErrorMessage("El código de seguridad del cajero debe tener entre 3 y 6 dígitos (ej. '000' o '1234').");
       return;
     }
 
@@ -93,7 +93,7 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
         setConflictDetected(true);
         setErrorMessage(err.response?.data?.detail || "Este cajero ya cuenta con una sesión activa en otra terminal.");
       } else {
-        setErrorMessage(err.response?.data?.detail || "Error al conectar el cajero. Verifique el código de 4 dígitos.");
+        setErrorMessage(err.response?.data?.detail || "Error al conectar el cajero. Verifique el código del cajero.");
       }
     } finally {
       setLoading(false);
@@ -108,8 +108,8 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
       setErrorMessage("Por favor escriba el nombre descriptivo del cajero (ej: 'Cajero de José Javier').");
       return;
     }
-    if (newCode.trim().length !== 4 || !/^\d{4}$/.test(newCode.trim())) {
-      setErrorMessage("El código de seguridad debe constar exactamente de 4 dígitos numéricos.");
+    if (newCode.trim().length < 3 || newCode.trim().length > 6 || !/^\d{3,6}$/.test(newCode.trim())) {
+      setErrorMessage("El código de seguridad debe constar de 3 a 6 dígitos numéricos (ej. '000' o '1234').");
       return;
     }
 
@@ -298,13 +298,13 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
                   <div>
                     <label className="block text-xs font-bold text-discord-textMuted mb-1 flex items-center gap-1.5">
                       <Key className="w-3.5 h-3.5 text-discord-amber" />
-                      <span>Código de Seguridad del Cajero (4 dígitos):</span>
+                      <span>Código de Seguridad del Cajero (3 a 6 dígitos):</span>
                     </label>
                     <input
                       type="password"
-                      maxLength={4}
+                      maxLength={6}
                       value={connectCode}
-                      onChange={(e) => setConnectCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      onChange={(e) => setConnectCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                       placeholder="••••"
                       className="w-full px-3 py-2 bg-discord-base border border-discord-hover rounded-lg text-white font-mono tracking-widest text-center text-lg focus:outline-none focus:border-discord-blurple"
                       onKeyDown={(e) => {
@@ -312,14 +312,14 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
                       }}
                     />
                     <p className="text-[10px] text-discord-textMuted mt-1">
-                      Código de 4 dígitos configurado para este cajero en la base de datos SQL (por defecto: 1234).
+                      Código configurado para este cajero en la base de datos SQL (ej. 000 para ATM-004 o 1234).
                     </p>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => handleConnect(false)}
-                    disabled={loading || connectCode.length !== 4}
+                    disabled={loading || connectCode.length < 3}
                     className="w-full py-2.5 rounded-xl bg-discord-blurple hover:bg-blue-600 disabled:opacity-40 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all"
                   >
                     <Radio className="w-4 h-4" />
@@ -355,14 +355,14 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
                 <div>
                   <label className="block text-xs font-bold text-discord-textMuted mb-1 flex items-center gap-1">
                     <Key className="w-3.5 h-3.5 text-discord-amber" />
-                    <span>Código de 4 Dígitos *</span>
+                    <span>Código de Seguridad (3 a 6 dígitos) *</span>
                   </label>
                   <input
                     type="password"
-                    maxLength={4}
+                    maxLength={6}
                     value={newCode}
-                    onChange={(e) => setNewCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                    placeholder="1234"
+                    onChange={(e) => setNewCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="ej. 000 o 1234"
                     className="w-full px-3 py-2 bg-discord-base border border-discord-hover rounded-lg text-white font-mono tracking-widest text-center text-base focus:outline-none focus:border-discord-green"
                   />
                 </div>
@@ -384,7 +384,7 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
                 <button
                   type="button"
                   onClick={handleRegister}
-                  disabled={loading || !newName.trim() || newCode.length !== 4}
+                  disabled={loading || !newName.trim() || newCode.length < 3}
                   className="w-full py-2.5 rounded-xl bg-discord-green hover:bg-green-500 disabled:opacity-40 text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all"
                 >
                   <PlusCircle className="w-4 h-4" />

@@ -1,39 +1,37 @@
 # Manual de Usuario: Terminal de Autoservicio y Consola Administrativa
 
-## Sistema Bancario y Cajero Automático Embebido (ATM Kiosk) - Versión 2.2.0
-### Red Multicajero, Red Interbancaria TCP 5000 y Accesibilidad Integral
+## Sistema Bancario y Cajero Automático Embebido (ATM Kiosk) - Versión 2.3.0
+### Red Multicajero, Red Interbancaria TCP 5000 y Sincronización Tripartita
 
 ---
 
-Bienvenido al manual operativo integral del sistema bancario **Banco Nacional Inzano GYT**. Esta guía cubre paso a paso la operación en la terminal táctil de autoservicio para clientes, la administración local de cajeros independientes y la consola global de superadministración de red multicajero.
+Bienvenido al manual operativo integral del sistema bancario **Banco Nacional Inzano GYT**. Esta guía cubre paso a paso la operación en la terminal táctil de autoservicio para clientes, la administración local de cajeros independientes, la consola global de superadministración de red multicajero y la sincronización con el servidor central en línea.
 
 ---
 
 ## PARTE 1: GUÍA PARA EL USUARIO (TERMINAL DE AUTOSERVICIO)
 
-### 1. Barra de Accesibilidad y Ergonomía (Novedad v2.2.0)
-En el borde superior de la terminal se encuentra la **Barra de Accesibilidad** interactiva, diseñada para garantizar una experiencia inclusiva y tolerante a fallos:
+### 1. Barra de Accesibilidad y Ergonomía
+En el borde superior de la terminal se encuentra la **Barra de Accesibilidad** interactiva, diseñada para garantizar una experiencia inclusiva, ergonómica y tolerante a fallos:
 
-* **🔊 Sonido Asistido (Web Audio API):** Presione el botón con icono de altavoz para activar la síntesis acústica en tiempo real. El sistema emite notas audibles diferenciadas:
-  * Tono agudo (650 Hz) para clics y pulsaciones táctiles.
-  * Acorde armonioso (C5-E5-G5-C6) al completar retiros, depósitos o transferencias exitosas.
-  * Tono de alerta (320 Hz) para advertencias y conteo de inactividad.
-  * Tono grave (180 Hz) para errores de validación o fondos insuficientes.
 * **🌓 Modo Alto Contraste:** Conmute este botón para activar una paleta de ultra-contraste (fondo negro puro, bordes y acentos amarillo reflectivo `#FFD700` y textos blancos brillantes), certificada bajo lineamientos WCAG AAA.
 * **🔠 Zoom de Fuente:** Presione el botón **"A+"** para aumentar el tamaño de textos y números en toda la pantalla, ideal para personas con baja agudeza visual.
 * **⌨️ Teclado Numérico Virtual Flotante (PINPad):** Si utiliza una pantalla táctil o prefiere teclear mediante cursor, pulse este icono para desplegar el PINPad flotante reubicable.
 * **🔍 Consultar Operación Pendiente:** Si ocurrió un apagón eléctrico, falla mecánica o desconexión de red mientras realizaba un retiro o transferencia, toque este botón e introduzca el número de referencia o token (`TRF-...`). El sistema comprobará el estado real de la transacción en el servidor sin duplicar débitos.
+* **🔇 Asistencia Sonora Silenciada:** Los beeps auditivos han sido desactivados para garantizar máxima discreción y privacidad en espacios públicos y oficinas bancarias.
 
 ---
 
 ### 2. Inicio de Sesión Multifactor (Vista 1)
 
-1. **Identificación del Cajero Activo:** En el encabezado observe el nombre y código del cajero en el que está operando (por ejemplo, `ATM-001: Cajero Central - Zona 10`).
+1. **Identificación y Cambio del Cajero Activo:** En el encabezado observe el nombre y código del cajero en el que está operando (por ejemplo, `ATM-004: Cajero ATM 4 - Sucursal Inzano`).
+   * **Botón `[ 🔄 Cambiar Cajero ]`:** Permite conmutar entre los cajeros disponibles de la red (`ATM-001` a `ATM-004`) o registrar uno nuevo directamente ingresando su código de seguridad (ej. `000` para ATM-004 o `1234`).
+   * **Botón `[ ☁️ Sincronizar Nube ]`:** Conecta de inmediato con el servidor en línea (Render) para descargar y subir las transacciones pendientes sin perder información ante reinicios.
 2. **Ingreso de Tarjeta:** Toque el campo "Número de Tarjeta" e ingrese los 16 dígitos numéricos. La interfaz agrupa los números en bloques legibles de 4 (`XXXX-XXXX-XXXX-XXXX`).
 3. **Ingreso de PIN Confidencial con Visor Seguro:**
    * Toque el campo "PIN" e introduzca sus 4 dígitos.
    * **Botón de Ojo (Mostrar/Ocultar):** Si necesita verificar visualmente los dígitos ingresados, presione el icono del ojo (`👁️`) a la derecha del campo para alternar entre puntos enmascarados y números visibles.
-4. **Ingreso de Token Dinámico:** Ingrese el código numérico de 6 dígitos (TOTP). En la pantalla del kiosco se exhibe el recuadro con el token vigente para agilizar el ingreso.
+4. **Ingreso de Token Dinámico:** Ingrese el código numérico de 6 dígitos (TOTP). En la pantalla del kiosco se exhibe el recuadro con el token vigente para agilizar el ingreso. Dispone además de tolerancia de tiempo extendida para prevenir bloqueos involuntarios.
 5. **Confirmación:** Presione el botón verde **"Entrar"** en el teclado virtual.
 
 > [!TIP]

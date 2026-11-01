@@ -354,6 +354,22 @@ export const hardwareService = {
 };
 
 export const syncService = {
+  getStatus: async () => {
+    const res = await apiClient.get("/api/sync/status");
+    return res.data;
+  },
+  executeSync: async () => {
+    const res = await apiClient.post("/api/sync/execute");
+    return res.data;
+  },
+  exportSnapshot: async () => {
+    const res = await apiClient.get("/api/sync/export");
+    return res.data;
+  },
+  importSnapshot: async (data: any) => {
+    const res = await apiClient.post("/api/sync/import", data);
+    return res.data;
+  },
   saveOfflineSnapshot: (key: string, data: any) => {
     try {
       localStorage.setItem(`atm_cache_${key}`, JSON.stringify({

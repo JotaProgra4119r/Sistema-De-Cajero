@@ -4,9 +4,9 @@ import {
   AlertCircle, CheckCircle2, RefreshCw, Plus, Radio,
   ArrowDownRight, ArrowUpRight, RotateCcw, AlertTriangle,
   Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key,
-  Building2, Globe, Layers, X
+  Building2, Globe, Layers, X, Cloud, HardDrive
 } from "lucide-react";
-import { adminService, hardwareService, interbankService } from "../services/api";
+import { adminService, hardwareService, interbankService, syncService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
 
 interface AdminConsoleViewProps {
@@ -119,6 +119,40 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
   const [rfidDebugCard, setRfidDebugCard] = useState<string>("1234567812345678");
   const [rfidDebugUid, setRfidDebugUid] = useState<string>("B4:5A:21:8F");
   const [rfidTapping, setRfidTapping] = useState<boolean>(false);
+
+  // Estados de sincronización tripartita (SQLite, MySQL, Render)
+  const [syncStatus, setSyncStatus] = useState<any>(null);
+  const [syncLoading, setSyncLoading] = useState<boolean>(false);
+
+  const fetchSyncStatus = async () => {
+    try {
+      const data = await syncService.getStatus();
+      setSyncStatus(data);
+    } catch (e) {
+      console.error("Error fetching sync status:", e);
+    }
+  };
+
+  const handleExecuteGlobalSync = async () => {
+    setSyncLoading(true);
+    setFeedbackMsg(null);
+    try {
+      const res = await syncService.executeSync();
+      await fetchSyncStatus();
+      await fetchMetrics();
+      setFeedbackMsg({
+        type: "success",
+        text: `Sincronización global completada: ${res?.statuses?.details?.join(" ") || "Motores relacionales actualizados y consistentes."}`
+      });
+    } catch (err: any) {
+      setFeedbackMsg({
+        type: "error",
+        text: err?.response?.data?.detail || "Error al sincronizar con el servidor y bases de datos."
+      });
+    } finally {
+      setSyncLoading(false);
+    }
+  };
 
   const fetchMetrics = async () => {
     try {
@@ -251,7 +285,11 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
 
   useEffect(() => {
     fetchMetrics();
-    const interval = setInterval(fetchMetrics, 10000);
+    fetchSyncStatus();
+    const interval = setInterval(() => {
+      fetchMetrics();
+      fetchSyncStatus();
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -606,6 +644,28 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 w-full min-w-0 flex flex-col p-3 sm:p-4 lg:p-6 pb-16 lg:pb-20 overflow-y-auto">
+        {/* Barra Superior de Sincronización Tripartita */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 bg-discord-surface/80 px-4 py-2.5 rounded-2xl border border-discord-hover shadow-sm">
+          <div className="flex items-center gap-2.5 text-xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-discord-green animate-pulse" />
+            <span className="text-discord-textMuted font-bold">Arquitectura de Persistencia:</span>
+            <span className="text-white font-mono font-bold">SQLite Local + MySQL + Servidor en Línea</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExecuteGlobalSync}
+              disabled={syncLoading}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-discord-blurple/20 hover:bg-discord-blurple text-discord-blurple hover:text-white font-bold text-xs border border-discord-blurple/40 transition-all shadow-xs"
+              title="Sincronizar datos con el servidor central en línea (Render) y bases de datos"
+            >
+              <Cloud className={`w-3.5 h-3.5 ${syncLoading ? "animate-spin" : ""}`} />
+              <span>{syncLoading ? "Sincronizando..." : "Sincronizar con Servidor"}</span>
+            </button>
+          </div>
+        </div>
+
         {/* TOP 4 KPI CARDS BAR */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 mb-4 lg:mb-6 flex-shrink-0">
           <div className="p-3 lg:p-4 rounded-2xl bg-discord-surface border border-discord-hover shadow-md">
@@ -1156,6 +1216,149 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 </div>
               </div>
             )}
+
+            {/* PANEL MAESTRO DE SINCRONIZACIÓN TRIPLE DE BASES DE DATOS */}
+            <div className="p-5 bg-gradient-to-r from-discord-sidebar via-discord-surface to-discord-sidebar rounded-2xl border border-discord-hover shadow-lg space-y-4 mt-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-discord-hover pb-3">
+                <div>
+                  <h3 className="text-sm lg:text-base font-black text-white flex items-center gap-2">
+                    <Database className="w-5 h-5 text-discord-blurple" />
+                    <span>Estado y Sincronización Tripartita de Bases de Datos</span>
+                  </h3>
+                  <p className="text-xs text-discord-textMuted mt-0.5">
+                    Monitoreo en vivo de motores de persistencia: SQLite Local, MySQL (InnoDB) y Servidor en Línea (Render Cloud Gateway)
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleExecuteGlobalSync}
+                  disabled={syncLoading}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-discord-green hover:bg-emerald-500 disabled:opacity-50 text-black font-black text-xs sm:text-sm shadow-md transition-all active:scale-95"
+                >
+                  <RefreshCw className={`w-4 h-4 ${syncLoading ? "animate-spin" : ""}`} />
+                  <span>{syncLoading ? "Sincronizando Motores..." : "⚡ Sincronizar Bases de Datos"}</span>
+                </button>
+              </div>
+
+              {/* Los 3 motores lado a lado */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* 1. SQLite Local */}
+                <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
+                  syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
+                    ? "bg-emerald-950/20 border-emerald-500/40"
+                    : syncStatus?.sqlite?.status === "pending"
+                    ? "bg-amber-950/20 border-amber-500/40"
+                    : "bg-rose-950/20 border-rose-500/40"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                      <HardDrive className="w-4 h-4 text-emerald-400" />
+                      <span>SQLite Local</span>
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                      syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                        : syncStatus?.sqlite?.status === "pending"
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                        : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                    }`}>
+                      {syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
+                        ? "🟢 Conectado"
+                        : syncStatus?.sqlite?.status === "pending"
+                        ? "🟡 Pendiente"
+                        : "🔴 Desconectado"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-discord-textMuted">
+                    {syncStatus?.sqlite?.message || "Base de datos autónoma local (database/atm_system.db)"}
+                  </p>
+                  <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
+                    <span>Dual-Write .txt:</span>
+                    <span className="text-emerald-400 font-bold">Activo &amp; Consistente</span>
+                  </div>
+                </div>
+
+                {/* 2. MySQL (InnoDB) */}
+                <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
+                  syncStatus?.mysql?.status === "connected" || syncStatus?.mysql?.status === "synced"
+                    ? "bg-emerald-950/20 border-emerald-500/40"
+                    : syncStatus?.mysql?.status === "pending"
+                    ? "bg-amber-950/20 border-amber-500/40"
+                    : "bg-rose-950/20 border-rose-500/40"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                      <Database className="w-4 h-4 text-blue-400" />
+                      <span>MySQL (InnoDB)</span>
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                      syncStatus?.mysql?.status === "connected" || syncStatus?.mysql?.status === "synced"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                        : syncStatus?.mysql?.status === "pending"
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                        : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                    }`}>
+                      {syncStatus?.mysql?.status === "connected" || syncStatus?.mysql?.status === "synced"
+                        ? "🟢 Conectado"
+                        : syncStatus?.mysql?.status === "pending"
+                        ? "🟡 Pendiente"
+                        : "🔴 Desconectado"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-discord-textMuted">
+                    {syncStatus?.mysql?.message || "Servidor MySQL relacional (puerto 3306)"}
+                  </p>
+                  <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
+                    <span>Motor:</span>
+                    <span className="text-blue-400 font-bold">MySQL Relacional</span>
+                  </div>
+                </div>
+
+                {/* 3. Servidor en Línea (Render) */}
+                <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
+                  syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
+                    ? "bg-emerald-950/20 border-emerald-500/40"
+                    : syncStatus?.cloud?.status === "pending"
+                    ? "bg-amber-950/20 border-amber-500/40"
+                    : "bg-rose-950/20 border-rose-500/40"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                      <Cloud className="w-4 h-4 text-purple-400" />
+                      <span>Servidor en Línea (Render)</span>
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                      syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                        : syncStatus?.cloud?.status === "pending"
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                        : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                    }`}>
+                      {syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
+                        ? "🟢 Conectado"
+                        : syncStatus?.cloud?.status === "pending"
+                        ? "🟡 Pendiente"
+                        : "🔴 Desconectado"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-discord-textMuted">
+                    {syncStatus?.cloud?.message || "https://sistema-de-cajero.onrender.com"}
+                  </p>
+                  <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
+                    <span>Red Multicajero:</span>
+                    <span className="text-purple-400 font-bold">Sincronización Cloud</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between text-xs text-discord-textMuted pt-2 border-t border-discord-hover">
+                <span>Última Sincronización Global: <strong className="text-white font-mono">{syncStatus?.last_sync || "Pendiente"}</strong></span>
+                <span className="text-[11px] text-blue-300">
+                  ℹ️ Las conexiones de otros bancos (NETGEAR / Protocolo 5000) se mantienen operativas sin alteración.
+                </span>
+              </div>
+            </div>
           </div>
         )}
 

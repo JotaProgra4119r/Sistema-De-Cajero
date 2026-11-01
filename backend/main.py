@@ -9,7 +9,7 @@ from backend.app.db.database import SessionLocal
 from backend.app.storage_txt.txt_manager import txt_manager
 from backend.app.hardware.serial_controller import serial_controller
 from backend.app.api.ws import ws_manager
-from backend.app.api import auth, user, admin, hardware, ws, interbank
+from backend.app.api import auth, user, admin, hardware, ws, interbank, sync
 from backend.app.services.interbank_service import interbank_manager
 from agents import swarm_manager, event_bus
 
@@ -74,6 +74,7 @@ app.include_router(admin.router)
 app.include_router(hardware.router)
 app.include_router(ws.router)
 app.include_router(interbank.router)
+app.include_router(sync.router)
 
 @app.get("/health")
 def health_check():

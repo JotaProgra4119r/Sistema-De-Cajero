@@ -17,7 +17,41 @@ timeline
     2026-10 : v2.0.0 (Red Multicajero) : Múltiples Cajeros Independientes, Superadmin, Bóvedas Aisladas, IDs de 8 Dígitos, Vistas SQL
             : v2.1.0 (Protocolo Interbancario) : Socket TCP 5000 / UDP 5005, Token TRF-YYYYMMDD-XXXXXX, Red Estudiantil LAN / Radmin
             : v2.2.0 (Accesibilidad y Ergonomía) : Barra Accesibilidad, Audio Web Audio API, Alto Contraste, Ojo PIN, Recuperación Pendientes
+            : v2.3.0 (Sincronización Tripartita) : Triple DB Sync (SQLite, MySQL, Render), ATM-004 Código 000, Bypass TOTP Inmune, Silenciamiento
 ```
+
+---
+
+## 🚀 Versión 2.3.0 — Sincronización Tripartita de Bases de Datos, Persistencia Cloud Render y Optimización Operativa (01/11/2026)
+
+### Novedades Principales
+1. **Sincronización Tripartita de Persistencia (`/api/sync`):**
+   - Interconexión bidireccional entre tres motores: **SQLite Local** (`database/atm_system.db`), **MySQL (InnoDB)** y **Servidor Cloud en Línea** (`https://sistema-de-cajero.onrender.com`).
+   - Endpoints implementados en backend:
+     - `GET /api/sync/status`: Diagnóstico de salud con insignias visuales (🟢 Conectado / 🟡 Pendiente / 🔴 Desconectado).
+     - `GET /api/sync/export`: Serialización relacional de instantánea completa de la red.
+     - `POST /api/sync/import`: Fusión idempotente (upsert) preservando bancos ajenos en la red.
+     - `POST /api/sync/execute`: Sincronización push/pull y reescritura atómica de archivos duales `.txt`.
+   - **Panel de Monitoreo Tripartito en Consola Superadministrador:** Visualización al pie de la sección Red Multicajero con los 3 motores y botón `[ ⚡ Sincronizar Bases de Datos ]`.
+   - **Botón de Sincronización en Inicio y Consola Admin:** Accesible en el banner superior de la pantalla de bienvenida y en la barra superior de la consola administrativa.
+
+2. **Soporte y Persistencia Completa de ATM-004:**
+   - Registro en la semilla relacional de **ATM-004** (*"Cajero ATM 4 - Sucursal Inzano"*, código `"000"`, inicializado con Q9,350.00 en denominaciones completas).
+   - Flexibilización de validaciones de longitud: ahora se admiten códigos de terminal de 3 a 6 dígitos (ej. `"000"` o `"1234"`).
+   - Botón directo **`[ 🔄 Cambiar Cajero ]`** en la pantalla de bienvenida para alternar terminal o registrar un nuevo cajero al vuelo.
+
+3. **Robustecimiento del Algoritmo TOTP Anti-Bloqueo:**
+   - Ventana de deriva temporal extendida a $\pm 5$ minutos ($\pm 5$ intervalos de 60 segundos).
+   - Inclusión de tokens maestros de demostración y evaluación rápida (`123456`, `456789`, `888999`, `000000`, `999999`) que evitan el bloqueo accidental de usuarios evaluadores sin romper la revocación estricta por `logout`.
+   - Límite superior en el desplazamiento de rotación para impedir desalineamientos continuos.
+
+4. **Liberación Nativa de Puertos en Scripts de Ejecución (`.bat`):**
+   - Eliminada la dependencia frágil de `psutil` en los archivos `.bat` (`run_web.bat`, `instalacion/run_web.bat`, `instalacion/windows/run_web.bat`).
+   - Implementado rastreo y terminación forzosa nativa de procesos zombies en puertos 8000 y 5173 mediante `netstat -aon` y `taskkill /F /PID`.
+
+5. **Silenciamiento Integral del Sistema de Asistencia Sonora:**
+   - Desactivación definitiva de los efectos de audio y beeps sonoros a solicitud del usuario en `audioAccessibility.ts`.
+   - Retiro del botón de audio en la barra de accesibilidad, manteniendo inalteradas las funciones visuales esenciales (Alto Contraste, Zoom Tipográfico y Rastreo de Operaciones Pendientes).
 
 ---
 
