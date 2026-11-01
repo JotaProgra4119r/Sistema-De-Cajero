@@ -413,31 +413,38 @@ def test_admin_change_user_pin():
     admin_token = login_admin.json()["access_token"]
     admin_headers = {"Authorization": f"Bearer {admin_token}"}
 
-    # 1. Admin cambia el PIN del usuario 2 a "9876"
-    res = client.post("/api/admin/users/change-pin", headers=admin_headers, json={
-        "id_usuario": 2,
-        "nuevo_pin": "9876"
-    })
-    assert res.status_code == 200
-    assert res.json()["status"] == "SUCCESS"
+    # 1. Obtener ID del usuario Carlos Roberto Gómez dinámicamente desde métricas
+    metrics_res = client.get("/api/admin/metrics", headers=admin_headers)
+    assert metrics_res.status_code == 200
+    users_list = metrics_res.json().get("users", [])
+    carlos_user = next((u for u in users_list if "1234567812345678" in str(u.get("tarjeta", ""))), None)
+    carlos_id = carlos_user["id_usuario"] if carlos_user else 2
 
-    # 2. Verificar que el usuario 2 puede hacer login con el nuevo PIN
-    _consumed_totp_tokens.clear()
-    tok = generate_totp_token()
-    login_res = client.post("/api/auth/login", json={
-        "card_number": "1234567812345678",
-        "pin": "9876",
-        "token": tok,
-        "is_admin": False
-    })
-    assert login_res.status_code == 200
+    # 2. Admin cambia el PIN del usuario a "9876" y garantiza restauración en finally
+    try:
+        res = client.post("/api/admin/users/change-pin", headers=admin_headers, json={
+            "id_usuario": carlos_id,
+            "nuevo_pin": "9876"
+        })
+        assert res.status_code == 200
+        assert res.json()["status"] == "SUCCESS"
 
-    # 3. Restaurar PIN a "1234" para conservar consistencia
-    restore_res = client.post("/api/admin/users/change-pin", headers=admin_headers, json={
-        "id_usuario": 2,
-        "nuevo_pin": "1234"
-    })
-    assert restore_res.status_code == 200
+        # 3. Verificar que el usuario puede hacer login con el nuevo PIN
+        _consumed_totp_tokens.clear()
+        tok = generate_totp_token()
+        login_res = client.post("/api/auth/login", json={
+            "card_number": "1234567812345678",
+            "pin": "9876",
+            "token": tok,
+            "is_admin": False
+        })
+        assert login_res.status_code == 200
+    finally:
+        # 4. Restaurar PIN a "1234" incondicionalmente para conservar consistencia
+        client.post("/api/admin/users/change-pin", headers=admin_headers, json={
+            "id_usuario": carlos_id,
+            "nuevo_pin": "1234"
+        })
 
 def test_transaction_status_pending_recovery():
     """Prueba que el endpoint /api/user/transactions/status permita consultar el estado de una transacción para recuperación ante caídas."""

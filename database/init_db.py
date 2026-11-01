@@ -114,36 +114,7 @@ def init_db():
                     existing_atm.codigo_cajero = "1234"
         db.commit()
 
-        # 3. Seed Super Admin User (Cuenta de prueba rápida aislada)
-        super_user = db.query(Usuario).filter(Usuario.id_rol == 3).first()
-        if not super_user:
-            super_user = Usuario(
-                id_rol=3,
-                nombre_completo="Super Administrador Global",
-                id_cuenta_bancaria="88888888",
-                pin_hash=get_pin_hash("1234"),
-                token_temporal="888999",
-                saldo_actual=0.00,
-                monto_max_diario=9999999.00,
-                total_retirado_hoy=0.00,
-                fecha_ultimo_acceso=datetime.now(timezone.utc),
-                activo=True
-            )
-            db.add(super_user)
-            db.flush()
-
-            card_super = db.query(Tarjeta).filter(Tarjeta.numero_tarjeta == "8888888888888888").first()
-            if not card_super:
-                card_super = Tarjeta(
-                    id_usuario=super_user.id_usuario,
-                    numero_tarjeta="8888888888888888",
-                    activa=True
-                )
-                db.add(card_super)
-            db.commit()
-            print("[DATABASE] Super Administrador creado con credenciales (Tarjeta: 8888888888888888, PIN: 1234, ID: 88888888).")
-
-        # 4. Seed Local Admin User
+        # 3. Seed Local Admin User
         admin_user = db.query(Usuario).filter(Usuario.id_rol == 1).first()
         if not admin_user:
             admin_user = Usuario(
@@ -173,7 +144,7 @@ def init_db():
                 admin_user.id_cuenta_bancaria = "99999999"
                 db.commit()
 
-        # 5. Seed 5 Corporate Employees con Tokens/IDs de Cuenta de 8 dígitos
+        # 4. Seed 5 Corporate Employees con Tokens/IDs de Cuenta de 8 dígitos
         employees_seed = [
             ("Carlos Roberto Gómez", "1234567812345678", 3500.00, 2000.00, "10014528"),
             ("María Andrea López",   "2345678923456789", 4800.00, 2500.00, "20027819"),
@@ -212,6 +183,35 @@ def init_db():
                 if u and not u.id_cuenta_bancaria:
                     u.id_cuenta_bancaria = acct_id
         db.commit()
+
+        # 5. Seed Super Admin User (Cuenta de prueba rápida aislada)
+        super_user = db.query(Usuario).filter(Usuario.id_rol == 3).first()
+        if not super_user:
+            super_user = Usuario(
+                id_rol=3,
+                nombre_completo="Super Administrador Global",
+                id_cuenta_bancaria="88888888",
+                pin_hash=get_pin_hash("1234"),
+                token_temporal="888999",
+                saldo_actual=0.00,
+                monto_max_diario=9999999.00,
+                total_retirado_hoy=0.00,
+                fecha_ultimo_acceso=datetime.now(timezone.utc),
+                activo=True
+            )
+            db.add(super_user)
+            db.flush()
+
+            card_super = db.query(Tarjeta).filter(Tarjeta.numero_tarjeta == "8888888888888888").first()
+            if not card_super:
+                card_super = Tarjeta(
+                    id_usuario=super_user.id_usuario,
+                    numero_tarjeta="8888888888888888",
+                    activa=True
+                )
+                db.add(card_super)
+            db.commit()
+            print("[DATABASE] Super Administrador creado con credenciales (Tarjeta: 8888888888888888, PIN: 1234, ID: 88888888).")
 
         # Asignar ID de 8 dígitos a cualquier usuario restante que no lo tenga
         other_users = db.query(Usuario).filter(Usuario.id_cuenta_bancaria == None).all()
