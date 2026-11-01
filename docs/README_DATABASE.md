@@ -1,246 +1,299 @@
-# 🏦 Arquitectura y Manual de Base de Datos - Sistema de Cajero v1.0.2
+# Arquitectura y Manual de Base de Datos - Sistema de Cajero v2.2.0
 
-Este documento detalla la arquitectura de persistencia de datos, el esquema relacional, el mecanismo de tolerancia a fallos (Dual-Engine con Fallback a SQLite) y la sincronización con archivos planos (`Dual-Write`) del **Sistema de Cajero Automático y Consola Administrativa**.
+## Red Multicajero, Red Interbancaria y Tolerancia a Fallos
+### Banco Nacional Inzano GYT (`BANC02`)
+
+Este documento detalla la arquitectura de persistencia de datos, el esquema relacional de 11 tablas y 2 vistas, el mecanismo de tolerancia a fallos por capas (Dual-Engine con Fallback instantáneo a SQLite) y la replicación atómica en archivos planos (`Dual-Write`) del **Sistema de Cajero Automático y Consola Administrativa**.
 
 ---
 
 ## 1. Visión General de la Arquitectura de Datos
 
-El sistema implementa un modelo de datos robusto con **tolerancia a fallos por capas**, garantizando alta disponibilidad, integridad ACID y cumplimiento de pistas de auditoría financiera:
+El sistema implementa una arquitectura de persistencia con **alta disponibilidad y tolerancia a fallos por capas**:
 
 ```mermaid
 graph TD
-    A[Servicio Bancario / API FastAPI] --> B{Motor de BD Primario}
-    B -->|Conexión Exitosa| C[(MySQL 8.4 InnoDB)]
-    B -->|Fallo / Sin Conexión| D[(SQLite Local: database/atm_system.db)]
-    A -->|Transacciones de Bóveda e Inventario| E[Sincronización Dual-Write Archivos Planos]
-    E --> F[data/storage_txt/cajero_inventario.txt]
-    E --> G[database/storage_txt/cajero_inventario.txt]
+    A[Servicio Bancario / API Gateway FastAPI] --> B{Motor Relacional Primario}
+    B -->|Conexión Activa| C[(MySQL Server 8.4 InnoDB\n11 Tablas + 2 Vistas\nTransacciones ACID & Row Locking)]
+    B -->|Fallo / Sin Conexión| D[(SQLite Local: database/atm_system.db\nFallback Transparente Zero-Downtime)]
+    
+    A --> E[TxtStorageManager\nDual-Write Concurrente con asyncio.Lock]
+    E --> F[./data/storage_txt/usuarios.txt]
+    E --> G[./data/storage_txt/cajero_inventario.txt]
+    E --> H[./data/storage_txt/cajeros_red.txt]
+    E --> I[./data/storage_txt/transacciones_historico.txt]
+    E --> J[./data/storage_txt/transferencias_interbancarias.txt]
+    E --> K[./data/storage_txt/auditoria_eventos.txt]
 ```
 
 ### Principios Fundamentales
-1. **Motor Primario:** MySQL 8.4+ utilizando el motor de almacenamiento **InnoDB** para soporte completo de transacciones ACID, bloqueos a nivel de fila (`FOR UPDATE`) y claves foráneas con integridad referencial.
-2. **Fallback Automático (Zero-Downtime):** Si MySQL no está levantado o las credenciales no coinciden, [`database/connection.py`](file:///c:/Users/majop/Documents/Sistema-De-Cajero-1.0.2_Release/database/connection.py) conmuta inmediatamente y en tiempo real a SQLite local (`database/atm_system.db`), manteniendo la operatividad sin interrupción del servicio.
-3. **Dual-Write Concurrente:** Toda mutación en las denominaciones físicas de la bóveda (retiros, depósitos, arqueos e inicializaciones) se replica atómicamente tanto en la base de datos relacional como en los archivos de texto estructurados (`storage_txt/cajero_inventario.txt`).
-4. **Política de Instalación Limpia (Clean Install a Q0.00):** La base de datos inicializada de fábrica o tras un despliegue limpio arranca con **Q0.00** en bóveda. El acceso para clientes queda bloqueado hasta que un Administrador realice la carga inicial y el arqueo mediante la Consola Administrativa.
-5. **Auditoría Estricta y Soft Deletes:** Ninguna cuenta o tarjeta se elimina físicamente; se aplica borrado lógico (`is_active = FALSE`) y se registra en `registros_eliminados` y `logs_auditoria`.
+1. **Motor Primario (MySQL 8.4 InnoDB):** Integridad referencial con restricciones `FOREIGN KEY`, bloqueos pesimistas de fila (`SELECT ... FOR UPDATE`), soporte de JSON nativo y cumplimiento estricto de propiedades ACID.
+2. **Fallback Automático (Zero-Downtime):** Si la base de datos MySQL no responde o las credenciales fallan, la capa de acceso a datos [`backend/app/db/database.py`](file:///c:/Users/majop/Documents/Sistema-De-Cajero-main/backend/app/db/database.py) conmuta inmediatamente a SQLite local (`database/atm_system.db`), preservando la continuidad de las operaciones.
+3. **Dual-Write Concurrente:** Toda mutación financiera u operativa se escribe en la base de datos relacional y se replica simultáneamente en archivos de texto estructurados mediante `asyncio.Lock()`.
+4. **Bóveda Limpia en Primer Inicio (Clean Install Q0.00):** Por directiva de seguridad bancaria, la base de datos limpia arranca con **Q0.00** en todos los cajeros. El autoservicio para clientes queda bloqueado hasta que el Administrador efectúe el arqueo e inicialización inicial.
+5. **Aislamiento Multicajero:** El inventario físico de papel moneda se encuentra estrictamente aislado por cajero (`id_cajero`), impidiendo que un retiro en la sucursal `ATM-001` altere el stock físico de `ATM-002`.
 
 ---
 
-## 2. Esquema Relacional de Base de Datos (8 Tablas)
+## 2. Esquema Relacional Completo (11 Tablas y 2 Vistas)
 
-El archivo maestro DDL y de migración se encuentra en [`database/schema.sql`](file:///c:/Users/majop/Documents/Sistema-De-Cajero-1.0.2_Release/database/schema.sql). A continuación se describe cada entidad:
+El script maestro DDL se encuentra en [`database/schema.sql`](file:///c:/Users/majop/Documents/Sistema-De-Cajero-main/database/schema.sql).
 
 ```mermaid
 erDiagram
     ROLES ||--o{ USUARIOS : "asigna permisos"
-    USUARIOS ||--o{ TARJETAS : "posee"
-    USUARIOS ||--o{ REGISTROS_ELIMINADOS : "audita borrado"
-    TARJETAS ||--o{ TRANSACCIONES : "ejecuta"
-    USUARIOS ||--o{ TRANSACCIONES : "titular"
-    USUARIOS ||--o{ ARQUEOS_CAJERO : "responsable"
-    USUARIOS ||--o{ LOGS_AUDITORIA : "inicia acción"
-    DENOMINACIONES_CAJERO ||--o{ TRANSACCIONES : "dispensa / recibe"
+    USUARIOS ||--o{ TARJETAS : "posee plasticos"
+    CAJEROS ||--o{ DENOMINACIONES_CAJERO : "aloja stock de billetes"
+    CAJEROS ||--o{ ARQUEOS_CAJERO : "registra inicializaciones"
+    CAJEROS ||--o{ TRANSACCIONES : "procesa operaciones"
+    USUARIOS ||--o{ TRANSACCIONES : "titular de cuenta"
+    BANCOS_RED ||--o{ TRANSFERENCIAS_BANCARIAS : "interconecta"
+    USUARIOS ||--o{ LOGS_AUDITORIA : "origina accion"
+    CAJEROS ||--o{ LOGS_AUDITORIA : "terminal de origen"
 
     ROLES {
         int id_rol PK
-        string nombre_rol
-        string descripcion
+        string nombre_rol UK
     }
     USUARIOS {
         int id_usuario PK
-        string username UK
-        string password_hash
-        string nombre_completo
         int id_rol FK
-        boolean is_active
-        timestamp created_at
+        string nombre_completo
+        string id_cuenta_bancaria UK
+        string pin_hash
+        string token_temporal
+        decimal saldo_actual
+        decimal monto_max_diario
+        decimal total_retirado_hoy
+        boolean cambio_pin_realizado
+        boolean activo
+        boolean is_deleted
     }
     TARJETAS {
         int id_tarjeta PK
         int id_usuario FK
         string numero_tarjeta UK
-        string pin_hash
-        decimal saldo
-        int intentos_fallidos
-        boolean is_locked
-        boolean is_active
-        timestamp created_at
+        boolean activa
+        boolean is_deleted
+    }
+    CAJEROS {
+        string id_cajero PK
+        string nombre
+        string ubicacion
+        string estado
+        boolean is_initialized
+        string codigo_cajero
+        boolean en_linea
+        string sesion_activa_id
+        datetime ultimo_latido
     }
     DENOMINACIONES_CAJERO {
         int id_denominacion PK
-        decimal valor_denominacion UK
-        int cantidad_disponible
-        string moneda
-        timestamp ultima_actualizacion
+        string id_cajero FK
+        int denominacion
+        int cantidad_billetes
     }
     ARQUEOS_CAJERO {
         int id_arqueo PK
-        int id_usuario_responsable FK
-        decimal total_registrado
-        decimal total_fisico
-        decimal diferencia
-        string observaciones
-        timestamp fecha_arqueo
+        string id_cajero FK
+        string tipo_evento
+        decimal monto_total
+        datetime fecha_evento
     }
     TRANSACCIONES {
         int id_transaccion PK
-        int id_tarjeta FK
+        string id_cajero FK
         int id_usuario FK
         string tipo_transaccion
         decimal monto
-        decimal saldo_anterior
-        decimal saldo_nuevo
-        string desglose_denominaciones
-        timestamp fecha_transaccion
+        json desglose_billetes
+        string id_cuenta_destino
+        string nombre_destinatario
+        string token_transferencia
+        datetime fecha_hora
     }
     LOGS_AUDITORIA {
         int id_log PK
-        int id_usuario FK
-        string modulo
+        string id_cajero
+        int id_usuario
         string accion
-        string detalle
-        string ip_origen
-        timestamp fecha_evento
+        text detalles
+        datetime fecha_hora
     }
     REGISTROS_ELIMINADOS {
-        int id_registro PK
+        int id_eliminacion PK
         string tabla_origen
-        int id_elemento_eliminado
-        string datos_respaldo_json
-        int id_usuario_eliminador FK
+        int id_registro_origen
+        json datos_eliminados_json
         string motivo
-        timestamp fecha_eliminacion
+        int eliminado_por_id
+        datetime fecha_eliminacion
+    }
+    BANCOS_RED {
+        int id_banco PK
+        string codigo_banco UK
+        string nombre_banco
+        string ip
+        int puerto
+        boolean es_propio
+        decimal limite_diario
+        decimal transferido_hoy
+        datetime fecha_ultimo_reinicio
+        boolean activo
+    }
+    TRANSFERENCIAS_BANCARIAS {
+        int id_transferencia PK
+        string token_transferencia
+        string tipo_transferencia
+        string banco_origen
+        string cuenta_origen
+        string nombre_origen
+        string banco_destino
+        string cuenta_destino
+        string nombre_destino
+        decimal monto
+        string concepto
+        decimal cupo_restante_banco_origen
+        decimal cupo_restante_banco_destino
+        string estado
+        datetime fecha_creacion
     }
 ```
 
-### Detalle de Tablas
+---
+
+### Detalle de Entidades
 
 #### 1. `roles`
-Define el nivel de autorización: `Administrador` (acceso a auditoría, bóveda y gestión de usuarios) y `Cliente` (acceso a autoservicio de cajero).
+Define los niveles de autorización RBAC del sistema: `ADMINISTRADOR` (1), `USUARIO` (2) y `SUPERADMIN` (3).
 
 #### 2. `usuarios`
-Cuentas de usuario del sistema. Las contraseñas se almacenan cifradas con algoritmos de hashing seguro (PBKDF2/Argon2). Soporta banderas de activación (`is_active`) para bajas lógicas.
+Catálogo maestro de clientes corporativos y administradores:
+* `id_cuenta_bancaria`: Código numérico único de **8 dígitos** (ej. `10014528` para Carlos Gómez, `20027819` para María López) utilizado para depósitos directos y transferencias entre cuentas.
+* `pin_hash`: Hash SHA-256 seguro con salting dinámico (`ATM_SALT_2026:PIN`).
+* `saldo_actual`: Saldo contable disponible en Quetzales.
+* `monto_max_diario` y `total_retirado_hoy`: Control estricto de cupo diario acumulado.
+* `is_deleted`: Bandera de baja lógica (*soft delete*) con respaldo forense.
 
 #### 3. `tarjetas`
-Tarjetas de débito/crédito asignadas a usuarios:
-- `numero_tarjeta`: Identificador único de tarjeta (ej. 16 dígitos o formato estandarizado).
-- `pin_hash`: Hash seguro del PIN numérico de 4 dígitos.
-- `saldo`: Saldo contable disponible del usuario en Quetzales (Q).
-- `intentos_fallidos`: Contador incremental de intentos fallidos de PIN.
-- `is_locked`: Booleano que bloquea la tarjeta tras superar el umbral de seguridad (3 intentos).
-- `is_active`: Flag de baja lógica.
+Plásticos de débito de 16 posiciones numéricas asociados al titular. Permite reasignación de tarjetas preservando intactos los saldos contables y registros del cliente.
 
-#### 4. `denominaciones_cajero`
-Inventario físico de billetes en la bóveda del cajero:
-- Denominaciones soportadas: **Q1.00, Q5.00, Q10.00, Q20.00, Q50.00, Q100.00, Q200.00**.
-- En instalación limpia, todas las filas tienen `cantidad_disponible = 0`.
-- El total en bóveda es la sumatoria de `(valor_denominacion * cantidad_disponible)`.
+#### 4. `cajeros` (Red Multicajero)
+Instancias independientes de terminales de autoservicio:
+* `id_cajero`: Clave primaria alfanumérica (`ATM-001`, `ATM-002`, `ATM-003`, etc.).
+* `codigo_cajero`: Código numérico confidencial de 4 dígitos para desbloquear el cajero en arranques posteriores.
+* `sesion_activa_id`: Identificador de sesión para el candado de concurrencia (impide que dos operadores o ventanas abran simultáneamente el mismo ATM).
+* `en_linea` y `ultimo_latido`: Monitoreo en tiempo real para el tablero del Superadministrador.
 
-#### 5. `arqueos_cajero`
-Historial de cuadres de caja y auditorías físicas de efectivo:
-- Registra `total_registrado`, `total_fisico`, `diferencia` (faltantes/sobrantes), observaciones y usuario responsable.
+#### 5. `denominaciones_cajero`
+Inventario físico de papel moneda segmentado por terminal:
+* Clave foránea `id_cajero` hacia la tabla `cajeros`.
+* Restricción de unicidad compuesta `uq_cajero_denom (id_cajero, denominacion)`.
+* Denominaciones válidas en Quetzales: **200, 100, 50, 20, 10, 5, 1**.
 
-#### 6. `transacciones`
-Historial financiero inmutable de operaciones bancarias:
-- Tipos: `RETIRO`, `DEPOSITO`, `CAMBIO_PIN`, `CONSULTA_SALDO`, `BLOQUEO_SEGURIDAD`.
-- Contiene los saldos anterior y nuevo para reconciliación contable.
-- `desglose_denominaciones`: Almacena el detalle JSON con las cantidades exactas de billetes dispensados o recibidos (ej. `{"100": 5, "50": 2}`).
+#### 6. `arqueos_cajero`
+Historial de cuadres, inicializaciones y recargas por cajero individual (`INICIALIZACION`, `RECARGA`, `RESET`).
 
-#### 7. `logs_auditoria`
-Pista de auditoría de seguridad del sistema:
-- Monitorea eventos como `LOGIN_FAIL`, `AUTH_USER`, `AUTH_ADMIN`, `LOCKOUT`, `BAJA_USUARIO`, `VAULT_INIT`, `VAULT_ARQUEO`, `RETIRO_COMPLETADO`, `DEPOSITO_COMPLETADO`.
-- Registra usuario, módulo, detalle, IP y timestamp exacto.
+#### 7. `transacciones`
+Historial inmutable de operaciones financieras:
+* `tipo_transaccion`: `RETIRO`, `DEPOSITO`, `DEPOSITO_A_TERCERO`, `TRANSFERENCIA_INTERBANCARIA`.
+* `desglose_billetes`: Objeto JSON con el conteo físico de cada pieza dispensada o recibida (ej. `{"100": 1, "20": 1, "1": 3}`).
+* `id_cuenta_destino`, `nombre_destinatario` y `token_transferencia`: Trazabilidad completa de operaciones hacia otras cuentas y otros bancos.
 
-#### 8. `registros_eliminados`
-Registro forense de bajas lógicas:
-- Almacena en `datos_respaldo_json` el estado completo del registro antes de ser desactivado, garantizando trazabilidad y posibilidad de auditoría o reversión.
+#### 8. `logs_auditoria`
+Pista forense que registra acciones críticas (`AUTH_USER`, `VAULT_INIT`, `INTERBANK_TRANSFER`, `A11Y_RECOVERY`), identificando el cajero (`id_cajero`), usuario, fecha y detalles.
+
+#### 9. `registros_eliminados`
+Bitácora de seguridad que conserva el snapshot JSON íntegro de registros dados de baja lógica para permitir auditorías judiciales o reactivaciones.
+
+#### 10. `bancos_red` (Protocolo TCP 5000 / UDP 5005)
+Directorio dinámico de instituciones bancarias conectadas en red local / VPN:
+* `codigo_banco`: Código oficial (`BANC02` para **Banco Nacional Inzano GYT**, `BANC01` para **NEXUSBANK**, `NETGEAR`, etc.).
+* `es_propio`: Marca booleana que identifica la instancia bancaria anfitriona.
+* `limite_diario` (Q25,000.00) y `transferido_hoy`: Coordinación del cupo diario interbancario acumulado.
+
+#### 11. `transferencias_bancarias`
+Conciliación de pagos entre bancos en red:
+* `token_transferencia`: Formato estricto `^TRF-\d{8}-\d{6}$` (ej. `TRF-20261031-153022`).
+* Registro de banco emisor, cuenta origen, titular origen, banco receptor, cuenta destino, titular destino, monto y estado contable (`APROBADA`, `RECHAZADA`).
 
 ---
 
-## 3. Instalación, Carga y Despliegue en MySQL
+## 3. Vistas SQL Especializadas
 
-### Método A: MySQL Workbench (Interfaz Gráfica)
-1. Abrir **MySQL Workbench** y conectarse a la instancia local (`127.0.0.1:3306`).
-2. Ir a **File > Open SQL Script...** y seleccionar:
+Para facilitar la consulta desde herramientas de gestión como MySQL Workbench, DBeaver o SQL Server Management Studio, se definieron dos vistas relacionales:
+
+### Vista `retiros`
+Consolida los débitos de efectivo con el nombre del cliente y el desglose de billetes:
+```sql
+CREATE OR REPLACE VIEW retiros AS
+SELECT 
+    t.id_transaccion,
+    t.id_cajero,
+    t.id_usuario,
+    u.nombre_completo AS cliente,
+    t.monto,
+    t.fecha_hora,
+    t.desglose_billetes
+FROM transacciones t
+JOIN usuarios u ON t.id_usuario = u.id_usuario
+WHERE t.tipo_transaccion = 'RETIRO';
+```
+
+### Vista `depositos`
+Consolida todos los ingresos de efectivo (cuenta propia, depósitos a terceros por cuenta de 8 dígitos y transferencias interbancarias recibidas):
+```sql
+CREATE OR REPLACE VIEW depositos AS
+SELECT 
+    t.id_transaccion,
+    t.id_cajero,
+    t.id_usuario,
+    u.nombre_completo AS cliente,
+    t.monto,
+    t.tipo_transaccion,
+    t.id_cuenta_destino,
+    t.nombre_destinatario,
+    t.token_transferencia,
+    t.fecha_hora,
+    t.desglose_billetes
+FROM transacciones t
+JOIN usuarios u ON t.id_usuario = u.id_usuario
+WHERE t.tipo_transaccion IN ('DEPOSITO', 'DEPOSITO_A_TERCERO', 'TRANSFERENCIA_INTERBANCARIA');
+```
+
+---
+
+## 4. Persistencia Dual Concurrente en Archivos Planos (.txt)
+
+Para cumplir con normativas de respaldo redundante e inspección rápida sin base de datos, cada operación financiera actualiza simultáneamente los archivos ubicados en `./data/storage_txt/`:
+
+1. **`usuarios.txt`:**
+   `ID_USUARIO|NOMBRE_COMPLETO|TARJETA_ACTUAL|PIN_HASH|SALDO_ACTUAL|MONTO_MAX_DIARIO|TOTAL_RETIRADO_HOY|CAMBIO_PIN|ULTIMO_ACCESO`
+2. **`cajero_inventario.txt`:**
+   Línea 1: `TOTAL_BOVEDA|{monto_acumulado}`
+   Líneas 2..8: `DENOMINACION|CANTIDAD_BILLETES|SUBTOTAL`
+3. **`cajeros_red.txt`:**
+   `ID_CAJERO|NOMBRE|UBICACION|ESTADO|INICIALIZADO|CODIGO_CAJERO|EN_LINEA`
+4. **`transacciones_historico.txt`:**
+   `ID_TX|TIMESTAMP|ID_CAJERO|ID_USUARIO|TIPO|MONTO|DESGLOSE_JSON`
+5. **`transferencias_interbancarias.txt`:**
+   `ID_TRF|TOKEN|BANCO_ORIGEN|CTA_ORIGEN|BANCO_DESTINO|CTA_DESTINO|MONTO|ESTADO|FECHA`
+6. **`auditoria_eventos.txt`:**
+   `ID_LOG|TIMESTAMP|ID_CAJERO|ID_USUARIO|ACCION|DETALLES`
+
+El gestor `TxtStorageManager` implementa bloqueos asíncronos (`asyncio.Lock()`) para garantizar concurrencia segura libre de condiciones de carrera.
+
+---
+
+## 5. Instalación y Despliegue de la Base de Datos
+
+### Despliegue Local en MySQL
+1. Abrir **MySQL Workbench** o terminal PowerShell.
+2. Ejecutar el script:
+   ```powershell
+   mysql -u root -p < database/schema.sql
    ```
-   database/schema.sql
-   ```
-3. Ejecutar el script haciendo clic en el icono del **Rayo (⚡)**.
-4. El script creará la base de datos `atm_system`, sus 8 tablas, los usuarios bancarios predeterminados y las 7 denominaciones en 0.
+3. El script creará la base de datos `atm_system`, sus 11 tablas, 2 vistas, usuarios de prueba predeterminados (incluyendo al Superadministrador) y las bóvedas de los tres cajeros iniciales vacías a **Q0.00**.
 
-### Método B: Script por Lote Windows (`.bat`)
-Hacer doble clic en el archivo:
-```
-database/ejecutar_en_mysql.bat
-```
-El script solicitará la contraseña de `root` de MySQL y aplicará automáticamente el esquema.
-
-### Método C: Línea de Comandos MySQL CLI
-```powershell
-mysql -u root -p < database/schema.sql
-```
-
----
-
-## 4. Configuración del Archivo `.env`
-
-El backend lee las variables de entorno desde el archivo raíz [`.env`](file:///c:/Users/majop/Documents/Sistema-De-Cajero-1.0.2_Release/.env):
-
-```ini
-# Configuración del Servidor FastAPI
-API_HOST=0.0.0.0
-API_PORT=8000
-SECRET_KEY=supersecretkey-cajero-atm-2026-production
-
-# Conexión MySQL Primaria
-MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=tu_password_aqui
-MYSQL_DATABASE=atm_system
-
-# Fallback SQLite
-SQLITE_DB_PATH=database/atm_system.db
-```
-
-> [!NOTE]
-> Si `MYSQL_PASSWORD` no coincide o MySQL está apagado, el sistema arranca automáticamente usando `SQLITE_DB_PATH` sin lanzar errores fatales.
-
----
-
-## 5. Política de Bóveda en Cero (Q0.00) y Bloqueo de Autoservicio
-
-1. **Estado Inicial:** Tras crear la base de datos con `schema.sql` o [`init_db.py`](file:///c:/Users/majop/Documents/Sistema-De-Cajero-1.0.2_Release/database/init_db.py), la suma total de efectivo en bóveda es exactamente **Q0.00**.
-2. **Bloqueo para Clientes:** Si un usuario intenta autenticarse en la pantalla de bienvenida con su tarjeta y PIN:
-   - El endpoint `/auth/token-preview` y `/auth/atm-status` informan que `vault_empty: true` y `vault_total: 0.0`.
-   - La pantalla muestra un banner de advertencia informando que el cajero requiere carga inicial.
-   - El servicio bancario rechaza cualquier intento de login regular con código HTTP `403 Forbidden` (`Cajero fuera de servicio: La bóveda se encuentra en Q0.00`).
-3. **Desbloqueo Administrativo:**
-   - El administrador inicia sesión en modo Admin (`admin` / `admin123`).
-   - Ingresa al panel **Inicialización de Bóveda** en la Consola Administrativa.
-   - Especifica las piezas para cada denominación (ej. 10 de cada una = Q3,860.00) y pulsa **Inicializar Bóveda**.
-   - El sistema actualiza `denominaciones_cajero`, los archivos de texto planos y registra el arqueo inicial.
-   - A partir de este momento, el cajero queda 100% operativo para retiros y depósitos de clientes.
-
----
-
-## 6. Dual-Write y Persistencia en Archivos Planos
-
-Para cumplir con redundancia operativa física, el inventario de la bóveda se almacena simultáneamente en:
-- `data/storage_txt/cajero_inventario.txt`
-- `database/storage_txt/cajero_inventario.txt`
-
-Formato de archivo plano:
-```
-DENOMINACION|CANTIDAD|SUBTOTAL
-1.00|0|0.00
-5.00|0|0.00
-10.00|0|0.00
-20.00|0|0.00
-50.00|0|0.00
-100.00|0|0.00
-200.00|0|0.00
-TOTAL_BOVEDA|0.00
-```
-Cualquier retiro o depósito procesado en `banking_service.py` ejecuta atómicamente la actualización en MySQL/SQLite y sobrescribe de forma segura estos archivos.
+### Despliegue en la Nube / Render
+En entornos de producción o contenedores en la nube (Render), el backend ejecuta de forma autónoma el archivo [`backend/app/db/init_db.py`](file:///c:/Users/majop/Documents/Sistema-De-Cajero-main/backend/app/db/init_db.py) al iniciar el servidor FastAPI, creando automáticamente todas las tablas, vistas y registros base si no existen.

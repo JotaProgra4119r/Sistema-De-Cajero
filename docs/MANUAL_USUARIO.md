@@ -1,158 +1,151 @@
-# Manual de Usuario: Guía Paso a Paso para la Terminal de Autoservicio
+# Manual de Usuario: Terminal de Autoservicio y Consola Administrativa
 
-## Sistema Bancario y Cajero Automático Embebido (ATM Kiosk)
-
-Bienvenido a la guía operativa de la terminal de autoservicio bancario. La interfaz ha sido diseñada con ergonomía táctil de kiosco de pantalla completa y una estética moderna inspirada en Discord (modo oscuro profundo, tarjetas modulares con bordes redondeados y microinteracciones de alta respuesta).
+## Sistema Bancario y Cajero Automático Embebido (ATM Kiosk) - Versión 2.2.0
+### Red Multicajero, Red Interbancaria TCP 5000 y Accesibilidad Integral
 
 ---
 
-## PARTE 1: GUÍA PARA EL USUARIO (ÁREA DE AUTOSERVICIO)
+Bienvenido al manual operativo integral del sistema bancario **Banco Nacional Inzano GYT**. Esta guía cubre paso a paso la operación en la terminal táctil de autoservicio para clientes, la administración local de cajeros independientes y la consola global de superadministración de red multicajero.
 
-### 1. Inicio de Sesión Multifactor (Vista 1)
-1. **Selección de Modo:** Verifique que el conmutador superior se encuentre en **"Terminal Usuario"** (botón azul con icono de usuario).
-2. **Ingreso de Tarjeta:** Toque el campo "Número de Tarjeta" e ingrese los 16 dígitos numéricos utilizando el teclado táctil virtual en pantalla. Los dígitos se agruparán automáticamente en bloques de cuatro (`XXXX-XXXX-XXXX-XXXX`).
-3. **Ingreso de PIN:** Toque el campo "PIN" e introduzca su clave de 4 dígitos. Por seguridad, los dígitos se mostrarán enmascarados con puntos circulares.
-4. **Ingreso de Token:** Ingrese el código temporal numérico de 6 dígitos (TOTP). En la pantalla del kiosco se muestra un recuadro con el token dinámico de seguridad vigente para facilitar la prueba.
-5. **Confirmación:** Toque el botón **"Entrar"** (color verde `#57F287`) en el teclado virtual para acceder a su cuenta.
+---
+
+## PARTE 1: GUÍA PARA EL USUARIO (TERMINAL DE AUTOSERVICIO)
+
+### 1. Barra de Accesibilidad y Ergonomía (Novedad v2.2.0)
+En el borde superior de la terminal se encuentra la **Barra de Accesibilidad** interactiva, diseñada para garantizar una experiencia inclusiva y tolerante a fallos:
+
+* **🔊 Sonido Asistido (Web Audio API):** Presione el botón con icono de altavoz para activar la síntesis acústica en tiempo real. El sistema emite notas audibles diferenciadas:
+  * Tono agudo (650 Hz) para clics y pulsaciones táctiles.
+  * Acorde armonioso (C5-E5-G5-C6) al completar retiros, depósitos o transferencias exitosas.
+  * Tono de alerta (320 Hz) para advertencias y conteo de inactividad.
+  * Tono grave (180 Hz) para errores de validación o fondos insuficientes.
+* **🌓 Modo Alto Contraste:** Conmute este botón para activar una paleta de ultra-contraste (fondo negro puro, bordes y acentos amarillo reflectivo `#FFD700` y textos blancos brillantes), certificada bajo lineamientos WCAG AAA.
+* **🔠 Zoom de Fuente:** Presione el botón **"A+"** para aumentar el tamaño de textos y números en toda la pantalla, ideal para personas con baja agudeza visual.
+* **⌨️ Teclado Numérico Virtual Flotante (PINPad):** Si utiliza una pantalla táctil o prefiere teclear mediante cursor, pulse este icono para desplegar el PINPad flotante reubicable.
+* **🔍 Consultar Operación Pendiente:** Si ocurrió un apagón eléctrico, falla mecánica o desconexión de red mientras realizaba un retiro o transferencia, toque este botón e introduzca el número de referencia o token (`TRF-...`). El sistema comprobará el estado real de la transacción en el servidor sin duplicar débitos.
+
+---
+
+### 2. Inicio de Sesión Multifactor (Vista 1)
+
+1. **Identificación del Cajero Activo:** En el encabezado observe el nombre y código del cajero en el que está operando (por ejemplo, `ATM-001: Cajero Central - Zona 10`).
+2. **Ingreso de Tarjeta:** Toque el campo "Número de Tarjeta" e ingrese los 16 dígitos numéricos. La interfaz agrupa los números en bloques legibles de 4 (`XXXX-XXXX-XXXX-XXXX`).
+3. **Ingreso de PIN Confidencial con Visor Seguro:**
+   * Toque el campo "PIN" e introduzca sus 4 dígitos.
+   * **Botón de Ojo (Mostrar/Ocultar):** Si necesita verificar visualmente los dígitos ingresados, presione el icono del ojo (`👁️`) a la derecha del campo para alternar entre puntos enmascarados y números visibles.
+4. **Ingreso de Token Dinámico:** Ingrese el código numérico de 6 dígitos (TOTP). En la pantalla del kiosco se exhibe el recuadro con el token vigente para agilizar el ingreso.
+5. **Confirmación:** Presione el botón verde **"Entrar"** en el teclado virtual.
 
 > [!TIP]
-> Si comete un error, presione el botón **"Limpiar"** (color rojo `#ED4245`) para vaciar el campo activo.
-> En la esquina inferior izquierda se encuentran botones de acceso rápido para iniciar sesión con usuarios de prueba con un solo toque (ej. *Carlos Gómez*, *María López*, *Juan Pérez*), los cuales consultan dinámicamente el token activo generado por el backend.
+> **Accesos Rápidos de Demostración:** En la esquina inferior izquierda dispone de botones de prueba rápida para iniciar sesión con un solo toque como *Carlos Roberto Gómez*, *María Andrea López*, *Juan Fernando Pérez*, *Sofía Morales* o *Diego Ruiz*.
 
 ---
 
-### 2. Retiro de Efectivo: Accesos Directos y Montos Personalizados (Vista 2)
-La terminal ofrece máxima flexibilidad transaccional combinando accesos directos estándar con la capacidad de dispensar cualquier monto arbitrario:
+### 3. Retiro de Efectivo y Desglose Inteligente (Vista 2)
 
-1. **Definir Monto:**
-   - **Accesos Directos Estándar:** Toque cualquiera de los botones rápidos preconfigurados: **`Q50`**, **`Q100`**, **`Q200`**, **`Q500`** o **`Q1000`**.
-   - **Monto Arbitrario Personalizado:** Puede introducir manualmente cualquier monto entero que desee (por ejemplo **Q123.00**, **Q239.00**, etc.) en el campo numérico táctil.
-2. **Seleccionar Desglose de Billetes:**
-   - En la cuadrícula táctil de 7 denominaciones oficiales en Quetzales (**Q200, Q100, Q50, Q20, Q10, Q5, Q1**), distinguidas con la coloración identitaria de cada billete nacional, use los botones táctiles **`+`** y **`-`** para armar el lote de billetes.
-   - *Ejemplo para Q123.00:*
-     - 1 billete de Q100
-     - 1 billete de Q20
-     - 3 billetes de Q1
-     - $\text{Total}: (1 \times 100) + (1 \times 20) + (3 \times 1) = \text{Q123.00}$.
-   - O bien, presione el botón **"⚡ Desglose Automático"** para que el algoritmo de programación dinámica del cajero seleccione el conteo óptimo de piezas minimizando el volumen de billetes entregados.
-3. **Validación Reactiva:**
-   - En la columna derecha, observe la tarjeta de cálculo reactivo:
-     - Si la suma coincide exactamente, el recuadro se iluminará en **verde** mostrando *"Suma Exacta: Válido"*.
-     - Si no coincide, se mostrará en **rojo** con la diferencia en Quetzales.
-4. **Dispensación:**
-   - Una vez la suma sea exacta, el botón **"Dispensar Efectivo"** se habilitará en verde brillante.
-   - Presione el botón: los motores paso a paso del cajero extraerán físicamente las piezas, los sensores ópticos comprobarán la salida del papel moneda y el saldo contable se actualizará en tiempo real.
+El sistema combina rapidez de dispensación con control absoluto sobre la denominación de billetes a recibir:
+
+1. **Definir Monto del Retiro:**
+   * **Accesos Rápidos Estándar:** Toque **`Q50`**, **`Q100`**, **`Q200`**, **`Q500`** o **`Q1000`**.
+   * **Monto Manual Arbitrario:** Digite cualquier valor exacto (ej. `Q123.00`, `Q235.00`, etc.).
+2. **Armado del Desglose por Denominación:**
+   * En la cuadrícula táctil de 7 denominaciones oficiales guatemaltecas (**Q200, Q100, Q50, Q20, Q10, Q5, Q1**), use los botones **`+`** y **`-`** para configurar el lote exacto de billetes.
+   * O presione **"⚡ Desglose Automático"** para que el algoritmo determine la combinación óptima de billetes con la menor cantidad de piezas.
+3. **Propuesta de Desglose Alternativo ante Falta de Stock (Novedad v2.2.0):**
+   * Si la bóveda física de este cajero no dispone de suficientes billetes de la denominación que usted eligió, pero el cajero sí tiene fondos suficientes en otros billetes, el sistema no rechazará su retiro.
+   * Aparecerá una sugerencia en pantalla con el desglose exacto que el cajero sí puede entregar, junto al botón **"Aceptar Desglose Propuesto"**. Al tocarlo, el lote se cargará automáticamente.
+4. **Validación Reactiva y Dispensación:**
+   * Cuando la suma coincida exactamente con el monto solicitado, el recuadro se iluminará en **verde** (*"Suma Exacta: Válido"*).
+   * Presione **"Dispensar Efectivo"**: los motores paso a paso dispensarán las piezas, los sensores ópticos comprobarán la salida y se emitirá el recibo digital con su nuevo saldo.
 
 ---
 
-### 2.1 Barra Superior de Control y Modos de Visualización (Novedad v1.0.2)
-En la parte superior de la terminal se encuentra la barra de herramientas interactiva:
-* **Conmutador de Tema (Modo Claro / Modo Oscuro):** Presione el botón con icono de Sol / Luna para alternar instantáneamente entre el tema oscuro profundo y el tema claro de alto contraste. Su preferencia se guardará en memoria local.
-* **Control de Ventana / Pantalla Completa:**
-  * **Modo Ventana:** Permite redimensionar la interfaz o trabajar en resolución contenida (1400x900 o 1024x600).
-  * **Pantalla Completa:** Bloquea la interfaz en modo Kiosco bancario inmersivo (atajo: tecla `F11`).
-* **Ejecución Web Desacoplada:** Si prefiere utilizar la terminal desde cualquier navegador web en su red local o dispositivo móvil sin instalar Electron, puede iniciar directamente `run_web.bat` (Windows) o `./run_web.sh` (Linux), accesible en `http://localhost:5173`.
+### 4. Módulo de Depósitos y Transferencias
+
+El módulo de depósitos ofrece tres alternativas accesibles desde el menú o las pestañas de autoservicio:
+
+#### 4.1 Depósito a Cuenta Propia
+1. Seleccione la opción **"Cuenta Propia"**.
+2. Utilice los botones de carga rápida (`+Q50`, `+Q100`, `+Q200`, `+Q500`, `+Q1000`) o los selectores `+`/`-` para contar los billetes a depositar en el cajero.
+3. El panel reactivo calculará el valor total y el nuevo saldo proyectado.
+4. Presione **"Confirmar Depósito"** para acreditar inmediatamente el saldo a su cuenta e incrementar el efectivo de la bóveda del cajero.
+
+#### 4.2 Depósito a Cuentas de Terceros (Cuenta de 8 Dígitos)
+1. Seleccione la opción **"A Terceros (Mismo Banco)"**.
+2. Ingrese el **ID de Cuenta Bancaria de 8 Dígitos** del destinatario (por ejemplo `20027819` perteneciente a María Andrea López).
+3. El cajero consultará en tiempo real el catálogo de cuentas y mostrará el **Nombre del Titular** para confirmación visual, protegiéndolo de envíos erróneos.
+4. Desglose los billetes físicos a depositar en la terminal.
+5. Presione **"Confirmar Depósito a Tercero"**. Los fondos se acreditarán en la cuenta del destinatario y se emitirá un comprobante con el nombre del receptor y la referencia contable.
+
+#### 4.3 Transferencia Interbancaria en Red Local (TCP 5000 / UDP 5005)
+1. Seleccione la opción **"Transferencia Interbancaria"**.
+2. Seleccione el **Banco Destino** de la lista de bancos descubiertos en la red local (ej. `NETGEAR Interbank`, `NEXUSBANK - BANC01`).
+3. Ingrese el número de cuenta de 8 dígitos del destinatario en dicho banco.
+4. El sistema verificará la existencia de la cuenta en el banco vecino mediante el comando `IB_VERIFICAR_CUENTA`.
+5. Digite el monto a transferir y presione **"Enviar Transferencia"**.
+6. El sistema enviará la solicitud `IB_TRANSFERIR` con un token único `TRF-YYYYMMDD-HHMMSS` emitido por **`Banco Nacional Inzano GYT` (`BANC02`)**.
+7. Se emitirá su factura con el token de confirmación interbancaria.
 
 ---
 
-### 3. Depósito de Efectivo Desglosado y Carga Rápida
-1. En la barra de menú superior (`Manejo de archivos > Depósito`) o en las pestañas principales, seleccione **"Depósito Desglosado"**.
-2. **Carga Rápida de Efectivo:** Puede presionar los botones rápidos **`+Q50`**, **`+Q100`**, **`+Q200`**, **`+Q500`** o **`+Q1000`** para sumar paquetes estándar con un solo toque, o usar el botón **"Limpiar"** para reiniciar.
-3. **Desglose Físico por Denominación:** Utilice los botones táctiles **`+`** y **`-`** en cada una de las 7 denominaciones (Q200 a Q1) para armar el lote exacto de billetes a ingresar al cajero.
-4. **Validación Reactiva de Depósito:** En la columna derecha, el panel reactivo valida en vivo el monto a acreditar, mostrando las piezas contadas y el nuevo saldo proyectado en cuenta.
-5. Presione **"Confirmar Depósito"**: sus fondos se acreditarán de inmediato en la base de datos MySQL/SQLite y se incrementará simultáneamente el inventario físico en la bóveda del cajero (`total_boveda`).
+### 5. Actualización de PIN Confidencial con Triple Validación (Novedad v2.2.0)
+
+Para blindar la cuenta ante errores involuntarios de tipeo:
+1. Diríjase a la pestaña **"Actualizar PIN"**.
+2. **PIN Actual:** Ingrese su clave confidencial de 4 dígitos en uso.
+3. **Nuevo PIN:** Introduzca la nueva combinación de 4 dígitos.
+4. **Confirmar Nuevo PIN:** Vuelva a escribir la nueva combinación. La interfaz comprobará en vivo que ambos campos coincidan antes de permitir el guardado.
+5. **Token Dinámico:** Ingrese el código temporal de 6 dígitos.
+6. Presione **"Confirmar Nuevo PIN"**.
 
 ---
 
-### 4. Consulta de Saldo y Fondos de la Tienda / Bóveda
-* En la columna izquierda, la tarjeta principal de saldos exhibe dos métricas financieras cruciales:
-  1. **Fondos en Cuenta (Q.):** Saldo contable disponible y personal del usuario.
-  2. **Fondos de la Tienda / Bóveda (Q.):** Efectivo total físico disponible en el cajero en ese instante (`total_boveda`), permitiendo al usuario conocer con total transparencia la liquidez disponible de la terminal antes de solicitar un retiro.
-* El **Anillo Circular de Cupo Diario** le indicará visualmente qué porcentaje del límite diario permitido ha consumido durante la jornada, detallando el monto retirado hoy y el cupo disponible restante.
+### 6. Consulta de Saldo, Facturas Detalladas y Cupo Diario
+
+* **Tarjeta de Saldos:** Muestra con total transparencia el saldo disponible de su cuenta y los fondos físicos totales en la bóveda de este cajero (`total_boveda`).
+* **Anillo de Cupo Diario:** Barra circular que detalla cuánto ha retirado durante el día y el margen restante de su límite máximo.
+* **Factura Detallada:** Todo comprobante de retiro, depósito o transferencia incluye fecha, hora, banco emisor (**Banco Nacional Inzano GYT**), cajero de origen, titular, destinatario (si aplica), desglose de billetes y token de seguimiento.
 
 ---
 
-### 4.1 Barra de Menú Estilo Ventana Clásica Desktop (`Manejo de archivos` y `Ayuda`)
-En el encabezado de la terminal de autoservicio se incorporó una barra de menús desplegables clásica:
-* **Manejo de archivos:**
-  - **💸 Retiro de Efectivo:** Conmuta directamente a la vista de dispensación de efectivo.
-  - **📥 Depósito a Cuenta:** Conmuta a la vista de ingreso y desglose de billetes.
-  - **🔑 Actualizar PIN:** Despliega el formulario de cambio de clave confidencial.
-  - **⚠️ Baja de Cuenta:** Muestra las políticas de desactivación de cuentas y soft-delete con respaldo JSON forense.
-  - **🚪 Cerrar Sesión:** Salida segura inmediata con rotación de token TOTP.
-* **Ayuda:**
-  - **📘 Guía Rápida:** Ventana modal interactiva con instrucciones sobre desglose de piezas, límites diarios y validación reactiva. *(Nota de seguridad: El estado y detalle de inventario de bóveda está restringido exclusivamente a la Consola Administrativa).*
+### 7. Temporizador de Seguridad con Alerta Temprana de 15 Segundos
+
+* La terminal monitorea la inactividad durante un máximo de **60 segundos**.
+* **Alerta Temprana (v2.2.0):** Al llegar a los **15 segundos restantes**, la pantalla oscurece suavemente el fondo y despliega una ventana modal con cuenta regresiva en color ámbar/rojo y un tono audible de aviso.
+* Si toca cualquier parte de la pantalla o pulsa **"Continuar Sesión"**, el temporizador se reiniciará. De lo contrario, se cerrará la sesión de forma segura y se rotará el token de seguridad.
 
 ---
 
-### 5. Historial de Transacciones
-* En la columna derecha, la tabla de auditoría personal despliega las **últimas 5 transacciones** efectuadas en el cajero (fecha, hora, tipo: Retiro o Depósito, y monto exacto), leídas directamente de MySQL/SQLite y sincronizadas en el histórico plano.
-
----
-
-### 6. Actualización de PIN Confidencial
-1. Seleccione la pestaña **"Actualizar PIN"**.
-2. Ingrese su PIN confidencial actual de 4 dígitos.
-3. Ingrese el token dinámico de 6 dígitos.
-4. Digite su nuevo PIN de 4 dígitos y presione **"Confirmar Nuevo PIN"**.
-
----
-
-### 7. Temporizador de Inactividad y Salida Segura
-* Para salvaguardar la privacidad bancaria, la terminal cuenta con un **temporizador automático de inactividad de 60 segundos** en la esquina superior derecha. Si no se detecta interacción táctil, la sesión se cerrará automáticamente.
-* Puede cerrar su sesión en cualquier momento presionando el botón **"Cerrar Sesión"**.
-
----
-
-## PARTE 2: GUÍA PARA EL ADMINISTRADOR (CONSOLA BANCARIA)
+## PARTE 2: GUÍA PARA EL ADMINISTRADOR DE CAJERO INDIVIDUAL
 
 ### 1. Acceso a la Consola Administrativa
-1. En la pantalla de bienvenida, cambie el conmutador superior a **"Panel Administrador"** (botón ámbar con icono de candado).
-2. Ingrese la tarjeta del administrador (`9999-8888-7777-6666`), el PIN (`1234`) y el token dinámico.
+1. En la pantalla principal, cambie el selector a **"Panel Administrador"**.
+2. Ingrese la tarjeta de administración (`9999-8888-7777-6666`), el PIN (`1234`) y el token dinámico.
 3. Presione **"Entrar"**.
 
----
+### 2. Gestión de Bóveda del Cajero Local
+* **Inventario Exclusivo:** Toda la información de stock, arqueo y billetes corresponde únicamente a la bóveda física del cajero en el que se ha iniciado sesión.
+* **Inicialización de Bóveda:** Al iniciar la jornada, introduzca la dotación inicial (límite máximo permitido de **Q10,000.00**).
+* **Recarga de Efectivo:** Permite añadir billetes durante la jornada, validando que el acumulado en bóveda no supere el tope estructural de **Q30,000.00**.
 
-### 2. Barra de KPIs Superiores
-* **Saldo en Bóveda:** Indicador de fondos físicos acumulados con barra de capacidad proporcional al límite máximo permitido de **Q30,000.00**.
-* **Total Retirado Hoy por Todos:** Suma consolidada de extracciones realizadas por los clientes durante el día.
-* **Promedio de Depósitos:** Ticket promedio de depósitos registrados.
-* **Estado de Bóveda:** Notifica si el cajero ha sido inicializado para la jornada operativa o si se encuentra pendiente.
-
----
-
-### 3. Módulo de Bóveda y Arqueo
-* **Inventario en Cartuchos:** Visualización en tiempo real de la cantidad de piezas y subtotales por denominación (Q200 a Q1).
-* **Inicialización Diaria:**
-  - Ingrese el conteo de billetes al iniciar la jornada.
-  - El sistema valida estrictamente que el valor total consolidado **no sobrepase los Q10,000.00**.
-  - Al inicializar, se reinician los consumos diarios acumulados de los usuarios a cero.
-* **Agregar Efectivo (Recarga):**
-  - Permite recargar piezas adicionales durante el día.
-  - La operación exige inicialización previa y **bloquea el ingreso** si el saldo total acumulado en la terminal superaría el límite de **Q30,000.00**.
+### 3. Catálogo de Usuarios y Auditoría Local
+* **Manejo de Empleados:** Creación de usuarios con ID de cuenta bancaria de 8 dígitos, asignación y reasignación de tarjetas de 16 dígitos, modificación de límites diarios y bajas lógicas reversibles.
+* **Bitácora Filtrable:** Pestañas para aislar transacciones de Retiro, Depósito, Eventos de Sistema y Hardware (Arduino / ESP32-CAM).
 
 ---
 
-### 4. Módulo de Cuentas de Usuarios
-* **Tabla de Empleados:** Muestra ID, nombre, tarjeta de 16 posiciones, saldo contable, límite diario, total retirado hoy, último acceso y estado de cambio de PIN.
-* **Modificar Límite:** Permite ajustar el tope máximo de retiro diario permitido para un empleado.
-* **Reasignar Plástico:** Modifica el número de tarjeta plástica de 16 dígitos asignado al usuario, **preservando íntegramente** su saldo contable y su historial de extracciones acumuladas del día.
-* **Registrar Nuevo Empleado:** Formulario para dar de alta un nuevo trabajador con tarjeta única, PIN inicial, saldo contable y límite diario.
+## PARTE 3: GUÍA PARA EL SUPERADMINISTRADOR (RED MULTICAJERO GLOBAL)
 
----
+### 1. Acceso Exclusivo de Superadministrador
+* **Credenciales de Acceso:** Ingrese con la tarjeta exclusiva de Superadmin (`8888-8888-8888-8888`), PIN (`1234`) y Token dinámico (`888999`).
+* *Nota de Seguridad:* Esta opción y panel no son visibles ni accesibles para los administradores de cajeros locales.
 
-### 5. Bitácora de Auditoría y Auditoría de Retiros
-* **Pestañas de Filtrado Especializado:**
-  - **Todos los Eventos:** Muestra cronológicamente todas las operaciones del sistema (autenticaciones, arqueos, recargas, cambios de PIN).
-  - **💸 Retiros:** Filtra y destaca exclusivamente los retiros de efectivo realizados en el cajero. Cada entrada despliega una tarjeta de auditoría con:
-    - Identificador único de transacción (`ID #TX`).
-    - Nombre del usuario y número de tarjeta utilizada.
-    - Monto debitado en Quetzales.
-    - Desglose exacto de piezas dispensadas por denominación (ej. `Q100 x 5, Q50 x 2`).
-    - Fecha y hora exacta del retiro.
-  - **📥 Depósitos:** Filtra todas las recepciones de efectivo con el detalle de piezas ingresadas y nuevo saldo.
-  - **⚙️ Eventos de Sistema:** Muestra eventos de inicialización, bloqueos de seguridad y bajas lógicas.
-* **Telemetría Hardware:**
-  - Estado del enlace serie con Arduino Mega 2560 (115200 baudios).
-  - Estado de la cámara ESP32-CAM y sensor ultrasónico de presencia HC-SR04.
-  - **Interruptor de Prueba de Atasco:** Permite activar la simulación de atasco mecánico (`JAM_DETECTED`) para verificar en vivo cómo el backend cancela la operación y protege las cuentas bancarias de los clientes.
+### 2. Panel de Control de Red Multicajero
+* **Monitor de Estado en Tiempo Real:** Visualización en cuadrícula de todos los cajeros de la institución (`ATM-001`, `ATM-002`, `ATM-003`, etc.), mostrando:
+  * Estado de Conexión: **En Línea** (verde) o **Apagado** (gris/rojo).
+  * Saldo Físico en Bóveda por cada cajero.
+  * Código de Seguridad de 4 dígitos registrado en el primer inicio.
+  * Sesión activa y último latido recibido.
+* **Inicialización en Lote ("Inicializar Todos los Cajeros"):** Botón de un solo clic que inicializa y habilita la totalidad de los cajeros de la red de forma simultánea.
+* **Prevención de Sesión Simultánea:** Si un operador intenta abrir una sesión en un cajero que ya cuenta con una sesión abierta en otra terminal, el sistema bloqueará el ingreso con el mensaje de advertencia correspondiente.
+* **Auditoría e Impresión Consolidada:** Despliega y permite imprimir el informe contable global con todas las entradas, salidas y transferencias realizadas en la institución bancaria durante la jornada.
