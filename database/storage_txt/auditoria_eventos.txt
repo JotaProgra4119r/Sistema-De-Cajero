@@ -153,6 +153,130 @@
 173|2026-10-31 23:41:59|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 8 cajeros con Q3870.00 c/u (Total Red: Q30960.00).
 174|2026-10-31 23:41:59|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
 175|2026-10-31 23:41:59|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 13923414) con tarjeta 1009207596936221, saldo Q500.00, límite Q1000.00.
+185|2026-11-01 00:13:00|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+186|2026-11-01 00:13:00|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+187|2026-11-01 00:13:00|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+188|2026-11-01 00:13:00|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+189|2026-11-01 00:13:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+190|2026-11-01 00:13:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+191|2026-11-01 00:13:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+192|2026-11-01 00:13:01|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+193|2026-11-01 00:13:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+194|2026-11-01 00:13:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+195|2026-11-01 00:13:01|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+196|2026-11-01 00:13:02|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+197|2026-11-01 00:13:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+198|2026-11-01 00:13:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+199|2026-11-01 00:13:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+200|2026-11-01 00:13:02|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 49658962) con tarjeta 7701793513582586, saldo Q800.00, límite Q1000.00.
+201|2026-11-01 00:13:02|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 23). Motivo: Fin de contrato laboral.
+202|2026-11-01 00:13:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+203|2026-11-01 00:13:02|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+204|2026-11-01 00:13:02|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+205|2026-11-01 00:13:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+206|2026-11-01 00:13:03|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+207|2026-11-01 00:13:03|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+208|2026-11-01 00:13:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+209|2026-11-01 00:13:03|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 72604777) con tarjeta 8801793513583674, saldo Q750.00, límite Q1000.00.
+210|2026-11-01 00:13:03|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 24). Motivo: Auditoria de cumplimiento regulatorio.
+211|2026-11-01 00:13:03|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+212|2026-11-01 00:13:03|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+213|2026-11-01 00:13:03|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 9 cajeros con Q3870.00 c/u (Total Red: Q34830.00).
+214|2026-11-01 00:13:04|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+215|2026-11-01 00:13:04|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 45524481) con tarjeta 2086657224395031, saldo Q500.00, límite Q1000.00.
+220|2026-11-01 00:14:11|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+221|2026-11-01 00:14:11|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+222|2026-11-01 00:14:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+223|2026-11-01 00:14:12|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+224|2026-11-01 00:14:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+225|2026-11-01 00:14:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+226|2026-11-01 00:14:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+227|2026-11-01 00:14:13|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+228|2026-11-01 00:14:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+229|2026-11-01 00:14:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+230|2026-11-01 00:14:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+231|2026-11-01 00:14:13|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+232|2026-11-01 00:14:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+233|2026-11-01 00:14:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+234|2026-11-01 00:14:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+235|2026-11-01 00:14:14|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 24219023) con tarjeta 7701793513654266, saldo Q800.00, límite Q1000.00.
+236|2026-11-01 00:14:14|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 26). Motivo: Fin de contrato laboral.
+237|2026-11-01 00:14:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+238|2026-11-01 00:14:14|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+239|2026-11-01 00:14:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+240|2026-11-01 00:14:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+241|2026-11-01 00:14:14|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+242|2026-11-01 00:14:14|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+243|2026-11-01 00:14:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+244|2026-11-01 00:14:15|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 54292227) con tarjeta 8801793513655212, saldo Q750.00, límite Q1000.00.
+245|2026-11-01 00:14:15|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 27). Motivo: Auditoria de cumplimiento regulatorio.
+246|2026-11-01 00:14:15|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+247|2026-11-01 00:14:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+248|2026-11-01 00:14:15|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 10 cajeros con Q3870.00 c/u (Total Red: Q38700.00).
+249|2026-11-01 00:14:15|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+250|2026-11-01 00:14:15|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 33279220) con tarjeta 1768650183127079, saldo Q500.00, límite Q1000.00.
+255|2026-11-01 00:14:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+256|2026-11-01 00:14:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+257|2026-11-01 00:14:51|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+258|2026-11-01 00:14:52|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+259|2026-11-01 00:14:52|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+260|2026-11-01 00:14:52|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+261|2026-11-01 00:14:52|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+262|2026-11-01 00:14:52|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+263|2026-11-01 00:14:52|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+264|2026-11-01 00:14:52|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+265|2026-11-01 00:14:53|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+266|2026-11-01 00:14:53|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+267|2026-11-01 00:14:53|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+268|2026-11-01 00:14:53|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+269|2026-11-01 00:14:53|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+270|2026-11-01 00:14:54|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 83922722) con tarjeta 7701793513694003, saldo Q800.00, límite Q1000.00.
+271|2026-11-01 00:14:54|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 29). Motivo: Fin de contrato laboral.
+272|2026-11-01 00:14:54|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+273|2026-11-01 00:14:54|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+274|2026-11-01 00:14:54|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+275|2026-11-01 00:14:54|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+276|2026-11-01 00:14:54|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+277|2026-11-01 00:14:54|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+278|2026-11-01 00:14:54|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+279|2026-11-01 00:14:54|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 78757495) con tarjeta 8801793513694988, saldo Q750.00, límite Q1000.00.
+280|2026-11-01 00:14:55|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 30). Motivo: Auditoria de cumplimiento regulatorio.
+281|2026-11-01 00:14:55|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+282|2026-11-01 00:14:55|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+283|2026-11-01 00:14:55|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 11 cajeros con Q3870.00 c/u (Total Red: Q42570.00).
+284|2026-11-01 00:14:55|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+285|2026-11-01 00:14:55|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 25414502) con tarjeta 1265821357576486, saldo Q500.00, límite Q1000.00.
+293|2026-11-01 00:17:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+294|2026-11-01 00:17:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+295|2026-11-01 00:17:12|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+296|2026-11-01 00:17:13|2|RETIRO_EFECTIVO|Retiro exitoso de Q123.00 en cajero ATM-001 con desglose {'100': 1, '20': 1, '1': 3}.
+297|2026-11-01 00:17:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+298|2026-11-01 00:17:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+299|2026-11-01 00:17:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+300|2026-11-01 00:17:13|2|DEPOSITO_EFECTIVO|Depósito exitoso de Q500.00 en ATM-001 desglosado: {'200': 2, '50': 2}.
+301|2026-11-01 00:17:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+302|2026-11-01 00:17:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+303|2026-11-01 00:17:13|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+304|2026-11-01 00:17:14|2|FALLO_DISPENSACION_FISICA|Error en hardware en cajero ATM-001: JAM_DETECTED. Monto solicitado Q100.00. No se aplicaron débitos contables.
+305|2026-11-01 00:17:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+306|2026-11-01 00:17:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+307|2026-11-01 00:17:14|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+308|2026-11-01 00:17:14|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Para Baja (ID Cuenta: 32861847) con tarjeta 7701793513834867, saldo Q800.00, límite Q1000.00.
+309|2026-11-01 00:17:14|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Para Baja (ID: 32). Motivo: Fin de contrato laboral.
+310|2026-11-01 00:17:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+311|2026-11-01 00:17:15|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-001 a cero (Q0.00).
+312|2026-11-01 00:17:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+313|2026-11-01 00:17:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+314|2026-11-01 00:17:15|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+315|2026-11-01 00:17:15|1|ADMIN_CAMBIO_PIN|El administrador actualizó el PIN del empleado Carlos Roberto Gómez (ID: 2).
+316|2026-11-01 00:17:15|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q9350.00.
+317|2026-11-01 00:17:15|1|ALTA_EMPLEADO|Registro de nuevo empleado Empleado Auditoria Forense (ID Cuenta: 14152823) con tarjeta 8801793513835882, saldo Q750.00, límite Q1000.00.
+318|2026-11-01 00:17:15|1|BAJA_LOGICA_USUARIO|Baja lógica de usuario Empleado Auditoria Forense (ID: 33). Motivo: Auditoria de cumplimiento regulatorio.
+319|2026-11-01 00:17:16|1|REINICIO_BOVEDA|Reinicio de bóveda de ATM-002 a cero (Q0.00).
+320|2026-11-01 00:17:16|1|INICIALIZACION_BOVEDA|Inicialización de bóveda para cajero ATM-001 completada con Q4250.00.
+321|2026-11-01 00:17:16|7|SUPERADMIN_INICIALIZACION_GLOBAL|Superadministrador inicializó simultáneamente 13 cajeros con Q3870.00 c/u (Total Red: Q50310.00).
+322|2026-11-01 00:17:16|2|DEPOSITO_INTERBANCARIO_TERCERO|Depósito de Q100.00 en cajero ATM-001 hacia cuenta 20027819 (María Andrea López). Desglose: {'100': 1}.
+323|2026-11-01 00:17:16|1|ALTA_EMPLEADO|Registro de nuevo empleado Test Nuevo Empleado Con ID (ID Cuenta: 82005477) con tarjeta 2095405216112724, saldo Q500.00, límite Q1000.00.
 32|2026-11-01 03:21:39||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-004 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
 33|2026-11-01 03:21:40||ATM_SESION_DESCONECTADA|Cajero ATM-004 (Cajero de José Javier) apagado / desconectado formalmente.
 34|2026-11-01 03:21:40||ATM_SESION_CONECTADA|Cajero ATM-004 (Cajero de José Javier) conectado y enlazado a sesión 62fbd30d...
@@ -177,3 +301,30 @@
 177|2026-11-01 05:41:59||ATM_SESION_DESCONECTADA|Cajero ATM-009 (Cajero de José Javier) apagado / desconectado formalmente.
 178|2026-11-01 05:41:59||ATM_SESION_CONECTADA|Cajero ATM-009 (Cajero de José Javier) conectado y enlazado a sesión a5ff6aab...
 179|2026-11-01 05:41:59||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 356b38bf...
+180|2026-11-01 06:05:17|7|BAJA_LOGICA_CAJERO|Baja lógica de terminal ATM-005 (Cajero de José Javier). Motivo: Depuración y baja lógica de terminal de prueba duplicada. Bóveda congelada en Q3870.00.
+181|2026-11-01 06:05:17|7|BAJA_LOGICA_CAJERO|Baja lógica de terminal ATM-006 (Cajero de José Javier). Motivo: Depuración y baja lógica de terminal de prueba duplicada. Bóveda congelada en Q3870.00.
+182|2026-11-01 06:05:17|7|BAJA_LOGICA_CAJERO|Baja lógica de terminal ATM-007 (Cajero de José Javier). Motivo: Depuración y baja lógica de terminal de prueba duplicada. Bóveda congelada en Q3870.00.
+183|2026-11-01 06:05:17|7|BAJA_LOGICA_CAJERO|Baja lógica de terminal ATM-008 (Cajero de José Javier). Motivo: Depuración y baja lógica de terminal de prueba duplicada. Bóveda congelada en Q3870.00.
+184|2026-11-01 06:05:17|7|BAJA_LOGICA_CAJERO|Baja lógica de terminal ATM-009 (Cajero de José Javier). Motivo: Depuración y baja lógica de terminal de prueba duplicada. Bóveda congelada en Q9350.00.
+216|2026-11-01 06:13:04||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-010 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+217|2026-11-01 06:13:04||ATM_SESION_DESCONECTADA|Cajero ATM-010 (Cajero de José Javier) apagado / desconectado formalmente.
+218|2026-11-01 06:13:04||ATM_SESION_CONECTADA|Cajero ATM-010 (Cajero de José Javier) conectado y enlazado a sesión 953f48ac...
+219|2026-11-01 06:13:04||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión c82f1cc6...
+251|2026-11-01 06:14:15||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-011 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+252|2026-11-01 06:14:15||ATM_SESION_DESCONECTADA|Cajero ATM-011 (Cajero de José Javier) apagado / desconectado formalmente.
+253|2026-11-01 06:14:15||ATM_SESION_CONECTADA|Cajero ATM-011 (Cajero de José Javier) conectado y enlazado a sesión 2c270c67...
+254|2026-11-01 06:14:15||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 43c79e96...
+286|2026-11-01 06:14:55||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-012 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+287|2026-11-01 06:14:55||ATM_SESION_DESCONECTADA|Cajero ATM-012 (Cajero de José Javier) apagado / desconectado formalmente.
+288|2026-11-01 06:14:55||ATM_SESION_CONECTADA|Cajero ATM-012 (Cajero de José Javier) conectado y enlazado a sesión e9f29f91...
+289|2026-11-01 06:14:55||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 95e802cc...
+290|2026-11-01 06:14:55||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-013 registrado como 'Cajero Temporal Test Soft Delete' con código de 4 dígitos y enlazado.
+291|2026-11-01 06:14:55|7|BAJA_LOGICA_CAJERO|Baja lógica de terminal ATM-013 (Cajero Temporal Test Soft Delete). Motivo: Prueba unitaria de depuración lógica. Bóveda congelada en Q9350.00.
+292|2026-11-01 06:14:55|7|RESTAURACION_CAJERO|Restauración de terminal ATM-013 (Cajero Temporal Test Soft Delete) a estado ACTIVO.
+324|2026-11-01 06:17:16||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-014 registrado como 'Cajero de José Javier' con código de 4 dígitos y enlazado.
+325|2026-11-01 06:17:16||ATM_SESION_DESCONECTADA|Cajero ATM-014 (Cajero de José Javier) apagado / desconectado formalmente.
+326|2026-11-01 06:17:16||ATM_SESION_CONECTADA|Cajero ATM-014 (Cajero de José Javier) conectado y enlazado a sesión 2f207e43...
+327|2026-11-01 06:17:16||ATM_SESION_CONECTADA|Cajero ATM-001 (Cajero Central - Sede Principal (Zona 10)) conectado y enlazado a sesión 01a1a9b9...
+328|2026-11-01 06:17:16||ATM_CREADO_Y_ENLAZADO|Nuevo cajero ATM-015 registrado como 'Cajero Temporal Test Soft Delete' con código de 4 dígitos y enlazado.
+329|2026-11-01 06:17:16|7|BAJA_LOGICA_CAJERO|Baja lógica de terminal ATM-015 (Cajero Temporal Test Soft Delete). Motivo: Prueba unitaria de depuración lógica. Bóveda congelada en Q9350.00.
+330|2026-11-01 06:17:16|7|RESTAURACION_CAJERO|Restauración de terminal ATM-015 (Cajero Temporal Test Soft Delete) a estado ACTIVO.

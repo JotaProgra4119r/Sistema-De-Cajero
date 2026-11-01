@@ -71,35 +71,61 @@ class SyncService:
                 "type": "sqlite"
             }
 
-    def check_mysql_status(self) -> Dict[str, Any]:
-        """Verifica la conectividad con el servidor MySQL (InnoDB)."""
-        raw_db_url = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
-        if not raw_db_url:
-            safe_password = urllib.parse.quote_plus(DB_PASSWORD)
-            raw_db_url = f"mysql+pymysql://{DB_USER}:{safe_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    def check_sqlserver_status(self) -> Dict[str, Any]:
+        """Verifica la conectividad con Microsoft SQL Server 2022 (puerto 1433 / T-SQL)."""
+        import socket
+        sql_host = os.getenv("SQL_SERVER_HOST", os.getenv("DB_HOST", "127.0.0.1"))
+        sql_port = int(os.getenv("SQL_SERVER_PORT", "1433"))
+        raw_db_url = os.getenv("MSSQL_URL") or os.getenv("DATABASE_URL")
 
+        # 1. Si existe URL de conexión explícita SQLAlchemy
+        if raw_db_url and ("mssql" in raw_db_url or "sqlserver" in raw_db_url):
+            try:
+                test_engine = create_engine(raw_db_url, connect_args={"connect_timeout": 2})
+                with test_engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                return {
+                    "name": "Microsoft SQL Server 2022",
+                    "status": "connected",
+                    "synced": True,
+                    "badge": "green",
+                    "message": f"Conectado a Microsoft SQL Server 2022 en {sql_host}:{sql_port}.",
+                    "type": "sqlserver"
+                }
+            except Exception as e:
+                return {
+                    "name": "Microsoft SQL Server 2022",
+                    "status": "disconnected",
+                    "synced": False,
+                    "badge": "red",
+                    "message": f"SQL Server 2022 no accesible en {sql_host}:{sql_port} ({e.args[0] if e.args else 'Sin conexión'}).",
+                    "type": "sqlserver"
+                }
+
+        # 2. Sondeo directo por socket TCP a puerto 1433 (estándar SQL Server 2022)
         try:
-            test_engine = create_engine(raw_db_url, connect_args={"connect_timeout": 2})
-            with test_engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
+            with socket.create_connection((sql_host, sql_port), timeout=1.5):
+                return {
+                    "name": "Microsoft SQL Server 2022",
+                    "status": "connected",
+                    "synced": True,
+                    "badge": "green",
+                    "message": f"Puerto 1433 de Microsoft SQL Server 2022 abierto y respondiendo en {sql_host}.",
+                    "type": "sqlserver"
+                }
+        except Exception:
             return {
-                "name": "MySQL (InnoDB)",
-                "status": "connected",
-                "synced": True,
-                "badge": "green",
-                "message": f"Conectado a MySQL en {DB_HOST}:{DB_PORT}/{DB_NAME}.",
-                "type": "mysql"
-            }
-        except Exception as e:
-            # Si no está corriendo el daemon local de MySQL o no hay credenciales remotas
-            return {
-                "name": "MySQL (InnoDB)",
+                "name": "Microsoft SQL Server 2022",
                 "status": "disconnected",
                 "synced": False,
                 "badge": "red",
-                "message": f"Servidor MySQL no accesible en {DB_HOST}:{DB_PORT} ({e.args[0] if e.args else 'Sin conexión'}).",
-                "type": "mysql"
+                "message": f"Instancia de Microsoft SQL Server 2022 no detectada en {sql_host}:{sql_port}.",
+                "type": "sqlserver"
             }
+
+    def check_mysql_status(self) -> Dict[str, Any]:
+        """Alias para compatibilidad retroactiva, delegando a Microsoft SQL Server 2022."""
+        return self.check_sqlserver_status()
 
     async def check_cloud_status(self) -> Dict[str, Any]:
         """Verifica la disponibilidad del servidor central en la nube (Render)."""
@@ -154,6 +180,7 @@ class SyncService:
 
         return {
             "sqlite": sqlite_stat,
+            "sqlserver": mysql_stat,
             "mysql": mysql_stat,
             "cloud": cloud_stat,
             "last_sync": self.last_sync_time or "Pendiente de sincronización manual",
@@ -216,6 +243,9 @@ class SyncService:
                 "en_linea": bool(c.en_linea),
                 "sesion_activa_id": c.sesion_activa_id,
                 "ultimo_latido": c.ultimo_latido.isoformat() if c.ultimo_latido else None,
+                "is_deleted": bool(c.is_deleted),
+                "deleted_at": c.deleted_at.isoformat() if c.deleted_at else None,
+                "deleted_by_id": c.deleted_by_id,
                 "fecha_creacion": c.fecha_creacion.isoformat() if c.fecha_creacion else None
             }
             for c in db.query(Cajero).all()
@@ -372,6 +402,9 @@ class SyncService:
                     c_obj.is_initialized = bool(c_data.get("is_initialized", c_obj.is_initialized))
                     c_obj.codigo_cajero = str(c_data.get("codigo_cajero", c_obj.codigo_cajero))
                     c_obj.en_linea = bool(c_data.get("en_linea", c_obj.en_linea))
+                    c_obj.is_deleted = bool(c_data.get("is_deleted", c_obj.is_deleted))
+                    c_obj.deleted_at = self._parse_dt(c_data.get("deleted_at")) or c_obj.deleted_at
+                    c_obj.deleted_by_id = c_data.get("deleted_by_id", c_obj.deleted_by_id)
                 counts["cajeros"] += 1
             db.commit()
 

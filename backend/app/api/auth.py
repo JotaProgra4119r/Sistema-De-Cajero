@@ -123,7 +123,7 @@ def list_atms(db: Session = Depends(get_db)):
     """Lista todos los cajeros de la red con su estado de inicialización, en línea y fondos."""
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc)
-    all_cajeros = db.query(Cajero).all()
+    all_cajeros = db.query(Cajero).filter(Cajero.is_deleted == False).all()
     res = []
     for c in all_cajeros:
         v_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == c.id_cajero).all()

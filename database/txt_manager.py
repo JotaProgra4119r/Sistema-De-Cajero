@@ -227,7 +227,7 @@ class TxtStorageManager:
             line = f"{log_id}|{ts}|{u_str}|{clean_act}|{clean_det}\n"
             self._write_file_all_paths("auditoria_eventos.txt", line, mode="a")
 
-    async def append_registro_eliminado(self, id_elim: int, tabla: str, id_origen: int, motivo: str, eliminado_por: str, afectado_id: Optional[int], dt: Optional[datetime] = None):
+    async def append_registro_eliminado(self, id_elim: int, tabla: str, id_origen: Any, motivo: str, eliminado_por: str, afectado_id: Optional[int], dt: Optional[datetime] = None):
         async with self.lock:
             ts = dt.strftime("%Y-%m-%d %H:%M:%S") if dt else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             clean_tabla = sanitize_flat_field(tabla)

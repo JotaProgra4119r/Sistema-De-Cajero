@@ -130,6 +130,13 @@ Para blindar la cuenta ante errores involuntarios de tipeo:
 * **Manejo de Empleados:** Creación de usuarios con ID de cuenta bancaria de 8 dígitos, asignación y reasignación de tarjetas de 16 dígitos, modificación de límites diarios y bajas lógicas reversibles.
 * **Bitácora Filtrable:** Pestañas para aislar transacciones de Retiro, Depósito, Eventos de Sistema y Hardware (Arduino / ESP32-CAM).
 
+### 4. Monitoreo y Sincronización Tripartita de Bases de Datos
+* **Panel de Persistencia Tripartita:** Al pie de la sección de *Bóveda y Arqueo*, el administrador local dispone de las 3 tarjetas de estado en tiempo real:
+  * **SQLite Local:** Base de datos embebida autónoma con persistencia dual en archivos `.txt`.
+  * **Microsoft SQL Server 2022:** Monitoreo en vivo del puerto 1433 y transacciones T-SQL.
+  * **Servidor en Línea (Render):** Enlace con la nube central para sincronización de cuentas y transacciones.
+* **Botón `[ ⚡ Sincronizar Bases de Datos ]`:** Permite forzar la sincronización bidireccional inmediata en cualquier momento de la jornada.
+
 ---
 
 ## PARTE 3: GUÍA PARA EL SUPERADMINISTRADOR (RED MULTICAJERO GLOBAL)
@@ -139,11 +146,13 @@ Para blindar la cuenta ante errores involuntarios de tipeo:
 * *Nota de Seguridad:* Esta opción y panel no son visibles ni accesibles para los administradores de cajeros locales.
 
 ### 2. Panel de Control de Red Multicajero
-* **Monitor de Estado en Tiempo Real:** Visualización en cuadrícula de todos los cajeros de la institución (`ATM-001`, `ATM-002`, `ATM-003`, etc.), mostrando:
+* **Monitor de Estado en Tiempo Real:** Visualización en cuadrícula de todos los cajeros activos de la institución (`ATM-001`, `ATM-002`, `ATM-003`, `ATM-004`), mostrando:
   * Estado de Conexión: **En Línea** (verde) o **Apagado** (gris/rojo).
   * Saldo Físico en Bóveda por cada cajero.
-  * Código de Seguridad de 4 dígitos registrado en el primer inicio.
+  * Código de Seguridad de 3 a 6 dígitos registrado en el primer inicio.
   * Sesión activa y último latido recibido.
+* **Baja Lógica de Terminales (`[ 🗑️ Baja ]`):** Permite depurar terminales obsoletas o duplicadas de prueba siguiendo el protocolo forense estricto. La terminal no se elimina físicamente, sino que se congela su bóveda y se archiva en la tabla `registros_eliminados` y archivos de texto duales.
+* **Papelera de Cajeros Dados de Baja (`[ ♻️ Restaurar a la Red ]`):** Botón superior que despliega el historial de cajeros dados de baja con su motivo y operador responsable, permitiendo restaurarlos a la red activa en caliente.
 * **Inicialización en Lote ("Inicializar Todos los Cajeros"):** Botón de un solo clic que inicializa y habilita la totalidad de los cajeros de la red de forma simultánea.
 * **Prevención de Sesión Simultánea:** Si un operador intenta abrir una sesión en un cajero que ya cuenta con una sesión abierta en otra terminal, el sistema bloqueará el ingreso con el mensaje de advertencia correspondiente.
 * **Auditoría e Impresión Consolidada:** Despliega y permite imprimir el informe contable global con todas las entradas, salidas y transferencias realizadas en la institución bancaria durante la jornada.

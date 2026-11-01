@@ -289,6 +289,18 @@ export const adminService = {
     const res = await apiClient.get("/api/admin/audit/deleted-records");
     return res.data;
   },
+  deleteCajero: async (idCajero: string, motivo?: string) => {
+    const res = await apiClient.post(`/api/admin/super/cajeros/${idCajero}/delete`, { motivo });
+    return res.data;
+  },
+  restoreCajero: async (idCajero: string) => {
+    const res = await apiClient.post(`/api/admin/super/cajeros/${idCajero}/restore`);
+    return res.data;
+  },
+  getDeletedCajeros: async () => {
+    const res = await apiClient.get("/api/admin/super/cajeros/deleted");
+    return res.data;
+  },
 };
 
 export const interbankService = {

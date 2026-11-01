@@ -93,6 +93,9 @@ CREATE TABLE IF NOT EXISTS cajeros (
     en_linea BOOLEAN NOT NULL DEFAULT FALSE,
     sesion_activa_id VARCHAR(100) NULL,
     ultimo_latido DATETIME NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at DATETIME NULL,
+    deleted_by_id INT NULL,
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

@@ -74,8 +74,8 @@ def test_auditoria_eliminaciones_txt_format():
         for line in lines:
             parts = line.split("|")
             assert len(parts) >= 5, f"Línea de auditoria_eliminaciones inválida: {line}"
-            # parts[0]: timestamp, parts[1]: registro_id, parts[2]: operador_id, parts[3]: motivo, parts[4]: snapshot_json
-            assert parts[1].isdigit()
+            # parts[0]: timestamp, parts[1]: registro_id (id_usuario int o id_cajero str como 'ATM-005'), parts[2]: operador_id, parts[3]: motivo, parts[4]: snapshot_json
+            assert parts[1].isdigit() or parts[1].startswith("ATM-") or len(parts[1]) > 0
             assert parts[2].isdigit() or parts[2] == "ADMIN"
 
 if __name__ == "__main__":

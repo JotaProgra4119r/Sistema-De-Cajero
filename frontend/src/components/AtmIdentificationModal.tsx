@@ -25,7 +25,7 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Normal connect inputs
-  const [selectedAtmId, setSelectedAtmId] = useState<string>(currentAtmId || "ATM-001");
+  const [selectedAtmId, setSelectedAtmId] = useState<string>(currentAtmId || "");
   const [connectCode, setConnectCode] = useState<string>("");
   const [conflictDetected, setConflictDetected] = useState<boolean>(false);
 
@@ -34,13 +34,18 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
   const [newCode, setNewCode] = useState<string>("");
   const [newLocation, setNewLocation] = useState<string>("");
 
+  const isSessionActive = localStorage.getItem("active_atm_session_started") === "true";
+
   const fetchAtms = async () => {
     try {
       setLoading(true);
       const list = await authService.getAtms();
       setAtmsList(list);
-      if (list.length > 0 && !selectedAtmId) {
-        setSelectedAtmId(list[0].id_cajero);
+      if (list.length === 0) {
+        // Si no hay cajeros registrados/activos, forzar creación en Primer Inicio
+        setActiveTab("register");
+      } else if (currentAtmId && list.some((c: any) => c.id_cajero === currentAtmId)) {
+        setSelectedAtmId(currentAtmId);
       }
     } catch (err: any) {
       console.error("Error al cargar cajeros:", err);
@@ -150,11 +155,13 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
                 </span>
               </h2>
               <p className="text-xs text-discord-textMuted">
-                Seleccione el cajero que operará en este equipo o registre un nuevo cajero en la red.
+                {isSessionActive
+                  ? "Seleccione el cajero que operará en este equipo o registre un nuevo cajero en la red."
+                  : "⚠️ Identificación obligatoria: Conecte o registre una terminal para habilitar el cajero."}
               </p>
             </div>
           </div>
-          {onClose && (
+          {onClose && isSessionActive && (
             <button
               type="button"
               onClick={onClose}
@@ -288,7 +295,7 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
               </div>
 
               {/* Formulario de Código de Seguridad */}
-              {selectedAtm && (
+              {selectedAtm ? (
                 <div className="p-3.5 rounded-xl bg-discord-sidebar/90 border border-discord-hover space-y-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-discord-textMuted">Cajero Seleccionado:</span>
@@ -324,6 +331,27 @@ export const AtmIdentificationModal: React.FC<AtmIdentificationModalProps> = ({
                   >
                     <Radio className="w-4 h-4" />
                     <span>{loading ? "Conectando con Servidor..." : "Arrancar y Conectar Cajero"}</span>
+                  </button>
+                </div>
+              ) : atmsList.length > 0 ? (
+                <div className="p-4 rounded-xl bg-discord-sidebar/60 border border-discord-hover text-center space-y-2">
+                  <Building2 className="w-6 h-6 text-discord-blurple mx-auto opacity-70" />
+                  <p className="text-xs text-discord-textMuted font-bold">
+                    👆 Seleccione un cajero de la lista superior para vincularlo a esta terminal e ingresar su código.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center space-y-2.5">
+                  <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto" />
+                  <p className="text-xs text-amber-300 font-bold">
+                    No hay cajeros activos disponibles en la red bancaria.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("register")}
+                    className="px-4 py-2 rounded-xl bg-discord-green hover:bg-emerald-500 text-black font-black text-xs transition-all shadow-md"
+                  >
+                    + Registrar Nuevo Cajero (Primer Inicio)
                   </button>
                 </div>
               )}

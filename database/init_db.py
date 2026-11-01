@@ -35,6 +35,9 @@ def migrate_existing_schema(db):
         "ALTER TABLE cajeros ADD COLUMN en_linea BOOLEAN DEFAULT 0",
         "ALTER TABLE cajeros ADD COLUMN sesion_activa_id VARCHAR(100)",
         "ALTER TABLE cajeros ADD COLUMN ultimo_latido DATETIME",
+        "ALTER TABLE cajeros ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
+        "ALTER TABLE cajeros ADD COLUMN deleted_at DATETIME",
+        "ALTER TABLE cajeros ADD COLUMN deleted_by_id INTEGER",
     ]
     for q in alter_queries:
         try:

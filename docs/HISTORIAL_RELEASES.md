@@ -17,8 +17,37 @@ timeline
     2026-10 : v2.0.0 (Red Multicajero) : Múltiples Cajeros Independientes, Superadmin, Bóvedas Aisladas, IDs de 8 Dígitos, Vistas SQL
             : v2.1.0 (Protocolo Interbancario) : Socket TCP 5000 / UDP 5005, Token TRF-YYYYMMDD-XXXXXX, Red Estudiantil LAN / Radmin
             : v2.2.0 (Accesibilidad y Ergonomía) : Barra Accesibilidad, Audio Web Audio API, Alto Contraste, Ojo PIN, Recuperación Pendientes
-            : v2.3.0 (Sincronización Tripartita) : Triple DB Sync (SQLite, MySQL, Render), ATM-004 Código 000, Bypass TOTP Inmune, Silenciamiento
+            : v2.3.0 (Sincronización Tripartita) : Triple DB Sync, ATM-004 Código 000, Bypass TOTP Inmune, Silenciamiento
+            : v2.4.0 (SQL Server 2022 & Soft Delete Cajeros) : Microsoft SQL Server 2022 (1433), Sync Panel en Admin Local, Baja Lógica y Papelera de Cajeros, Enlace Mandatorio Kiosk
 ```
+
+---
+
+## 🚀 Versión 2.4.0 — Soporte Microsoft SQL Server 2022, Panel Tripartito en Administrador Local, Protocolo de Baja Lógica de Cajeros y Enlace Mandatorio Kiosk (01/11/2026)
+
+### Novedades Principales
+1. **Soporte Nativo de Microsoft SQL Server 2022 (T-SQL, Puerto 1433):**
+   - Actualización completa de la arquitectura tripartita reemplazando MySQL por **Microsoft SQL Server 2022**.
+   - Sondeo de socket TCP en puerto `1433` y compatibilidad con cadenas de conexión `MSSQL_URL` (SQLAlchemy / pyodbc).
+   - Diagnóstico en tiempo real: insignia visual (🟢 Conectado / 🔴 Desconectado), estado de sincronización y detalle técnico del motor T-SQL.
+
+2. **Panel Tripartito Desplegado en Consola de Administrador Local (`Bóveda y Arqueo`):**
+   - El panel completo de *Estado y Sincronización Tripartita de Bases de Datos* ahora se muestra de forma nativa tanto en la consola del Superadministrador como en la del Administrador Local.
+   - Incluye las 3 tarjetas en vivo: **SQLite Local**, **Microsoft SQL Server 2022** y **Servidor en Línea (Render)**, junto con el botón de acción instantánea **`[ ⚡ Sincronizar Bases de Datos ]`**.
+
+3. **Protocolo Forense de Baja Lógica (Soft Delete) de Cajeros Terminales:**
+   - Adición de campos `is_deleted`, `deleted_at` y `deleted_by_id` a la entidad `cajeros` con migración DDL automatizada en SQLite y SQL Server.
+   - Depuración y traslado seguro de las terminales de prueba duplicadas (`ATM-005`, `ATM-006`, `ATM-007`, `ATM-008`, `ATM-009`) hacia la base de auditoría forense (`registros_eliminados`) y archivos de texto dual (`auditoria_eliminaciones.txt` y `bajas_eliminaciones.txt`).
+   - Las terminales dadas de baja lógica son automáticamente filtradas de la pantalla de bienvenida y del modal de arranque de terminales.
+   - En la consola del Superadministrador, cada tarjeta de cajero cuenta con el botón **`[ 🗑️ Baja ]`** con modal de confirmación y captura obligatoria de justificación/motivo.
+   - Incorporación del botón y modal de **Papelera de Terminales dadas de Baja Lógica** con botón de restauración en caliente **`[ ♻️ Restaurar a la Red ]`**.
+
+4. **Arranque Mandatorio de Terminal ("Estado de Cajero Obligatorio"):**
+   - En el modal de identificación inicial (`AtmIdentificationModal`), se eliminó la selección por defecto automática (`ATM-001`), evitando que el equipo arranque en un estado fantasma o no asignado.
+   - Si la terminal no tiene un cajero enlazado en su sesión física local, el modal deshabilita el botón de cierre `X`, obligando al operador a elegir un cajero existente e ingresar su código de seguridad, o registrar un nuevo cajero en *Primer Inicio (Nuevo Cajero)*.
+   - En caso de que no existan cajeros disponibles en la red, el sistema redirige automáticamente a la pestaña de creación de nueva terminal.
+
+---
 
 ---
 

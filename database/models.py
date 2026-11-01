@@ -79,6 +79,11 @@ class Cajero(Base):
     ultimo_latido = Column(DateTime, nullable=True)  # Timestamp de último heartbeat de la terminal
     fecha_creacion = Column(DateTime, default=utc_now, nullable=False)
 
+    # Soft Delete Audit Attributes (Baja lógica y aislamiento)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    deleted_at = Column(DateTime, nullable=True)
+    deleted_by_id = Column(Integer, nullable=True)
+
     denominaciones = relationship("DenominacionCajero", back_populates="cajero")
 
 class ArqueoCajero(Base):
@@ -169,8 +174,8 @@ class RegistroEliminado(Base):
     __tablename__ = "registros_eliminados"
 
     id_eliminacion = Column(Integer, primary_key=True, autoincrement=True)
-    tabla_origen = Column(String(50), nullable=False)  # usuarios | tarjetas | transacciones
-    id_registro_origen = Column(Integer, nullable=False)
+    tabla_origen = Column(String(50), nullable=False)  # usuarios | tarjetas | transacciones | cajeros
+    id_registro_origen = Column(String(50), nullable=False)  # ej. 'ATM-005' o id de usuario
     datos_eliminados_json = Column(JSON, nullable=False)
     motivo = Column(String(255), nullable=True)
     eliminado_por_id = Column(Integer, nullable=True)

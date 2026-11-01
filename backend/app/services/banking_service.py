@@ -1334,7 +1334,8 @@ class BankingService:
         """Dashboard consolidado para el Superadministrador: métricas simultáneas de todos los cajeros."""
         now = datetime.now(timezone.utc)
         today_date_str = datetime.now().strftime("%Y-%m-%d")
-        all_cajeros = db.query(Cajero).all()
+        all_cajeros = db.query(Cajero).filter(Cajero.is_deleted == False).all()
+        cajeros_eliminados_count = db.query(Cajero).filter(Cajero.is_deleted == True).count()
         cajeros_details = []
         global_vault_total = 0.0
         global_withdrawals_total = 0.0
@@ -1458,6 +1459,7 @@ class BankingService:
 
         return {
             "total_cajeros": len(all_cajeros),
+            "cajeros_eliminados": int(cajeros_eliminados_count),
             "cajeros_iniciados": int(cajeros_iniciados_count),
             "cajeros_apagados": int(len(all_cajeros) - cajeros_iniciados_count),
             "cajeros_operativos": sum(1 for c in all_cajeros if c.is_initialized),
@@ -1490,6 +1492,8 @@ class BankingService:
         cajero = db.query(Cajero).filter(Cajero.id_cajero == id_cajero).first()
         if not cajero:
             raise HTTPException(status_code=404, detail=f"Cajero con ID '{id_cajero}' no encontrado en la red bancaria.")
+        if cajero.is_deleted:
+            raise HTTPException(status_code=400, detail=f"El cajero '{id_cajero}' ha sido dado de baja lógicamente.")
 
         clean_code = str(codigo_cajero).strip()
         expected_code = str(cajero.codigo_cajero or "1234").strip()
@@ -1768,3 +1772,151 @@ class BankingService:
             "cajeros": metrics["cajeros"],
             "transacciones": metrics["transacciones_recientes"]
         }
+
+    @staticmethod
+    async def soft_delete_cajero(db: Session, operator_user_id: int, id_cajero: str, motivo: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Baja lógica de un cajero terminal según el protocolo estricto de auditoría forense.
+        No destruye físicamente el registro: lo traslada a la base/tabla de bajas ('registros_eliminados')
+        y actualiza la persistencia dual en los archivos de texto plano de auditoría.
+        """
+        cajero = db.query(Cajero).filter(Cajero.id_cajero == id_cajero).first()
+        if not cajero:
+            raise HTTPException(status_code=404, detail=f"Cajero '{id_cajero}' no encontrado.")
+        if cajero.is_deleted:
+            raise HTTPException(status_code=400, detail=f"El cajero '{id_cajero}' ya se encuentra dado de baja.")
+
+        now = datetime.now(timezone.utc)
+        operator = db.query(Usuario).filter(Usuario.id_usuario == operator_user_id).first()
+        op_name = operator.nombre_completo if operator else "SUPERADMINISTRADOR"
+        clean_motivo = str(motivo).strip() if motivo else "Baja y depuración de terminal solicitada desde Consola Superadmin"
+
+        # Capturar snapshot forense de la terminal
+        denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == id_cajero).all()
+        vault_total = sum(d.denominacion * d.cantidad_billetes for d in denoms)
+        snapshot = {
+            "id_cajero": cajero.id_cajero,
+            "nombre": cajero.nombre,
+            "ubicacion": cajero.ubicacion,
+            "estado_anterior": cajero.estado,
+            "codigo_cajero": cajero.codigo_cajero,
+            "is_initialized": cajero.is_initialized,
+            "total_boveda": float(vault_total),
+            "denominaciones": {d.denominacion: d.cantidad_billetes for d in denoms},
+            "fecha_creacion": cajero.fecha_creacion.isoformat() if cajero.fecha_creacion else None
+        }
+
+        # Aplicar baja lógica (soft delete)
+        cajero.is_deleted = True
+        cajero.estado = "DADO_DE_BAJA"
+        cajero.en_linea = False
+        cajero.sesion_activa_id = None
+        cajero.deleted_at = now
+        cajero.deleted_by_id = operator_user_id
+
+        # Insertar en registros_eliminados
+        reg_elim = RegistroEliminado(
+            tabla_origen="cajeros",
+            id_registro_origen=cajero.id_cajero,
+            datos_eliminados_json=snapshot,
+            motivo=clean_motivo,
+            eliminado_por_id=operator_user_id,
+            eliminado_por_nombre=op_name,
+            id_usuario_afectado=None,
+            visible_para_usuario=False,
+            fecha_eliminacion=now
+        )
+        db.add(reg_elim)
+
+        # Log de auditoría
+        log = LogAuditoria(
+            id_usuario=operator_user_id,
+            accion="BAJA_LOGICA_CAJERO",
+            detalles=f"Baja lógica de terminal {cajero.id_cajero} ({cajero.nombre}). Motivo: {clean_motivo}. Bóveda congelada en Q{vault_total:.2f}.",
+            fecha_hora=now
+        )
+        db.add(log)
+        db.commit()
+
+        # Persistir en archivos planos
+        try:
+            await txt_manager.append_registro_eliminado(
+                id_elim=reg_elim.id_eliminacion,
+                tabla="cajeros",
+                id_origen=cajero.id_cajero,
+                motivo=clean_motivo,
+                eliminado_por=op_name,
+                afectado_id=None,
+                dt=now
+            )
+            await txt_manager.append_auditoria_eliminacion(
+                registro_id=cajero.id_cajero,
+                operador_id=operator_user_id,
+                motivo_baja=clean_motivo,
+                snapshot_anterior=snapshot,
+                dt=now
+            )
+            await txt_manager.sync_cajeros(db)
+        except Exception as e:
+            print(f"[TXT_MANAGER] Error registrando baja de cajero: {e}")
+
+        return {
+            "status": "SUCCESS",
+            "mensaje": f"Cajero '{cajero.nombre}' ({cajero.id_cajero}) ha sido dado de baja lógicamente y trasladado a la base de registros eliminados.",
+            "id_cajero": cajero.id_cajero,
+            "id_eliminacion": reg_elim.id_eliminacion
+        }
+
+    @staticmethod
+    async def restore_cajero(db: Session, operator_user_id: int, id_cajero: str) -> Dict[str, Any]:
+        """Restaura un cajero previamente dado de baja lógica."""
+        cajero = db.query(Cajero).filter(Cajero.id_cajero == id_cajero).first()
+        if not cajero:
+            raise HTTPException(status_code=404, detail=f"Cajero '{id_cajero}' no encontrado.")
+        if not cajero.is_deleted:
+            raise HTTPException(status_code=400, detail=f"El cajero '{id_cajero}' no está dado de baja.")
+
+        now = datetime.now(timezone.utc)
+        cajero.is_deleted = False
+        cajero.estado = "ACTIVO"
+        cajero.deleted_at = None
+        cajero.deleted_by_id = None
+
+        log = LogAuditoria(
+            id_usuario=operator_user_id,
+            accion="RESTAURACION_CAJERO",
+            detalles=f"Restauración de terminal {cajero.id_cajero} ({cajero.nombre}) a estado ACTIVO.",
+            fecha_hora=now
+        )
+        db.add(log)
+        db.commit()
+        try:
+            await txt_manager.sync_cajeros(db)
+        except Exception:
+            pass
+        return {
+            "status": "SUCCESS",
+            "mensaje": f"Cajero '{cajero.nombre}' ({cajero.id_cajero}) restaurado a la red activa exitosamente.",
+            "id_cajero": cajero.id_cajero
+        }
+
+    @staticmethod
+    def get_deleted_cajeros(db: Session) -> List[Dict[str, Any]]:
+        """Lista los cajeros dados de baja lógica para la papelera / auditoría del Superadmin."""
+        del_cajeros = db.query(Cajero).filter(Cajero.is_deleted == True).all()
+        res = []
+        for c in del_cajeros:
+            reg = db.query(RegistroEliminado).filter(
+                RegistroEliminado.tabla_origen == "cajeros",
+                RegistroEliminado.id_registro_origen == c.id_cajero
+            ).order_by(RegistroEliminado.fecha_eliminacion.desc()).first()
+            res.append({
+                "id_cajero": c.id_cajero,
+                "nombre": c.nombre,
+                "ubicacion": c.ubicacion,
+                "codigo_cajero": c.codigo_cajero,
+                "deleted_at": c.deleted_at.strftime("%Y-%m-%d %H:%M:%S") if c.deleted_at else "",
+                "motivo": reg.motivo if reg else "Sin motivo registrado",
+                "eliminado_por": reg.eliminado_por_nombre if reg else "ADMIN"
+            })
+        return res

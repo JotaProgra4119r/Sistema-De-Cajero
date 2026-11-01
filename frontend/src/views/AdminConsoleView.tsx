@@ -4,7 +4,7 @@ import {
   AlertCircle, CheckCircle2, RefreshCw, Plus, Radio,
   ArrowDownRight, ArrowUpRight, RotateCcw, AlertTriangle,
   Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key,
-  Building2, Globe, Layers, X, Cloud, HardDrive
+  Building2, Globe, Layers, X, Cloud, HardDrive, Trash2
 } from "lucide-react";
 import { adminService, hardwareService, interbankService, syncService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
@@ -120,9 +120,225 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
   const [rfidDebugUid, setRfidDebugUid] = useState<string>("B4:5A:21:8F");
   const [rfidTapping, setRfidTapping] = useState<boolean>(false);
 
-  // Estados de sincronización tripartita (SQLite, MySQL, Render)
+  // Estados de sincronización tripartita (SQLite, SQL Server 2022, Render)
   const [syncStatus, setSyncStatus] = useState<any>(null);
   const [syncLoading, setSyncLoading] = useState<boolean>(false);
+
+  // Estados para baja lógica y auditoría de terminales cajeros
+  const [atmToDelete, setAtmToDelete] = useState<any | null>(null);
+  const [deleteMotivo, setDeleteMotivo] = useState<string>("Depuración y baja lógica de terminal solicitada desde Consola Superadmin");
+  const [deletingAtm, setDeletingAtm] = useState<boolean>(false);
+  const [showDeletedCajerosModal, setShowDeletedCajerosModal] = useState<boolean>(false);
+  const [deletedCajerosList, setDeletedCajerosList] = useState<any[]>([]);
+  const [loadingDeletedCajeros, setLoadingDeletedCajeros] = useState<boolean>(false);
+
+  const handlePromptDeleteAtm = (atm: any) => {
+    setAtmToDelete(atm);
+    setDeleteMotivo("Depuración y baja lógica de terminal solicitada desde Consola Superadmin");
+  };
+
+  const handleConfirmDeleteAtm = async () => {
+    if (!atmToDelete) return;
+    try {
+      setDeletingAtm(true);
+      await adminService.deleteCajero(atmToDelete.id_cajero, deleteMotivo);
+      setFeedbackMsg({
+        type: "success",
+        text: `Terminal ${atmToDelete.nombre} (${atmToDelete.id_cajero}) dada de baja lógicamente y archivada en auditoría.`
+      });
+      setAtmToDelete(null);
+      await fetchMetrics();
+      if (showDeletedCajerosModal) {
+        await fetchDeletedCajeros();
+      }
+    } catch (err: any) {
+      setFeedbackMsg({
+        type: "error",
+        text: err?.response?.data?.detail || "Error al dar de baja el cajero."
+      });
+    } finally {
+      setDeletingAtm(false);
+    }
+  };
+
+  const fetchDeletedCajeros = async () => {
+    try {
+      setLoadingDeletedCajeros(true);
+      const list = await adminService.getDeletedCajeros();
+      setDeletedCajerosList(list);
+    } catch (err: any) {
+      console.error("Error al cargar cajeros eliminados:", err);
+    } finally {
+      setLoadingDeletedCajeros(false);
+    }
+  };
+
+  const handleRestoreAtm = async (idCajero: string) => {
+    try {
+      await adminService.restoreCajero(idCajero);
+      setFeedbackMsg({
+        type: "success",
+        text: `Terminal ${idCajero} restaurada exitosamente a la red activa.`
+      });
+      await fetchMetrics();
+      await fetchDeletedCajeros();
+    } catch (err: any) {
+      setFeedbackMsg({
+        type: "error",
+        text: err?.response?.data?.detail || "Error al restaurar cajero."
+      });
+    }
+  };
+
+  const renderTripartiteSyncPanel = () => {
+    const sqlServerStatus = syncStatus?.sqlserver || syncStatus?.mysql;
+    const isSqlServerConnected = sqlServerStatus?.status === "connected" || sqlServerStatus?.status === "synced";
+    const isSqlServerPending = sqlServerStatus?.status === "pending";
+
+    return (
+      <div className="p-5 bg-gradient-to-r from-discord-sidebar via-discord-surface to-discord-sidebar rounded-2xl border border-discord-hover shadow-lg space-y-4 mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-discord-hover pb-3">
+          <div>
+            <h3 className="text-sm lg:text-base font-black text-white flex items-center gap-2">
+              <Database className="w-5 h-5 text-discord-blurple" />
+              <span>Estado y Sincronización Tripartita de Bases de Datos</span>
+            </h3>
+            <p className="text-xs text-discord-textMuted mt-0.5">
+              Monitoreo en vivo de motores de persistencia: SQLite Local, Microsoft SQL Server 2022 y Servidor en Línea (Render Cloud Gateway)
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleExecuteGlobalSync}
+            disabled={syncLoading}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-discord-green hover:bg-emerald-500 disabled:opacity-50 text-black font-black text-xs sm:text-sm shadow-md transition-all active:scale-95"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncLoading ? "animate-spin" : ""}`} />
+            <span>{syncLoading ? "Sincronizando Motores..." : "⚡ Sincronizar Bases de Datos"}</span>
+          </button>
+        </div>
+
+        {/* Los 3 motores lado a lado */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* 1. SQLite Local */}
+          <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
+            syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
+              ? "bg-emerald-950/20 border-emerald-500/40"
+              : syncStatus?.sqlite?.status === "pending"
+              ? "bg-amber-950/20 border-amber-500/40"
+              : "bg-rose-950/20 border-rose-500/40"
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                <HardDrive className="w-4 h-4 text-emerald-400" />
+                <span>SQLite Local</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                  : syncStatus?.sqlite?.status === "pending"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+              }`}>
+                {syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
+                  ? "🟢 Conectado"
+                  : syncStatus?.sqlite?.status === "pending"
+                  ? "🟡 Pendiente"
+                  : "🔴 Desconectado"}
+              </span>
+            </div>
+            <p className="text-xs text-discord-textMuted">
+              {syncStatus?.sqlite?.message || "Base de datos autónoma local (database/atm_system.db)"}
+            </p>
+            <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
+              <span>Dual-Write .txt:</span>
+              <span className="text-emerald-400 font-bold">Activo &amp; Consistente</span>
+            </div>
+          </div>
+
+          {/* 2. Microsoft SQL Server 2022 */}
+          <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
+            isSqlServerConnected
+              ? "bg-emerald-950/20 border-emerald-500/40"
+              : isSqlServerPending
+              ? "bg-amber-950/20 border-amber-500/40"
+              : "bg-rose-950/20 border-rose-500/40"
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                <Database className="w-4 h-4 text-blue-400" />
+                <span>Microsoft SQL Server 2022</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                isSqlServerConnected
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                  : isSqlServerPending
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+              }`}>
+                {isSqlServerConnected
+                  ? "🟢 Conectado"
+                  : isSqlServerPending
+                  ? "🟡 Pendiente"
+                  : "🔴 Desconectado"}
+              </span>
+            </div>
+            <p className="text-xs text-discord-textMuted">
+              {sqlServerStatus?.message || "Instancia de Microsoft SQL Server 2022 (puerto 1433)"}
+            </p>
+            <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
+              <span>Motor:</span>
+              <span className="text-blue-400 font-bold">SQL Server 2022 (T-SQL)</span>
+            </div>
+          </div>
+
+          {/* 3. Servidor en Línea (Render) */}
+          <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
+            syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
+              ? "bg-emerald-950/20 border-emerald-500/40"
+              : syncStatus?.cloud?.status === "pending"
+              ? "bg-amber-950/20 border-amber-500/40"
+              : "bg-rose-950/20 border-rose-500/40"
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                <Cloud className="w-4 h-4 text-purple-400" />
+                <span>Servidor en Línea (Render)</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                  : syncStatus?.cloud?.status === "pending"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+              }`}>
+                {syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
+                  ? "🟢 Conectado"
+                  : syncStatus?.cloud?.status === "pending"
+                  ? "🟡 Pendiente"
+                  : "🔴 Desconectado"}
+              </span>
+            </div>
+            <p className="text-xs text-discord-textMuted">
+              {syncStatus?.cloud?.message || "https://sistema-de-cajero.onrender.com"}
+            </p>
+            <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
+              <span>Red Multicajero:</span>
+              <span className="text-purple-400 font-bold">Sincronización Cloud</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between text-xs text-discord-textMuted pt-2 border-t border-discord-hover">
+          <span>Última Sincronización Global: <strong className="text-white font-mono">{syncStatus?.last_sync || "Pendiente"}</strong></span>
+          <span className="text-[11px] text-blue-300">
+            ℹ️ Las conexiones de otros bancos (NETGEAR / Protocolo 5000) se mantienen operativas sin alteración.
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   const fetchSyncStatus = async () => {
     try {
@@ -649,7 +865,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
           <div className="flex items-center gap-2.5 text-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-discord-green animate-pulse" />
             <span className="text-discord-textMuted font-bold">Arquitectura de Persistencia:</span>
-            <span className="text-white font-mono font-bold">SQLite Local + MySQL + Servidor en Línea</span>
+            <span className="text-white font-mono font-bold">SQLite Local + SQL Server 2022 + Servidor en Línea</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -855,14 +1071,28 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
 
             {/* Grid de Cajeros Individuales */}
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-discord-blurple" />
                   <span>Estado Individual por Cajero Automático</span>
                 </h3>
-                <span className="text-xs text-discord-textMuted">
-                  Cada cajero mantiene su bóveda física desacoplada
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeletedCajerosModal(true);
+                      fetchDeletedCajeros();
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-discord-surface border border-rose-500/30 text-rose-300 hover:text-white hover:bg-rose-950/40 text-xs font-bold transition-all shadow-xs"
+                    title="Ver cajeros dados de baja lógica"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Cajeros Dados de Baja ({superMetrics?.cajeros_eliminados ?? 0})</span>
+                  </button>
+                  <span className="text-xs text-discord-textMuted hidden sm:inline">
+                    Cada cajero mantiene su bóveda física desacoplada
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -963,6 +1193,15 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                             title="Vaciar bóveda a Q0.00"
                           >
                             Vaciar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handlePromptDeleteAtm(c)}
+                            className="px-2.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white font-bold text-[11px] border border-rose-500/40 transition-all text-center flex items-center gap-1"
+                            title="Dar de baja este cajero (traslado a base de datos de eliminados)"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Baja</span>
                           </button>
                         </div>
                       </div>
@@ -1218,147 +1457,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
             )}
 
             {/* PANEL MAESTRO DE SINCRONIZACIÓN TRIPLE DE BASES DE DATOS */}
-            <div className="p-5 bg-gradient-to-r from-discord-sidebar via-discord-surface to-discord-sidebar rounded-2xl border border-discord-hover shadow-lg space-y-4 mt-6">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-discord-hover pb-3">
-                <div>
-                  <h3 className="text-sm lg:text-base font-black text-white flex items-center gap-2">
-                    <Database className="w-5 h-5 text-discord-blurple" />
-                    <span>Estado y Sincronización Tripartita de Bases de Datos</span>
-                  </h3>
-                  <p className="text-xs text-discord-textMuted mt-0.5">
-                    Monitoreo en vivo de motores de persistencia: SQLite Local, MySQL (InnoDB) y Servidor en Línea (Render Cloud Gateway)
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleExecuteGlobalSync}
-                  disabled={syncLoading}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-discord-green hover:bg-emerald-500 disabled:opacity-50 text-black font-black text-xs sm:text-sm shadow-md transition-all active:scale-95"
-                >
-                  <RefreshCw className={`w-4 h-4 ${syncLoading ? "animate-spin" : ""}`} />
-                  <span>{syncLoading ? "Sincronizando Motores..." : "⚡ Sincronizar Bases de Datos"}</span>
-                </button>
-              </div>
-
-              {/* Los 3 motores lado a lado */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* 1. SQLite Local */}
-                <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
-                  syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
-                    ? "bg-emerald-950/20 border-emerald-500/40"
-                    : syncStatus?.sqlite?.status === "pending"
-                    ? "bg-amber-950/20 border-amber-500/40"
-                    : "bg-rose-950/20 border-rose-500/40"
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                      <HardDrive className="w-4 h-4 text-emerald-400" />
-                      <span>SQLite Local</span>
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                      syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                        : syncStatus?.sqlite?.status === "pending"
-                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
-                        : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
-                    }`}>
-                      {syncStatus?.sqlite?.status === "connected" || syncStatus?.sqlite?.status === "synced"
-                        ? "🟢 Conectado"
-                        : syncStatus?.sqlite?.status === "pending"
-                        ? "🟡 Pendiente"
-                        : "🔴 Desconectado"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-discord-textMuted">
-                    {syncStatus?.sqlite?.message || "Base de datos autónoma local (database/atm_system.db)"}
-                  </p>
-                  <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
-                    <span>Dual-Write .txt:</span>
-                    <span className="text-emerald-400 font-bold">Activo &amp; Consistente</span>
-                  </div>
-                </div>
-
-                {/* 2. MySQL (InnoDB) */}
-                <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
-                  syncStatus?.mysql?.status === "connected" || syncStatus?.mysql?.status === "synced"
-                    ? "bg-emerald-950/20 border-emerald-500/40"
-                    : syncStatus?.mysql?.status === "pending"
-                    ? "bg-amber-950/20 border-amber-500/40"
-                    : "bg-rose-950/20 border-rose-500/40"
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                      <Database className="w-4 h-4 text-blue-400" />
-                      <span>MySQL (InnoDB)</span>
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                      syncStatus?.mysql?.status === "connected" || syncStatus?.mysql?.status === "synced"
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                        : syncStatus?.mysql?.status === "pending"
-                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
-                        : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
-                    }`}>
-                      {syncStatus?.mysql?.status === "connected" || syncStatus?.mysql?.status === "synced"
-                        ? "🟢 Conectado"
-                        : syncStatus?.mysql?.status === "pending"
-                        ? "🟡 Pendiente"
-                        : "🔴 Desconectado"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-discord-textMuted">
-                    {syncStatus?.mysql?.message || "Servidor MySQL relacional (puerto 3306)"}
-                  </p>
-                  <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
-                    <span>Motor:</span>
-                    <span className="text-blue-400 font-bold">MySQL Relacional</span>
-                  </div>
-                </div>
-
-                {/* 3. Servidor en Línea (Render) */}
-                <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
-                  syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
-                    ? "bg-emerald-950/20 border-emerald-500/40"
-                    : syncStatus?.cloud?.status === "pending"
-                    ? "bg-amber-950/20 border-amber-500/40"
-                    : "bg-rose-950/20 border-rose-500/40"
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                      <Cloud className="w-4 h-4 text-purple-400" />
-                      <span>Servidor en Línea (Render)</span>
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                      syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                        : syncStatus?.cloud?.status === "pending"
-                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
-                        : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
-                    }`}>
-                      {syncStatus?.cloud?.status === "connected" || syncStatus?.cloud?.status === "synced"
-                        ? "🟢 Conectado"
-                        : syncStatus?.cloud?.status === "pending"
-                        ? "🟡 Pendiente"
-                        : "🔴 Desconectado"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-discord-textMuted">
-                    {syncStatus?.cloud?.message || "https://sistema-de-cajero.onrender.com"}
-                  </p>
-                  <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
-                    <span>Red Multicajero:</span>
-                    <span className="text-purple-400 font-bold">Sincronización Cloud</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between text-xs text-discord-textMuted pt-2 border-t border-discord-hover">
-                <span>Última Sincronización Global: <strong className="text-white font-mono">{syncStatus?.last_sync || "Pendiente"}</strong></span>
-                <span className="text-[11px] text-blue-300">
-                  ℹ️ Las conexiones de otros bancos (NETGEAR / Protocolo 5000) se mantienen operativas sin alteración.
-                </span>
-              </div>
-            </div>
+            {renderTripartiteSyncPanel()}
           </div>
         )}
 
@@ -1788,6 +1887,9 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 </div>
               </div>
             </div>
+
+            {/* PANEL TRIPARTITA DE BASES DE DATOS (ACCESIBLE PARA EL ADMINISTRADOR LOCAL) */}
+            {renderTripartiteSyncPanel()}
           </div>
         )}
 
@@ -3109,6 +3211,166 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN DE BAJA LÓGICA DE CAJERO */}
+      {atmToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-md bg-discord-surface rounded-2xl border border-rose-500/40 p-5 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">Dar de Baja Terminal Cajero</h3>
+                <p className="text-xs text-discord-textMuted">Protocolo estricto de auditoría y desvinculación</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-discord-sidebar border border-discord-hover text-xs space-y-2">
+              <div className="flex justify-between">
+                <span className="text-discord-textMuted">Terminal:</span>
+                <span className="font-mono font-bold text-white">{atmToDelete.id_cajero}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-discord-textMuted">Nombre:</span>
+                <span className="font-bold text-white">{atmToDelete.nombre}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-discord-textMuted">Ubicación:</span>
+                <span className="text-white">{atmToDelete.ubicacion || "Oficina Central"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-discord-textMuted">Saldo actual en Bóveda:</span>
+                <span className="font-mono font-bold text-amber-400">Q{(atmToDelete.total_boveda || 0).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="text-xs text-discord-textMuted bg-rose-950/20 p-3 rounded-xl border border-rose-500/30">
+              ℹ️ <strong className="text-rose-300">Preservación Forense:</strong> La terminal no se destruye físicamente de la base de datos. Pasa al estado <em>DADO_DE_BAJA</em> y se archiva en la tabla <code className="text-white font-mono">registros_eliminados</code> y archivos planos de auditoría.
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-discord-textMuted mb-1">
+                Motivo o Justificación de la Baja *
+              </label>
+              <input
+                type="text"
+                value={deleteMotivo}
+                onChange={(e) => setDeleteMotivo(e.target.value)}
+                placeholder="Escriba el motivo de la baja..."
+                className="w-full px-3 py-2 bg-discord-base border border-discord-hover rounded-xl text-white text-xs focus:outline-none focus:border-rose-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setAtmToDelete(null)}
+                disabled={deletingAtm}
+                className="flex-1 py-2 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-discord-textMuted hover:text-white text-xs font-bold transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteAtm}
+                disabled={deletingAtm || !deleteMotivo.trim()}
+                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5"
+              >
+                {deletingAtm ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Dando de Baja...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Confirmar Baja Lógica</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE PAPELERA Y CAJEROS DADOS DE BAJA */}
+      {showDeletedCajerosModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-2xl bg-discord-surface rounded-2xl border border-rose-500/40 p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-discord-hover pb-3">
+              <div className="flex items-center gap-2.5">
+                <Trash2 className="w-5 h-5 text-rose-400" />
+                <h3 className="text-base font-black text-white">
+                  Papelera de Terminales dadas de Baja Lógica ({deletedCajerosList.length})
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeletedCajerosModal(false)}
+                className="p-1 rounded-lg text-discord-textMuted hover:text-white hover:bg-discord-hover transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+              {loadingDeletedCajeros ? (
+                <div className="py-8 text-center text-xs text-discord-textMuted flex items-center justify-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin text-discord-blurple" />
+                  <span>Consultando archivo de bajas y auditoría...</span>
+                </div>
+              ) : deletedCajerosList.length === 0 ? (
+                <div className="py-8 text-center text-xs text-discord-textMuted">
+                  No hay terminales dadas de baja lógica actualmente.
+                </div>
+              ) : (
+                deletedCajerosList.map((dc: any) => (
+                  <div
+                    key={dc.id_cajero}
+                    className="p-3.5 rounded-xl bg-discord-sidebar border border-discord-hover flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-rose-400">{dc.id_cajero}</span>
+                        <span className="font-bold text-white">{dc.nombre}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          DADO DE BAJA
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-discord-textMuted mt-1">
+                        📍 {dc.ubicacion} | Fecha: <span className="font-mono text-white">{dc.deleted_at}</span>
+                      </p>
+                      <p className="text-[11px] text-discord-textMuted mt-0.5 italic">
+                        Motivo: "{dc.motivo}" (por {dc.eliminado_por})
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRestoreAtm(dc.id_cajero)}
+                      className="px-3 py-1.5 rounded-xl bg-discord-green hover:bg-emerald-500 text-black font-black text-xs transition-all shadow-sm flex items-center gap-1.5 self-end sm:self-center"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Restaurar a la Red</span>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-discord-hover flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDeletedCajerosModal(false)}
+                className="px-4 py-2 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-white text-xs font-bold transition-all"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

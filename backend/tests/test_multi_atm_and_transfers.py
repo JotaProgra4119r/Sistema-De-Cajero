@@ -316,3 +316,70 @@ def test_superadmin_role_enforcement_and_reports():
     rep_data = rep_res.json()
     assert "titulo" in rep_data
     assert "cajeros" in rep_data
+
+def test_cajero_soft_delete_and_restore():
+    """Verifica el protocolo forense de baja lógica y restauración de terminales cajeros."""
+    _consumed_totp_tokens.clear()
+    super_tok = generate_totp_token()
+    login_super = client.post("/api/auth/login", json={
+        "card_number": "8888888888888888",
+        "pin": "1234",
+        "token": super_tok,
+        "is_admin": True
+    })
+    assert login_super.status_code == 200
+    super_headers = {"Authorization": f"Bearer {login_super.json()['access_token']}"}
+
+    # 1. Registrar cajero de prueba temporal
+    import uuid
+    tmp_session = str(uuid.uuid4())
+    reg_res = client.post("/api/auth/atm/register", json={
+        "nombre": "Cajero Temporal Test Soft Delete",
+        "codigo_cajero": "5555",
+        "ubicacion": "Zona 14 Test",
+        "session_id": tmp_session
+    })
+    assert reg_res.status_code == 200
+    cajero_id = reg_res.json()["cajero"]["id_cajero"]
+
+    # 2. Verificar que aparezca en la lista activa
+    atms_active = client.get("/api/auth/atms").json()
+    assert any(c["id_cajero"] == cajero_id for c in atms_active)
+
+    # 3. Dar de baja lógica como Superadministrador
+    del_res = client.post(
+        f"/api/admin/super/cajeros/{cajero_id}/delete",
+        json={"motivo": "Prueba unitaria de depuración lógica"},
+        headers=super_headers
+    )
+    assert del_res.status_code == 200
+    del_data = del_res.json()
+    assert del_data["status"] == "SUCCESS"
+    assert del_data["id_cajero"] == cajero_id
+
+    # 4. Verificar que ya NO aparezca en la lista de cajeros activos
+    atms_active_after = client.get("/api/auth/atms").json()
+    assert not any(c["id_cajero"] == cajero_id for c in atms_active_after)
+
+    # 5. Verificar que aparezca en el inventario de papelera / registros eliminados
+    deleted_list = client.get("/api/admin/super/cajeros/deleted", headers=super_headers).json()
+    assert any(c["id_cajero"] == cajero_id for c in deleted_list)
+
+    # 6. Intentar conectar al cajero dado de baja debe fallar
+    conn_fail = client.post("/api/auth/atm/connect", json={
+        "id_cajero": cajero_id,
+        "codigo_cajero": "5555",
+        "session_id": str(uuid.uuid4())
+    })
+    assert conn_fail.status_code == 400
+    assert "dado de baja" in conn_fail.json()["detail"]
+
+    # 7. Restaurar la terminal
+    restore_res = client.post(f"/api/admin/super/cajeros/{cajero_id}/restore", headers=super_headers)
+    assert restore_res.status_code == 200
+    assert restore_res.json()["status"] == "SUCCESS"
+
+    # 8. Verificar que vuelva a estar en la lista activa
+    atms_restored = client.get("/api/auth/atms").json()
+    assert any(c["id_cajero"] == cajero_id for c in atms_restored)
+

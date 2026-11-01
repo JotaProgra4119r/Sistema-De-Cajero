@@ -44,6 +44,9 @@ class SoftDeleteUserRequest(BaseModel):
     id_usuario: int
     motivo: str = "Baja solicitada por administración"
 
+class SoftDeleteCajeroRequest(BaseModel):
+    motivo: Optional[str] = "Baja y depuración de terminal solicitada desde Consola Superadmin"
+
 @router.get("/metrics")
 def get_metrics(
     x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"),
@@ -77,6 +80,34 @@ def get_superadmin_consolidated_report(
 ):
     """Genera dataset para el Certificado y Reporte Consolidado Imprimible de toda la Red Multicajero."""
     return BankingService.get_superadmin_consolidated_report(db)
+
+@router.post("/super/cajeros/{id_cajero}/delete")
+async def soft_delete_cajero_route(
+    id_cajero: str,
+    payload: Optional[SoftDeleteCajeroRequest] = None,
+    current_superadmin: Usuario = Depends(get_current_superadmin),
+    db: Session = Depends(get_db)
+):
+    """Baja lógica de una terminal cajero con preservación forense en tabla registros_eliminados y archivos .txt."""
+    motivo = payload.motivo if payload and payload.motivo else "Baja y depuración de terminal solicitada desde Consola Superadmin"
+    return await BankingService.soft_delete_cajero(db, current_superadmin.id_usuario, id_cajero, motivo)
+
+@router.post("/super/cajeros/{id_cajero}/restore")
+async def restore_cajero_route(
+    id_cajero: str,
+    current_superadmin: Usuario = Depends(get_current_superadmin),
+    db: Session = Depends(get_db)
+):
+    """Restaura una terminal cajero dada de baja lógicamente."""
+    return await BankingService.restore_cajero(db, current_superadmin.id_usuario, id_cajero)
+
+@router.get("/super/cajeros/deleted")
+def get_deleted_cajeros_route(
+    current_superadmin: Usuario = Depends(get_current_superadmin),
+    db: Session = Depends(get_db)
+):
+    """Lista las terminales dadas de baja en la red bancaria."""
+    return BankingService.get_deleted_cajeros(db)
 
 @router.post("/vault/initialize")
 async def initialize_vault(

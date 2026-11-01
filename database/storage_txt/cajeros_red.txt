@@ -1,9 +1,15 @@
-ATM-001|Cajero Central - Sede Principal (Zona 10)|1234|7ma Avenida 12-34, Zona 10, Ciudad de Guatemala|ACTIVO|1|1|3970.00|2026-11-01 05:41:59
-ATM-002|Cajero Express - Sucursal Zona 1|1234|6ta Avenida 4-20, Centro Histórico, Zona 1|ACTIVO|0|1|3870.00|
-ATM-003|Cajero Miraflores - Centro Comercial|1234|Calzada Roosevelt, C.C. Miraflores, Local K-12|ACTIVO|0|1|3870.00|
-ATM-004|Cajero de José Javier|000|Oficina Central|ACTIVO|1|1|3870.00|2026-11-01 03:21:40
+ATM-001|Cajero Central - Sede Principal (Zona 10)|1234|7ma Avenida 12-34, Zona 10, Ciudad de Guatemala|ACTIVO|1|0|0.00|2026-11-01 06:17:16
+ATM-002|Cajero Express - Sucursal Zona 1|1234|6ta Avenida 4-20, Centro Histórico, Zona 1|ACTIVO|0|0|0.00|
+ATM-003|Cajero Miraflores - Centro Comercial|1234|Calzada Roosevelt, C.C. Miraflores, Local K-12|ACTIVO|0|0|0.00|
+ATM-004|Cajero ATM 4 - Sucursal Inzano|000|12 Calle 5-45, Zona 9, Plaza Inzano|ACTIVO|1|1|9350.00|2026-11-01 03:21:40
 ATM-005|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-11-01 03:21:52
 ATM-006|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-11-01 05:39:41
 ATM-007|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-11-01 05:40:05
 ATM-008|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|3870.00|2026-11-01 05:41:41
 ATM-009|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|9350.00|2026-11-01 05:41:59
+ATM-010|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|9350.00|2026-11-01 06:13:04
+ATM-011|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|9350.00|2026-11-01 06:14:15
+ATM-012|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|9350.00|2026-11-01 06:14:55
+ATM-013|Cajero Temporal Test Soft Delete|5555|Zona 14 Test|ACTIVO|0|1|9350.00|2026-11-01 06:14:55
+ATM-014|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|9350.00|2026-11-01 06:17:16
+ATM-015|Cajero Temporal Test Soft Delete|5555|Zona 14 Test|ACTIVO|0|1|9350.00|2026-11-01 06:17:16

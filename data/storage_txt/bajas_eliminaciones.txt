@@ -8,3 +8,18 @@
 8|2026-10-31 23:41:40|usuarios|18|Administrador Bóveda|18|Auditoria de cumplimiento regulatorio
 9|2026-10-31 23:41:57|usuarios|20|Administrador Bóveda|20|Fin de contrato laboral
 10|2026-10-31 23:41:58|usuarios|21|Administrador Bóveda|21|Auditoria de cumplimiento regulatorio
+16|2026-11-01 00:13:02|usuarios|23|Administrador Bóveda|23|Fin de contrato laboral
+17|2026-11-01 00:13:03|usuarios|24|Administrador Bóveda|24|Auditoria de cumplimiento regulatorio
+18|2026-11-01 00:14:14|usuarios|26|Administrador Bóveda|26|Fin de contrato laboral
+19|2026-11-01 00:14:15|usuarios|27|Administrador Bóveda|27|Auditoria de cumplimiento regulatorio
+20|2026-11-01 00:14:54|usuarios|29|Administrador Bóveda|29|Fin de contrato laboral
+21|2026-11-01 00:14:55|usuarios|30|Administrador Bóveda|30|Auditoria de cumplimiento regulatorio
+23|2026-11-01 00:17:14|usuarios|32|Administrador Bóveda|32|Fin de contrato laboral
+24|2026-11-01 00:17:15|usuarios|33|Administrador Bóveda|33|Auditoria de cumplimiento regulatorio
+11|2026-11-01 06:05:17|cajeros|ATM-005|Super Administrador Global|N/A|Depuración y baja lógica de terminal de prueba duplicada
+12|2026-11-01 06:05:17|cajeros|ATM-006|Super Administrador Global|N/A|Depuración y baja lógica de terminal de prueba duplicada
+13|2026-11-01 06:05:17|cajeros|ATM-007|Super Administrador Global|N/A|Depuración y baja lógica de terminal de prueba duplicada
+14|2026-11-01 06:05:17|cajeros|ATM-008|Super Administrador Global|N/A|Depuración y baja lógica de terminal de prueba duplicada
+15|2026-11-01 06:05:17|cajeros|ATM-009|Super Administrador Global|N/A|Depuración y baja lógica de terminal de prueba duplicada
+22|2026-11-01 06:14:55|cajeros|ATM-013|Super Administrador Global|N/A|Prueba unitaria de depuración lógica
+25|2026-11-01 06:17:16|cajeros|ATM-015|Super Administrador Global|N/A|Prueba unitaria de depuración lógica
