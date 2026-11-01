@@ -439,4 +439,33 @@ def test_admin_change_user_pin():
     })
     assert restore_res.status_code == 200
 
+def test_transaction_status_pending_recovery():
+    """Prueba que el endpoint /api/user/transactions/status permita consultar el estado de una transacción para recuperación ante caídas."""
+    _consumed_totp_tokens.clear()
+    tok = generate_totp_token()
+    login_res = client.post("/api/auth/login", json={
+        "card_number": "1234567812345678",
+        "pin": "1234",
+        "token": tok,
+        "is_admin": False
+    })
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Obtener una transacción existente
+    txs_res = client.get("/api/user/transactions", headers=headers)
+    assert txs_res.status_code == 200
+    txs = txs_res.json()
+    assert len(txs) > 0
+    sample_id = str(txs[0]["id_transaccion"])
+
+    # 2. Consultar por referencia
+    status_res = client.get(f"/api/user/transactions/status?reference={sample_id}", headers=headers)
+    assert status_res.status_code == 200
+    st_data = status_res.json()
+    assert st_data["found"] is True
+    assert st_data["confirmed"] is True
+    assert st_data["id_transaccion"] == int(sample_id)
+
+
 

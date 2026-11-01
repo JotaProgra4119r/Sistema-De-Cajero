@@ -2,9 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Wallet, LogOut, CheckCircle2, AlertTriangle, ArrowDownRight,
   ArrowUpRight, RefreshCw, KeyRound, AlertCircle, Banknote, Archive,
-  HelpCircle, X, Printer, Globe, Send, Radio
+  HelpCircle, X, Printer, Globe, Send, Radio, Eye, EyeOff, Info, Keyboard
 } from "lucide-react";
 import { QuetzalBillCard } from "../components/QuetzalBillCard";
+import { VirtualKeypad } from "../components/VirtualKeypad";
+import { AccessibilityToolbar } from "../components/AccessibilityToolbar";
+import { soundEffects } from "../utils/audioAccessibility";
 import { userService, interbankService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
 
@@ -22,6 +25,17 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
   const [loadingAudit, setLoadingAudit] = useState<boolean>(false);
   const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
   const [activeVoucher, setActiveVoucher] = useState<VoucherData | null>(null);
+
+  // Accesibilidad, controles avanzados y recuperación de operaciones
+  const [showNumpad, setShowNumpad] = useState<boolean>(false);
+  const [showBalanceDetailModal, setShowBalanceDetailModal] = useState<boolean>(false);
+  const [proposedAlternative, setProposedAlternative] = useState<Record<string, number> | null>(null);
+  const [confirmNewPin, setConfirmNewPin] = useState<string>("");
+  const [showPinEyes, setShowPinEyes] = useState<{ current: boolean; new: boolean; confirm: boolean }>({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
   // Custom withdrawal state
   const [requestedAmount, setRequestedAmount] = useState<string>("0");
@@ -410,6 +424,8 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
       }
       const prevBal = userSummary.saldo_actual || 0;
       const res = await userService.withdraw(totalSelectedWithdraw, billsPayload);
+      soundEffects.playSuccessChime();
+      localStorage.setItem("last_pending_reference", String(res.id_transaccion || Date.now()));
       setFeedbackMessage({ type: "success", text: res.mensaje || "Dispensación exitosa de efectivo." });
 
       const newBal = res.nuevo_saldo !== undefined ? res.nuevo_saldo : prevBal - totalSelectedWithdraw;
@@ -428,10 +444,22 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
       setSelectedBills({ 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 });
       setRequestedAmount("0");
+      setProposedAlternative(null);
       await reloadData();
     } catch (err: any) {
-      const msg = err.response?.data?.detail || "Error al procesar el retiro.";
-      setFeedbackMessage({ type: "error", text: msg });
+      const errDetail = err.response?.data?.detail;
+      if (errDetail && typeof errDetail === "object" && errDetail.alternativa) {
+        setProposedAlternative(errDetail.alternativa);
+        soundEffects.playWarningTone();
+        setFeedbackMessage({
+          type: "error",
+          text: `⚠️ Stock insuficiente para el desglose elegido. El cajero propone una distribución alternativa.`
+        });
+      } else {
+        soundEffects.playErrorTone();
+        const msg = typeof errDetail === "string" ? errDetail : "Error al procesar el retiro.";
+        setFeedbackMessage({ type: "error", text: msg });
+      }
     } finally {
       setLoading(false);
     }
@@ -501,23 +529,42 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     }
   };
 
-  // Execute PIN Change sin token dinámico
+  // Execute PIN Change con confirmación y validación estricta
   const handleExecuteChangePin = async () => {
     resetInactivity();
     setPinSuccessMsg(null);
     setFeedbackMessage(null);
+    if (currentPin.length !== 4) {
+      soundEffects.playWarningTone();
+      setFeedbackMessage({ type: "error", text: "Debe ingresar su PIN actual completo de 4 dígitos." });
+      return;
+    }
     if (newPin.length !== 4) {
+      soundEffects.playWarningTone();
       setFeedbackMessage({ type: "error", text: "El nuevo PIN debe tener exactamente 4 dígitos." });
+      return;
+    }
+    if (newPin !== confirmNewPin) {
+      soundEffects.playWarningTone();
+      setFeedbackMessage({ type: "error", text: "El nuevo PIN y su confirmación no coinciden." });
+      return;
+    }
+    if (newPin === currentPin) {
+      soundEffects.playWarningTone();
+      setFeedbackMessage({ type: "error", text: "El nuevo PIN debe ser distinto al PIN actual." });
       return;
     }
     setLoading(true);
     try {
       const res = await userService.changePin(userSummary.tarjeta, currentPin, newPin);
-      setPinSuccessMsg(res.mensaje);
+      soundEffects.playSuccessChime();
+      setPinSuccessMsg(res.mensaje || "PIN confidencial actualizado con éxito en toda la red.");
       setCurrentPin("");
       setNewPin("");
+      setConfirmNewPin("");
       await reloadData();
     } catch (err: any) {
+      soundEffects.playErrorTone();
       const msg = err.response?.data?.detail || "Error al actualizar el PIN.";
       setFeedbackMessage({ type: "error", text: msg });
     } finally {
@@ -540,23 +587,28 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
             <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-base lg:text-lg font-black text-discord-textPure tracking-wide">
-              Área de Autoservicio Bancario
-            </h1>
-            <p className="text-[10px] sm:text-[11px] lg:text-xs text-discord-textMuted flex flex-wrap items-center gap-1.5">
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base lg:text-lg font-black text-discord-textPure tracking-wide">
+                Banco Nacional Inzano GYT
+              </h1>
+              <span className="text-[10px] bg-blue-900/60 text-blue-200 px-2 py-0.5 rounded-full font-bold border border-blue-700">
+                {userSummary.id_cajero || "ATM-001"}
+              </span>
+            </div>
+            <p className="text-[10px] sm:text-[11px] lg:text-xs text-discord-textMuted flex flex-wrap items-center gap-1.5 mt-0.5">
               <span>Usuario: <strong className="text-white">{userSummary.nombre_completo}</strong></span>
               <span>|</span>
               <span>ID Cuenta: <strong className="font-mono text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800">{userSummary.id_cuenta_bancaria || "N/A"}</strong></span>
               <span>|</span>
               <span>Tarjeta: <strong className="font-mono text-discord-green">{userSummary.tarjeta}</strong></span>
-              <span>|</span>
-              <span>Cajero: <strong className="text-amber-300">{userSummary.id_cajero || "ATM-001"}</strong></span>
             </p>
           </div>
         </div>
 
-        {/* Inactivity, Help & Logout */}
-        <div className="flex items-center gap-2 lg:gap-3">
+        {/* Accessibility Toolbar, Inactivity, Help & Logout */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+          <AccessibilityToolbar onToggleVirtualKeypad={() => setShowNumpad(!showNumpad)} showKeypadToggle={true} />
+
           <button
             type="button"
             onClick={() => setShowHelpModal(true)}
@@ -603,6 +655,18 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 Q{userSummary.saldo_actual?.toFixed(2) || "0.00"}
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                soundEffects.playKeyClick();
+                setShowBalanceDetailModal(true);
+              }}
+              className="w-full mt-2 py-2 px-3 rounded-xl bg-discord-sidebar hover:bg-discord-hover text-cyan-300 border border-discord-hover text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95"
+            >
+              <Info className="w-4 h-4 text-cyan-400" />
+              <span>Ver Detalle de Límites &amp; Cupo</span>
+            </button>
 
             {/* Circular Progress Gauge */}
             <div className="mt-2.5 sm:mt-4 p-2.5 sm:p-3 rounded-xl bg-discord-sidebar/60 border border-discord-hover text-center">
@@ -783,6 +847,46 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                     </button>
                   </div>
                 </div>
+
+                {/* Desglose Alternativo Propuesto por el Cajero ante Stock Limitado */}
+                {proposedAlternative && (
+                  <div className="p-3 mb-2 rounded-xl bg-amber-500/20 border-2 border-amber-500 text-amber-200 text-xs animate-shake">
+                    <div className="font-bold flex items-center gap-2 mb-1">
+                      <AlertCircle className="w-4 h-4 text-amber-400" />
+                      <span>El cajero propone un desglose alternativo según existencias físicas:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 my-2 font-mono">
+                      {Object.entries(proposedAlternative).map(([d, c]) => (
+                        <span key={d} className="px-2 py-0.5 rounded bg-black/50 border border-amber-600 font-bold">
+                          Q{d} × {c}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextBills: Record<number, number> = { 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 };
+                          for (const [d, c] of Object.entries(proposedAlternative)) {
+                            nextBills[Number(d)] = Number(c);
+                          }
+                          setSelectedBills(nextBills);
+                          setProposedAlternative(null);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs shadow-sm"
+                      >
+                        Aceptar Desglose Propuesto
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProposedAlternative(null)}
+                        className="px-3 py-1.5 rounded-lg bg-discord-sidebar text-white text-xs"
+                      >
+                        Descartar
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Intelligent Auto-Breakdown (Sin duplicar montos que ya están en el panel de validación derecho) */}
                 <div className="flex items-center justify-between gap-2 p-2 mb-2 rounded-xl bg-discord-sidebar/80 border border-discord-hover text-xs flex-shrink-0">
@@ -1183,28 +1287,78 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-discord-textMuted block mb-1">
-                    PIN Confidencial Actual (4 dígitos)
-                  </label>
+                  <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
+                    <span>PIN Confidencial Actual (4 dígitos)</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPinEyes((prev) => ({ ...prev, current: !prev.current }))}
+                      className="text-discord-textMuted hover:text-white"
+                      title={showPinEyes.current ? "Ocultar" : "Mostrar"}
+                    >
+                      {showPinEyes.current ? <EyeOff className="w-3.5 h-3.5 text-discord-amber" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                   <input
-                    type="password"
+                    type={showPinEyes.current ? "text" : "password"}
                     maxLength={4}
                     value={currentPin}
-                    onChange={(e) => setCurrentPin(e.target.value)}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      setCurrentPin(clean);
+                      resetInactivity();
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl bg-discord-surface border border-discord-hover font-mono text-xl tracking-widest text-white focus:outline-none focus:border-discord-blurple"
                     placeholder="••••"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-discord-textMuted block mb-1">
-                    Nuevo PIN Confidencial (4 dígitos)
-                  </label>
+                  <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
+                    <span>Nuevo PIN Confidencial (4 dígitos)</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPinEyes((prev) => ({ ...prev, new: !prev.new }))}
+                      className="text-discord-textMuted hover:text-white"
+                      title={showPinEyes.new ? "Ocultar" : "Mostrar"}
+                    >
+                      {showPinEyes.new ? <EyeOff className="w-3.5 h-3.5 text-discord-amber" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                   <input
-                    type="password"
+                    type={showPinEyes.new ? "text" : "password"}
                     maxLength={4}
                     value={newPin}
-                    onChange={(e) => setNewPin(e.target.value)}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      setNewPin(clean);
+                      resetInactivity();
+                    }}
+                    className="w-full px-4 py-2.5 rounded-xl bg-discord-surface border border-discord-hover font-mono text-xl tracking-widest text-white focus:outline-none focus:border-discord-blurple"
+                    placeholder="••••"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
+                    <span>Confirmar Nuevo PIN (4 dígitos)</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPinEyes((prev) => ({ ...prev, confirm: !prev.confirm }))}
+                      className="text-discord-textMuted hover:text-white"
+                      title={showPinEyes.confirm ? "Ocultar" : "Mostrar"}
+                    >
+                      {showPinEyes.confirm ? <EyeOff className="w-3.5 h-3.5 text-discord-amber" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <input
+                    type={showPinEyes.confirm ? "text" : "password"}
+                    maxLength={4}
+                    value={confirmNewPin}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      setConfirmNewPin(clean);
+                      resetInactivity();
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl bg-discord-surface border border-discord-hover font-mono text-xl tracking-widest text-white focus:outline-none focus:border-discord-blurple"
                     placeholder="••••"
                   />
@@ -1213,9 +1367,9 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
                 <button
                   type="button"
                   onClick={handleExecuteChangePin}
-                  disabled={loading || newPin.length !== 4}
+                  disabled={loading || newPin.length !== 4 || confirmNewPin.length !== 4}
                   className={`w-full py-3.5 rounded-xl font-extrabold text-sm transition-all shadow-md mt-4 ${
-                    newPin.length === 4 && !loading
+                    newPin.length === 4 && confirmNewPin.length === 4 && !loading
                       ? "bg-discord-amber hover:bg-amber-400 text-black shadow-glow"
                       : "bg-gray-700 text-gray-500 cursor-not-allowed"
                   }`}
@@ -1704,6 +1858,143 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           voucher={activeVoucher}
           onClose={() => setActiveVoucher(null)}
         />
+      )}
+
+      {/* ALERTA FLOTANTE DE INACTIVIDAD (15 SEGUNDOS) */}
+      {secondsRemaining <= 15 && (
+        <div className="fixed bottom-6 right-6 z-50 bg-discord-surface border-2 border-discord-red p-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-bounce">
+          <AlertTriangle className="w-8 h-8 text-discord-red animate-pulse flex-shrink-0" />
+          <div>
+            <div className="text-sm font-black text-white">¿Sigues realizando operaciones?</div>
+            <div className="text-xs text-discord-textMuted">
+              La sesión se cerrará en <span className="text-discord-red font-mono font-bold text-sm">{secondsRemaining}s</span> por inactividad.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              soundEffects.playKeyClick();
+              resetInactivity();
+            }}
+            className="px-4 py-2 bg-discord-green hover:bg-emerald-400 text-black font-black text-xs rounded-xl shadow-glow transition-all active:scale-95"
+          >
+            Continuar Operando
+          </button>
+        </div>
+      )}
+
+      {/* TECLADO TÁCTIL EN PANTALLA FLOTANTE */}
+      {showNumpad && (
+        <div className="fixed bottom-6 left-6 z-50 p-4 bg-discord-surface/95 backdrop-blur-md rounded-3xl border-2 border-discord-blurple shadow-2xl animate-fade-in max-w-[340px]">
+          <div className="flex items-center justify-between mb-2 pb-2 border-b border-discord-hover">
+            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+              <Keyboard className="w-4 h-4 text-discord-blurple" />
+              <span>Teclado Táctil en Pantalla</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowNumpad(false)}
+              className="p-1 rounded-lg hover:bg-discord-hover text-discord-textMuted hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <VirtualKeypad
+            onNumberClick={(n) => {
+              resetInactivity();
+              if (activeTab === "withdraw") {
+                setRequestedAmount((prev) => (prev === "0" ? n : prev + n));
+              } else if (activeTab === "deposit" && depositMode === "interbank") {
+                setInterbankAmount((prev) => prev + n);
+              } else if (activeTab === "pin") {
+                if (currentPin.length < 4) setCurrentPin((p) => p + n);
+                else if (newPin.length < 4) setNewPin((p) => p + n);
+                else if (confirmNewPin.length < 4) setConfirmNewPin((p) => p + n);
+              }
+            }}
+            onClear={() => {
+              resetInactivity();
+              if (activeTab === "withdraw") setRequestedAmount("0");
+              else if (activeTab === "deposit") setInterbankAmount("");
+              else if (activeTab === "pin") {
+                setCurrentPin("");
+                setNewPin("");
+                setConfirmNewPin("");
+              }
+            }}
+            onEnter={() => {
+              resetInactivity();
+              if (activeTab === "withdraw") handleExecuteWithdrawal();
+              else if (activeTab === "deposit" && depositMode === "interbank") handleExecuteInterbankTransfer();
+              else if (activeTab === "pin") handleExecuteChangePin();
+            }}
+          />
+        </div>
+      )}
+
+      {/* MODAL DE DETALLE COMPLETO DE SALDO Y LÍMITES */}
+      {showBalanceDetailModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="max-w-md w-full p-6 bg-discord-surface rounded-2xl border border-discord-hover shadow-2xl space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-discord-hover pb-3">
+              <div className="flex items-center gap-2">
+                <Info className="w-5 h-5 text-discord-blurple" />
+                <h3 className="text-base font-black">Detalle Integral de Saldo y Cupo</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowBalanceDetailModal(false)}
+                className="p-1 rounded-lg hover:bg-discord-sidebar text-discord-textMuted hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <div className="flex justify-between p-2.5 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <span className="text-discord-textMuted font-medium">1. Saldo actual contable:</span>
+                <span className="font-mono font-bold text-discord-green text-sm">
+                  Q{Number(userSummary.saldo_actual || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <span className="text-discord-textMuted font-medium">2. Límite diario asignado:</span>
+                <span className="font-mono font-bold text-white">
+                  Q{Number(userSummary.monto_max_diario || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <span className="text-discord-textMuted font-medium">3. Total retirado hoy:</span>
+                <span className="font-mono font-bold text-discord-amber">
+                  Q{Number(userSummary.total_retirado_hoy || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-xl bg-discord-sidebar border border-discord-hover">
+                <span className="text-discord-textMuted font-medium">4. Cupo remanente del día:</span>
+                <span className="font-mono font-bold text-cyan-300">
+                  Q{Number(userSummary.cupo_disponible || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between p-3 rounded-xl bg-emerald-950/40 border border-emerald-600">
+                <span className="text-emerald-200 font-bold">5. Máximo retirable hoy:</span>
+                <span className="font-mono font-black text-emerald-300 text-base">
+                  Q{Math.max(0, Math.min(Number(userSummary.saldo_actual || 0), Number(userSummary.cupo_disponible || 0))).toFixed(2)}
+                </span>
+              </div>
+              <p className="text-[11px] text-discord-textMuted leading-relaxed pt-1">
+                ℹ️ La cantidad efectivamente retirable está sujeta tanto a su saldo contable como a la disponibilidad de billetes en la bóveda de esta terminal.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowBalanceDetailModal(false)}
+              className="w-full py-2.5 rounded-xl bg-discord-blurple hover:bg-discord-blurpleHover text-white font-bold text-xs shadow-md"
+            >
+              Cerrar Detalle
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

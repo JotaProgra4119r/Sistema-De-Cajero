@@ -203,6 +203,14 @@ export const userService = {
     const res = await apiClient.get("/api/user/audit/deleted-records");
     return res.data;
   },
+  checkPendingTransaction: async (reference: string) => {
+    const res = await apiClient.get(`/api/user/transactions/status?reference=${encodeURIComponent(reference)}`);
+    return res.data;
+  },
+  calculateBreakdown: async (amount: number) => {
+    const res = await apiClient.post("/api/user/calculate-breakdown", { amount });
+    return res.data;
+  },
 };
 
 export const adminService = {

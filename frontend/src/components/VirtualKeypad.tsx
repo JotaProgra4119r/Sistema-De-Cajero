@@ -1,5 +1,6 @@
 import React from "react";
 import { Delete, Check } from "lucide-react";
+import { soundEffects } from "../utils/audioAccessibility";
 
 interface VirtualKeypadProps {
   onNumberClick: (num: string) => void;
@@ -16,6 +17,21 @@ export const VirtualKeypad: React.FC<VirtualKeypadProps> = ({
 }) => {
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "E"];
 
+  const handleNum = (num: string) => {
+    soundEffects.playKeyClick();
+    onNumberClick(num);
+  };
+
+  const handleClr = () => {
+    soundEffects.playWarningTone();
+    onClear();
+  };
+
+  const handleEnt = () => {
+    soundEffects.playSuccessChime();
+    onEnter();
+  };
+
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-[360px] mx-auto p-2.5 sm:p-4 bg-discord-surface rounded-2xl shadow-kiosk border border-discord-hover">
       {keys.map((k) => {
@@ -24,8 +40,9 @@ export const VirtualKeypad: React.FC<VirtualKeypadProps> = ({
             <button
               key="clear"
               type="button"
-              onClick={onClear}
-              className="h-11 sm:h-13 lg:h-16 min-h-[44px] sm:min-h-[52px] lg:min-h-[64px] flex items-center justify-center gap-1.5 sm:gap-2 bg-discord-red hover:bg-red-600 active:scale-95 text-white font-semibold text-sm sm:text-base lg:text-lg rounded-xl transition-all shadow-md"
+              onClick={handleClr}
+              className="h-11 sm:h-13 lg:h-16 min-h-[44px] sm:min-h-[52px] lg:min-h-[64px] flex items-center justify-center gap-1.5 sm:gap-2 bg-discord-red hover:bg-red-600 active:scale-95 text-white font-semibold text-sm sm:text-base lg:text-lg rounded-xl transition-all shadow-md focus:ring-2 focus:ring-red-400 focus:outline-none"
+              aria-label="Limpiar entrada actual"
             >
               <Delete className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               <span>Limpiar</span>
@@ -37,13 +54,14 @@ export const VirtualKeypad: React.FC<VirtualKeypadProps> = ({
             <button
               key="enter"
               type="button"
-              onClick={onEnter}
+              onClick={handleEnt}
               disabled={enterDisabled}
-              className={`h-11 sm:h-13 lg:h-16 min-h-[44px] sm:min-h-[52px] lg:min-h-[64px] flex items-center justify-center gap-1.5 sm:gap-2 font-bold text-sm sm:text-base lg:text-lg rounded-xl transition-all shadow-md active:scale-95 ${
+              className={`h-11 sm:h-13 lg:h-16 min-h-[44px] sm:min-h-[52px] lg:min-h-[64px] flex items-center justify-center gap-1.5 sm:gap-2 font-bold text-sm sm:text-base lg:text-lg rounded-xl transition-all shadow-md active:scale-95 focus:ring-2 focus:ring-emerald-400 focus:outline-none ${
                 enterDisabled
                   ? "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
                   : "bg-discord-green hover:bg-emerald-400 text-black shadow-glow"
               }`}
+              aria-label="Confirmar o entrar"
             >
               <Check className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               <span>Entrar</span>
@@ -54,8 +72,9 @@ export const VirtualKeypad: React.FC<VirtualKeypadProps> = ({
           <button
             key={k}
             type="button"
-            onClick={() => onNumberClick(k)}
-            className="h-11 sm:h-13 lg:h-16 min-h-[44px] sm:min-h-[52px] lg:min-h-[64px] flex items-center justify-center bg-discord-sidebar hover:bg-discord-hover active:scale-95 text-discord-textPure font-bold text-lg sm:text-xl lg:text-2xl rounded-xl transition-all border border-discord-hover shadow-sm"
+            onClick={() => handleNum(k)}
+            className="h-11 sm:h-13 lg:h-16 min-h-[44px] sm:min-h-[52px] lg:min-h-[64px] flex items-center justify-center bg-discord-sidebar hover:bg-discord-hover active:scale-95 text-discord-textPure font-bold text-lg sm:text-xl lg:text-2xl rounded-xl transition-all border border-discord-hover shadow-sm focus:ring-2 focus:ring-discord-blurple focus:outline-none"
+            aria-label={`Dígito ${k}`}
           >
             {k}
           </button>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Lock, UserCheck, CreditCard, Clock, AlertCircle } from "lucide-react";
+import { Lock, UserCheck, CreditCard, Clock, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { VirtualKeypad } from "../components/VirtualKeypad";
 import { HardwareBadges } from "../components/HardwareBadges";
+import { AccessibilityToolbar } from "../components/AccessibilityToolbar";
 import { authService } from "../services/api";
 
 interface WelcomeAuthViewProps {
@@ -17,6 +18,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   const [pin, setPin] = useState<string>("");
   const [token, setToken] = useState<string>("");
   const [activeField, setActiveField] = useState<ActiveField>("card");
+  const [showPin, setShowPin] = useState<boolean>(false);
   
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -270,47 +272,51 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
           </div>
           <div>
             <h1 className="text-lg lg:text-2xl font-black tracking-wider text-discord-textPure uppercase">
-              Banco Nacional de Guatemala
+              Banco Nacional Inzano GYT
             </h1>
             <p className="text-[10px] lg:text-xs text-discord-textMuted tracking-widest uppercase">
-              Terminal Kiosco de Autoservicio Bancario Embebido
+              Terminal Kiosco de Autoservicio Bancario Embebido · {activeAtm}
             </p>
           </div>
         </div>
 
-        {/* Dual Mode Switcher */}
-        <div className="flex items-center gap-2 lg:gap-3 bg-discord-surface p-1.5 rounded-2xl border border-discord-hover">
-          <button
-            type="button"
-            onClick={() => {
-              setIsAdminMode(false);
-              setErrorMessage(null);
-            }}
-            className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
-              !isAdminMode
-                ? "bg-discord-blurple text-white shadow-md"
-                : "text-discord-textMuted hover:text-discord-textPure"
-            }`}
-          >
-            <UserCheck className="w-4 h-4" />
-            <span>Terminal Usuario</span>
-          </button>
+        {/* Accessibility & Dual Mode Switcher */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+          <AccessibilityToolbar showKeypadToggle={false} />
 
-          <button
-            type="button"
-            onClick={() => {
-              setIsAdminMode(true);
-              setErrorMessage(null);
-            }}
-            className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
-              isAdminMode
-                ? "bg-discord-amber shadow-md font-extrabold"
-                : "text-discord-textMuted hover:text-discord-textPure"
-            }`}
-          >
-            <Lock className="w-4 h-4" />
-            <span>Panel Administrador</span>
-          </button>
+          <div className="flex items-center gap-2 lg:gap-3 bg-discord-surface p-1.5 rounded-2xl border border-discord-hover">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAdminMode(false);
+                setErrorMessage(null);
+              }}
+              className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
+                !isAdminMode
+                  ? "bg-discord-blurple text-white shadow-md"
+                  : "text-discord-textMuted hover:text-discord-textPure"
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Terminal Usuario</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsAdminMode(true);
+                setErrorMessage(null);
+              }}
+              className={`flex items-center gap-2 px-3.5 lg:px-5 py-2 lg:py-2.5 rounded-xl font-bold text-xs lg:text-sm transition-all ${
+                isAdminMode
+                  ? "bg-discord-amber shadow-md font-extrabold"
+                  : "text-discord-textMuted hover:text-discord-textPure"
+              }`}
+            >
+              <Lock className="w-4 h-4" />
+              <span>Panel Administrador</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -472,19 +478,37 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 >
                   <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
                     <span>PIN (4 dígitos)</span>
-                    {activeField === "pin" && <span className="text-discord-blurple">● Activo</span>}
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowPin(!showPin);
+                        }}
+                        aria-label={showPin ? "Ocultar PIN" : "Mostrar PIN"}
+                        className="p-1 rounded text-discord-textMuted hover:text-white transition-all"
+                        title={showPin ? "Ocultar PIN" : "Mostrar PIN"}
+                      >
+                        {showPin ? <EyeOff className="w-3.5 h-3.5 text-discord-amber" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                      {activeField === "pin" && <span className="text-discord-blurple">● Activo</span>}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 h-7">
-                    {[0, 1, 2, 3].map((idx) => (
-                      <div
-                        key={idx}
-                        className={`w-3.5 h-3.5 rounded-full border transition-all ${
-                          idx < pin.length
-                            ? "bg-discord-green border-discord-green shadow-sm"
-                            : "border-gray-600 bg-discord-surface"
-                        }`}
-                      />
-                    ))}
+                  <div className="flex items-center gap-2 h-7 font-mono font-bold text-xl text-discord-green">
+                    {showPin ? (
+                      <span className="tracking-widest">{pin ? pin.padEnd(4, "•") : "••••"}</span>
+                    ) : (
+                      [0, 1, 2, 3].map((idx) => (
+                        <div
+                          key={idx}
+                          className={`w-3.5 h-3.5 rounded-full border transition-all ${
+                            idx < pin.length
+                              ? "bg-discord-green border-discord-green shadow-sm"
+                              : "border-gray-600 bg-discord-surface"
+                          }`}
+                        />
+                      ))
+                    )}
                   </div>
                 </div>
 

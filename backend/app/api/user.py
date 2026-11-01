@@ -127,6 +127,61 @@ def get_transactions(current_user: Usuario = Depends(get_current_user), db: Sess
         })
     return res
 
+@router.get("/transactions/status")
+def get_transaction_status(
+    reference: Optional[str] = Query(None, description="ID o token de la transacción"),
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Consulta y verifica el estado de una transacción pendiente o incierta tras un corte de red."""
+    from backend.app.db.models import Transaccion, TransferenciaBancaria
+    if not reference:
+        raise HTTPException(status_code=400, detail="Debe proporcionar la referencia o token a consultar.")
+    
+    ref_clean = reference.strip()
+    
+    # 1. Buscar en transacciones locales
+    tx = None
+    if ref_clean.isdigit():
+        tx = db.query(Transaccion).filter(Transaccion.id_transaccion == int(ref_clean), Transaccion.id_usuario == current_user.id_usuario).first()
+    if not tx:
+        tx = db.query(Transaccion).filter(Transaccion.token_transferencia == ref_clean, Transaccion.id_usuario == current_user.id_usuario).first()
+    
+    if tx:
+        return {
+            "found": True,
+            "confirmed": True,
+            "id_transaccion": tx.id_transaccion,
+            "tipo": tx.tipo_transaccion,
+            "monto": float(tx.monto),
+            "fecha_hora": tx.fecha_hora.strftime("%Y-%m-%d %H:%M:%S") if tx.fecha_hora else "",
+            "id_cajero": tx.id_cajero or "ATM-001",
+            "token": tx.token_transferencia,
+            "mensaje": "Operación confirmada y registrada en la base de datos oficial del servidor."
+        }
+    
+    # 2. Buscar en transferencias bancarias
+    trf = db.query(TransferenciaBancaria).filter(TransferenciaBancaria.token_transferencia == ref_clean).first()
+    if trf:
+        return {
+            "found": True,
+            "confirmed": trf.estado == "APROBADA",
+            "id_transaccion": trf.id_transferencia,
+            "tipo": "TRANSFERENCIA_INTERBANCARIA",
+            "monto": float(trf.monto),
+            "fecha_hora": trf.fecha_creacion.strftime("%Y-%m-%d %H:%M:%S") if trf.fecha_creacion else "",
+            "id_cajero": "RED-INTERBANCARIA",
+            "token": trf.token_transferencia,
+            "estado": trf.estado,
+            "mensaje": f"Transferencia interbancaria {trf.estado} en el registro oficial."
+        }
+
+    return {
+        "found": False,
+        "confirmed": False,
+        "mensaje": "No se encontró registro de la operación con esa referencia. Puede requerir asistencia técnica administrativa."
+    }
+
 @router.post("/change-pin")
 async def change_pin(payload: ChangePinRequest, current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
     return await BankingService.change_pin(

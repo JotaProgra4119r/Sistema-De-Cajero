@@ -243,3 +243,26 @@ button, input {
     color: #111827 !important;
   }
 }
+
+
+/* =========================================================================
+   ACCESIBILIDAD Y ERGONOMIA BANCARIA (ALTO CONTRASTE Y ZOOM DE FUENTE)
+   ========================================================================= */
+html.atm-high-contrast {
+  filter: contrast(135%);
+  --atm-bg-base: #000000 !important;
+  --atm-bg-surface: #0a0a0c !important;
+  --atm-bg-sidebar: #121216 !important;
+  --atm-bg-hover: #1e1e24 !important;
+  --atm-border: #facc15 !important;
+  --atm-text-pure: #ffffff !important;
+}
+
+html.atm-high-contrast button {
+  border-width: 2px !important;
+  font-weight: 800 !important;
+}
+
+html.atm-large-font {
+  font-size: 115% !important;
+}
