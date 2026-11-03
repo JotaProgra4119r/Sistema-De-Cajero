@@ -301,6 +301,10 @@ export const adminService = {
     const res = await apiClient.get("/api/admin/super/cajeros/deleted");
     return res.data;
   },
+  scaleExponentialCajeros: async (count?: number) => {
+    const res = await apiClient.post("/api/admin/super/cajeros/scale-exponential", { count });
+    return res.data;
+  },
 };
 
 export const interbankService = {
@@ -310,6 +314,10 @@ export const interbankService = {
   },
   getBanks: async () => {
     const res = await apiClient.get("/api/interbank/banks");
+    return res.data;
+  },
+  pingDirect: async (ip: string, puerto: number) => {
+    const res = await apiClient.post("/api/interbank/ping", { ip, puerto });
     return res.data;
   },
   scanNetwork: async () => {

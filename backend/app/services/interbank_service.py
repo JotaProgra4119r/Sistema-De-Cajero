@@ -46,6 +46,7 @@ class InterbankProtocolManager:
     """
     def __init__(self):
         self.tcp_server: Optional[asyncio.Server] = None
+        self.tcp_servers: List[asyncio.Server] = []
         self.udp_transport: Optional[asyncio.DatagramTransport] = None
         self.is_running: bool = False
         self.local_ip: str = get_local_ip()
@@ -610,24 +611,41 @@ class InterbankProtocolManager:
     # 3. CICLO DE VIDA DEL SERVICIO (START / STOP)
     # =========================================================================
     async def start(self):
-        """Inicia los escuchadores de red TCP 5000 y UDP 5005."""
+        """Inicia los escuchadores de red TCP (5000, 5040 Wi-Fi, 5034 Ethernet) y UDP 5005."""
         if self.is_running:
             return
 
         self.local_ip = get_local_ip()
         loop = asyncio.get_running_loop()
 
-        # Iniciar Servidor TCP 5000
-        try:
-            self.tcp_server = await asyncio.start_server(
-                self.handle_tcp_client,
-                host="0.0.0.0",
-                port=settings.INTERBANK_TCP_PORT,
-                reuse_address=True
-            )
-            logger.info(f"[INTERBANK TCP] Servidor escuchando en 0.0.0.0:{settings.INTERBANK_TCP_PORT} (IP Local: {self.local_ip})")
-        except Exception as e:
-            logger.warning(f"[INTERBANK TCP] No se pudo enlazar puerto {settings.INTERBANK_TCP_PORT}: {e}")
+        # Iniciar Servidores TCP en puertos configurados:
+        # - Puerto Base: 5000
+        # - Puerto Wi-Fi: 5040 (o 40)
+        # - Puerto Ethernet: 5034 (o 34)
+        ports_to_listen = [
+            settings.INTERBANK_TCP_PORT,
+            getattr(settings, "INTERBANK_WIFI_PORT", 5040),
+            getattr(settings, "INTERBANK_ETH_PORT", 5034),
+        ]
+        for short_p in [40, 34]:
+            if short_p not in ports_to_listen:
+                ports_to_listen.append(short_p)
+
+        self.tcp_servers = []
+        for port in ports_to_listen:
+            try:
+                srv = await asyncio.start_server(
+                    self.handle_tcp_client,
+                    host="0.0.0.0",
+                    port=port,
+                    reuse_address=True
+                )
+                self.tcp_servers.append(srv)
+                if self.tcp_server is None:
+                    self.tcp_server = srv
+                logger.info(f"[INTERBANK TCP] Servidor escuchando en 0.0.0.0:{port} (IP Local: {self.local_ip})")
+            except Exception as e:
+                logger.warning(f"[INTERBANK TCP] No se pudo enlazar puerto {port}: {e}")
 
         # Iniciar Servidor UDP 5005
         try:
@@ -649,14 +667,21 @@ class InterbankProtocolManager:
         self.is_running = True
 
     async def stop(self):
-        """Detiene los servidores interbancarios."""
-        if self.tcp_server:
-            self.tcp_server.close()
-            await self.tcp_server.wait_closed()
-            self.tcp_server = None
+        """Detiene todos los servidores interbancarios."""
+        for srv in self.tcp_servers:
+            try:
+                srv.close()
+                await srv.wait_closed()
+            except Exception:
+                pass
+        self.tcp_servers = []
+        self.tcp_server = None
 
         if self.udp_transport:
-            self.udp_transport.close()
+            try:
+                self.udp_transport.close()
+            except Exception:
+                pass
             self.udp_transport = None
 
         self.is_running = False
@@ -899,113 +924,168 @@ class InterbankProtocolManager:
                 "tokenTransferencia": token
             }
 
-    async def scan_network(self, timeout_sec: float = 2.5) -> List[Dict[str, Any]]:
+    async def scan_network(self, timeout_sec: float = 2.0) -> List[Dict[str, Any]]:
         """
-        Escanea la red local:
-        1. Emite broadcast UDP a 255.255.255.255:5005 y subred:5005.
-        2. Realiza sondeo TCP rápido a IPs comunes y registradas (ej. 10.219.19.9, Radmin 26.121.70.247).
+        Escanea la red local y los routers interconectados:
+        1. Emite broadcast UDP a 255.255.255.255:5005, subred:5005, Wi-Fi 5040 y Ethernet 5034.
+        2. Realiza sondeo TCP rápido y asíncrono a IPs comunes y registradas en puertos 5000, 5040, 5034, 40 y 34.
+        3. Realiza la persistencia atómica en BD sin condiciones de carrera.
         """
         local_ip = get_local_ip()
         self.local_ip = local_ip
         bcast_ip = get_broadcast_ip(local_ip)
 
-        # 1. Enviar UDP Broadcast
+        # 1. Enviar UDP Broadcast de forma resiliente
         msg_udp = f"DISCOVER_BANCO_ATM|{settings.BANK_CODE}|{settings.BANK_NAME}|{local_ip}|{settings.INTERBANK_TCP_PORT}"
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        udp_ports = [
+            settings.INTERBANK_UDP_PORT,
+            getattr(settings, "INTERBANK_WIFI_PORT", 5040),
+            getattr(settings, "INTERBANK_ETH_PORT", 5034)
+        ]
+        broadcast_targets = {"255.255.255.255", bcast_ip, "192.168.1.255", "192.168.0.255", "10.255.255.255", "26.255.255.255"}
         try:
-            broadcast_targets = {"255.255.255.255", bcast_ip, "192.168.1.255", "192.168.0.255", "26.255.255.255"}
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sock.settimeout(0.15)
             for b_addr in broadcast_targets:
                 if b_addr:
-                    try:
-                        sock.sendto(msg_udp.encode("utf-8"), (b_addr, settings.INTERBANK_UDP_PORT))
-                    except Exception:
-                        pass
-        except Exception as e:
-            logger.warning(f"[UDP SCAN] Broadcast fallo: {e}")
-        finally:
+                    for u_port in udp_ports:
+                        try:
+                            sock.sendto(msg_udp.encode("utf-8"), (b_addr, u_port))
+                        except Exception:
+                            pass
             sock.close()
+        except Exception as e:
+            logger.warning(f"[UDP SCAN] Broadcast advertencia: {e}")
 
-        # 2. Sondeo TCP a bancos registrados y conocidos
-        db = SessionLocal()
-        known_banks = []
+        # 2. Recopilar objetivos de sondeo TCP
+        ports_to_probe = [
+            settings.INTERBANK_TCP_PORT,
+            getattr(settings, "INTERBANK_WIFI_PORT", 5040),
+            getattr(settings, "INTERBANK_ETH_PORT", 5034),
+            40,
+            34
+        ]
+        default_targets = [
+            ("NETGEAR", "NETGEAR Interbank", "127.0.0.1", 5000),
+            ("BANC01", "NEXUSBANK", "10.219.19.9", 5000),
+            ("BANC01_RADMIN", "NEXUSBANK (Radmin)", "26.121.70.247", 5000),
+            ("BANC02_REMOTE", "Banco Nacional Inzano GYT", "10.28.117.72", 5000),
+        ]
+
+        seen = set()
+        targets_to_ping = []
+
+        # Agregar bancos existentes en base de datos
         try:
-            known_banks = db.query(BancoRed).filter(BancoRed.es_propio == False).all()
-            # Asegurarse de probar IPs por defecto si no están
-            test_targets = [
-                ("NETGEAR", "NETGEAR Interbank", "127.0.0.1", 5000),
-                ("BANC01", "NEXUSBANK", "10.219.19.9", 5000),
-                ("BANC01_RADMIN", "NEXUSBANK (Radmin)", "26.121.70.247", 5000),
-            ]
-            for kb in known_banks:
-                test_targets.append((kb.codigo_banco, kb.nombre_banco, kb.ip, kb.puerto))
+            with SessionLocal() as db_read:
+                known_banks = db_read.query(BancoRed).filter(BancoRed.es_propio == False).all()
+                for kb in known_banks:
+                    for prt in [kb.puerto, 5000, 5040, 5034]:
+                        if (kb.ip, prt) not in seen and kb.ip != local_ip:
+                            seen.add((kb.ip, prt))
+                            targets_to_ping.append((kb.codigo_banco, kb.nombre_banco, kb.ip, prt))
+        except Exception as e:
+            logger.warning(f"[SCAN] Error leyendo bancos en BD: {e}")
 
-            # Eliminar duplicados de IP:Puerto
-            seen = set()
-            targets_to_ping = []
-            for cod, nom, ip, prt in test_targets:
-                if (ip, prt) not in seen and ip != local_ip:
-                    seen.add((ip, prt))
-                    targets_to_ping.append((cod, nom, ip, prt))
+        # Agregar objetivos predeterminados
+        for cod, nom, ip, prt in default_targets:
+            if (ip, prt) not in seen and ip != local_ip:
+                seen.add((ip, prt))
+                targets_to_ping.append((cod, nom, ip, prt))
 
-            async def try_ping(cod, nom, ip, prt):
+        # Agregar sondeo a la subred activa (detectar routers y terminales en Wi-Fi / Ethernet)
+        try:
+            octets = local_ip.split(".")
+            if len(octets) == 4 and octets[0] in ("192", "10", "172", "26"):
+                prefix = f"{octets[0]}.{octets[1]}.{octets[2]}"
+                # Escaneo de IPs clave de red (gateway, 34 ethernet, 40 wifi, nodos comunes)
+                for oct_val in [1, 2, 34, 40, 72, 100, 153, 200]:
+                    probe_ip = f"{prefix}.{oct_val}"
+                    if probe_ip != local_ip:
+                        for prt in [5000, 5040, 5034]:
+                            if (probe_ip, prt) not in seen:
+                                seen.add((probe_ip, prt))
+                                targets_to_ping.append((f"NODE_{oct_val}", f"Banco Subred {probe_ip}", probe_ip, prt))
+        except Exception:
+            pass
+
+        # 3. Sondeo asíncrono seguro (sin compartir sesión de base de datos)
+        async def try_ping(cod, nom, ip, prt):
+            try:
                 resp = await self.ping_bank(ip, prt)
-                if resp.get("codigo") == "00":
-                    datos = resp.get("datos", {})
-                    # Actualizar en BD
-                    banco_bd = db.query(BancoRed).filter(BancoRed.codigo_banco == datos.get("codigoBanco", cod)).first()
-                    if not banco_bd:
-                        banco_bd = BancoRed(
-                            codigo_banco=datos.get("codigoBanco", cod),
-                            nombre_banco=datos.get("nombreBanco", nom),
-                            ip=ip,
-                            puerto=prt,
-                            es_propio=False,
-                            limite_diario=settings.BANK_DAILY_LIMIT,
-                            transferido_hoy=0.00,
-                            fecha_ultimo_reinicio=datetime.now(timezone.utc),
-                            activo=True
-                        )
-                        db.add(banco_bd)
-                    else:
-                        banco_bd.ip = ip
-                        banco_bd.puerto = prt
-                        banco_bd.nombre_banco = datos.get("nombreBanco", nom)
-                        banco_bd.activo = True
-                    db.commit()
+                return (cod, nom, ip, prt, resp)
+            except Exception:
+                return (cod, nom, ip, prt, None)
 
-            tasks = [try_ping(cod, nom, ip, prt) for cod, nom, ip, prt in targets_to_ping]
-            if tasks:
-                await asyncio.gather(*tasks, return_exceptions=True)
+        tasks = [try_ping(cod, nom, ip, prt) for cod, nom, ip, prt in targets_to_ping]
+        ping_results = []
+        if tasks:
+            try:
+                ping_results = await asyncio.gather(*tasks, return_exceptions=True)
+            except Exception as e:
+                logger.warning(f"[SCAN] Error en ping concurrente: {e}")
 
-        finally:
-            db.close()
-
-        # Pequeña espera para recibir respuestas UDP
-        await asyncio.sleep(min(timeout_sec, 1.0))
-
-        # Retornar lista completa de bancos
-        db = SessionLocal()
+        # 4. Actualización en una sola transacción limpia
         try:
-            bancos = db.query(BancoRed).all()
-            results = []
-            for b in bancos:
-                cupo_disp = max(0.0, float(b.limite_diario) - float(b.transferido_hoy))
-                results.append({
-                    "id_banco": b.id_banco,
-                    "codigo_banco": b.codigo_banco,
-                    "nombre_banco": b.nombre_banco,
-                    "ip": b.ip,
-                    "puerto": b.puerto,
-                    "es_propio": b.es_propio,
-                    "limite_diario": float(b.limite_diario),
-                    "transferido_hoy": float(b.transferido_hoy),
-                    "cupo_disponible": cupo_disp,
-                    "activo": b.activo
-                })
-            return results
-        finally:
-            db.close()
+            with SessionLocal() as db_write:
+                for item in ping_results:
+                    if isinstance(item, tuple) and len(item) == 5:
+                        cod, nom, ip, prt, resp = item
+                        if resp and resp.get("codigo") == "00":
+                            datos = resp.get("datos", {})
+                            bank_code = datos.get("codigoBanco") or cod
+                            bank_name = datos.get("nombreBanco") or nom
+
+                            banco_bd = db_write.query(BancoRed).filter(BancoRed.codigo_banco == bank_code).first()
+                            if not banco_bd:
+                                banco_bd = BancoRed(
+                                    codigo_banco=bank_code,
+                                    nombre_banco=bank_name,
+                                    ip=ip,
+                                    puerto=prt,
+                                    es_propio=False,
+                                    limite_diario=settings.BANK_DAILY_LIMIT,
+                                    transferido_hoy=0.00,
+                                    fecha_ultimo_reinicio=datetime.now(timezone.utc),
+                                    activo=True
+                                )
+                                db_write.add(banco_bd)
+                            else:
+                                banco_bd.ip = ip
+                                banco_bd.puerto = prt
+                                banco_bd.nombre_banco = bank_name
+                                banco_bd.activo = True
+                db_write.commit()
+        except Exception as e:
+            logger.warning(f"[SCAN] Error guardando bancos detectados: {e}")
+
+        # 5. Breve pausa para recopilar paquetes UDP tardíos
+        await asyncio.sleep(min(timeout_sec, 0.5))
+
+        # 6. Retornar lista de bancos registrados
+        try:
+            with SessionLocal() as db_final:
+                bancos = db_final.query(BancoRed).all()
+                results = []
+                for b in bancos:
+                    cupo_disp = max(0.0, float(b.limite_diario) - float(b.transferido_hoy))
+                    results.append({
+                        "id_banco": b.id_banco,
+                        "codigo_banco": b.codigo_banco,
+                        "nombre_banco": b.nombre_banco,
+                        "ip": b.ip,
+                        "puerto": b.puerto,
+                        "es_propio": b.es_propio,
+                        "limite_diario": float(b.limite_diario),
+                        "transferido_hoy": float(b.transferido_hoy),
+                        "cupo_disponible": round(cupo_disp, 2),
+                        "activo": b.activo
+                    })
+                return results
+        except Exception as e:
+            logger.warning(f"[SCAN] Error consultando lista final: {e}")
+            return []
 
 # Instancia singleton del administrador interbancario
 interbank_manager = InterbankProtocolManager()

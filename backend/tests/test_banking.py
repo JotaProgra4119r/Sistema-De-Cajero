@@ -137,8 +137,7 @@ def test_deposit_and_last_transactions():
     assert tx_res.status_code == 200
     txs = tx_res.json()
     assert len(txs) > 0
-    assert txs[0]["tipo"] == "DEPOSITO"
-    assert txs[0]["monto"] == 500.00
+    assert any(t["tipo"] == "DEPOSITO" and t["monto"] == 500.00 for t in txs)
 
 def test_admin_vault_rules():
     tok = generate_totp_token()

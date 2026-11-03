@@ -94,12 +94,20 @@ def init_db():
             db.add(role_super)
         db.commit()
 
-        # 2. Seed Red Multicajero (Cajeros Independientes)
+        # 2. Seed Red Multicajero (Red de Cajeros Exponencial Extendida)
         atms_seed = [
-            ("ATM-001", "Cajero Central - Sede Principal (Zona 10)", "7ma Avenida 12-34, Zona 10, Ciudad de Guatemala", "1234", False),
-            ("ATM-002", "Cajero Express - Sucursal Zona 1", "6ta Avenida 4-20, Centro Histórico, Zona 1", "1234", False),
-            ("ATM-003", "Cajero Miraflores - Centro Comercial", "Calzada Roosevelt, C.C. Miraflores, Local K-12", "1234", False),
+            ("ATM-001", "Cajero Central - Sede Principal (Zona 10)", "7ma Avenida 12-34, Zona 10, Ciudad de Guatemala", "1234", True),
+            ("ATM-002", "Cajero Express - Sucursal Zona 1", "6ta Avenida 4-20, Centro Histórico, Zona 1", "1234", True),
+            ("ATM-003", "Cajero Miraflores - Centro Comercial", "Calzada Roosevelt, C.C. Miraflores, Local K-12", "1234", True),
             ("ATM-004", "Cajero ATM 4 - Sucursal Inzano", "12 Calle 5-45, Zona 9, Plaza Inzano", "000", True),
+            ("ATM-005", "Cajero Oakland Mall - Zona 10", "Diagonal 6 13-01, Centro Comercial Oakland Mall, Nivel 1", "1234", True),
+            ("ATM-006", "Cajero Cayalá - Paseo Cayalá", "Bulevar Rafael Landívar 10-05, Zona 16, Paseo Cayalá", "1234", True),
+            ("ATM-007", "Cajero Portales - Zona 17", "Km 4.5 Carretera al Atlántico, C.C. Portales", "1234", True),
+            ("ATM-008", "Cajero Pradera Concepción - Carretera a El Salvador", "Km 15.5 Carretera a El Salvador, Santa Catarina Pinula", "1234", True),
+            ("ATM-009", "Cajero Quetzaltenango - C.C. Pradera Xela", "Avenida Las Américas 7-12, Zona 3, Quetzaltenango", "1234", True),
+            ("ATM-010", "Cajero Antigua Guatemala - Calle del Arco", "5ta Avenida Norte #22, Antigua Guatemala, Sacatepéquez", "1234", True),
+            ("ATM-011", "Cajero Escuintla - Plaza Palmeras", "Km 58 Autopista Palín-Escuintla, Local 18", "1234", True),
+            ("ATM-012", "Cajero Aeropuerto La Aurora - Terminal Internacional", "Zona 13, Aeropuerto Internacional La Aurora, Sala de Espera", "1234", True),
         ]
         for atm_id, name, location, code, initialized in atms_seed:
             existing_atm = db.query(Cajero).filter(Cajero.id_cajero == atm_id).first()
@@ -225,7 +233,7 @@ def init_db():
         if other_users:
             db.commit()
 
-        # 6. Seed Denominaciones por Cajero (Inventario Físico Independiente)
+        # 6. Seed Denominaciones por Cajero (Inventario Físico Independiente Q9,350.00 por cajero)
         denominaciones_list = [200, 100, 50, 20, 10, 5, 1]
         starter_map = {200: 20, 100: 25, 50: 20, 20: 50, 10: 50, 5: 50, 1: 100}
         all_cajeros = db.query(Cajero).all()
@@ -235,14 +243,14 @@ def init_db():
                     DenominacionCajero.id_cajero == cajero.id_cajero,
                     DenominacionCajero.denominacion == denom
                 ).first()
-                init_qty = starter_map.get(denom, 0) if cajero.id_cajero == "ATM-004" else 0
+                init_qty = starter_map.get(denom, 0)
                 if not rec:
                     db.add(DenominacionCajero(
                         id_cajero=cajero.id_cajero,
                         denominacion=denom,
                         cantidad_billetes=init_qty
                     ))
-                elif cajero.id_cajero == "ATM-004" and rec.cantidad_billetes == 0:
+                elif rec.cantidad_billetes == 0 and cajero.is_initialized:
                     rec.cantidad_billetes = init_qty
         db.commit()
 

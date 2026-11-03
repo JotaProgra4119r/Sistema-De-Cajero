@@ -2,5 +2,9 @@
 2|2026-11-03 09:29:59|usuarios|9|Administrador Bóveda|9|Auditoria de cumplimiento regulatorio
 4|2026-11-03 09:32:46|usuarios|11|Administrador Bóveda|11|Fin de contrato laboral
 5|2026-11-03 09:32:48|usuarios|12|Administrador Bóveda|12|Auditoria de cumplimiento regulatorio
+7|2026-11-03 10:50:15|usuarios|14|Administrador Bóveda|14|Fin de contrato laboral
+8|2026-11-03 10:50:17|usuarios|15|Administrador Bóveda|15|Auditoria de cumplimiento regulatorio
+10|2026-11-03 10:51:27|usuarios|17|Administrador Bóveda|17|Fin de contrato laboral
 3|2026-11-03 15:30:02|cajeros|ATM-006|Super Administrador Global|N/A|Prueba unitaria de depuración lógica
 6|2026-11-03 15:32:49|cajeros|ATM-008|Super Administrador Global|N/A|Prueba unitaria de depuración lógica
+9|2026-11-03 16:50:18|cajeros|ATM-014|Super Administrador Global|N/A|Prueba unitaria de depuración lógica

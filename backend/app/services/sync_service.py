@@ -102,6 +102,11 @@ class SyncService:
         try:
             import pyodbc
             targets = [
+                r".\SQLEXPRESS",
+                r".\sqlserver22",
+                r".\SQLSERVER22",
+                r"(local)\SQLEXPRESS",
+                r"(local)\sqlserver22",
                 r"localhost\SQLEXPRESS",
                 f"localhost\\{sql_instance}",
                 r"localhost\SQLSERVER22",
@@ -110,22 +115,13 @@ class SyncService:
             ]
             for target in targets:
                 for db_name in [sql_db, "master"]:
-                    try:
-                        conn_str = f"Driver={{ODBC Driver 18 for SQL Server}};Server={target};Database={db_name};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=1;"
-                        conn = pyodbc.connect(conn_str, timeout=1)
-                        conn.close()
-                        return {
-                            "name": "Microsoft SQL Server 2022 (sqlserver22)",
-                            "status": "connected",
-                            "synced": True,
-                            "badge": "green",
-                            "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {target} [{db_name}].",
-                            "type": "sqlserver22"
-                        }
-                    except Exception:
+                    for driver in ["ODBC Driver 18 for SQL Server", "ODBC Driver 17 for SQL Server", "SQL Server"]:
                         try:
-                            conn_str_17 = f"Driver={{ODBC Driver 17 for SQL Server}};Server={target};Database={db_name};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=1;"
-                            conn = pyodbc.connect(conn_str_17, timeout=1)
+                            if driver == "SQL Server":
+                                conn_str = f"Driver={{{driver}}};Server={target};Database={db_name};Trusted_Connection=yes;"
+                            else:
+                                conn_str = f"Driver={{{driver}}};Server={target};Database={db_name};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=1;"
+                            conn = pyodbc.connect(conn_str, timeout=1)
                             conn.close()
                             return {
                                 "name": "Microsoft SQL Server 2022 (sqlserver22)",

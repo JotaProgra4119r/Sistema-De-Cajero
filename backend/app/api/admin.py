@@ -109,6 +109,19 @@ def get_deleted_cajeros_route(
     """Lista las terminales dadas de baja en la red bancaria."""
     return BankingService.get_deleted_cajeros(db)
 
+class ScaleExponentialRequest(BaseModel):
+    count: Optional[int] = Field(4, ge=1, le=20, description="Cantidad de nuevos cajeros a incorporar a la red")
+
+@router.post("/super/cajeros/scale-exponential")
+async def scale_exponential_cajeros_route(
+    payload: Optional[ScaleExponentialRequest] = None,
+    current_admin: Usuario = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Genera e inicializa de forma exponencial nuevos cajeros en la red regional bancaria."""
+    count = payload.count if payload and payload.count else 4
+    return await BankingService.scale_exponential_cajeros(db, current_admin.id_usuario, count=count)
+
 @router.post("/vault/initialize")
 async def initialize_vault(
     payload: VaultInitRequest,

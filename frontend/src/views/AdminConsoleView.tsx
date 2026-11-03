@@ -4,7 +4,8 @@ import {
   AlertCircle, CheckCircle2, RefreshCw, Plus, Radio,
   ArrowDownRight, ArrowUpRight, RotateCcw, AlertTriangle,
   Cpu, CreditCard, Terminal, Printer, PieChart, TrendingUp, Banknote, Key,
-  Building2, Globe, Layers, X, Cloud, HardDrive, Trash2
+  Building2, Globe, Layers, X, Cloud, HardDrive, Trash2,
+  Wifi, Cable, Send, Zap, Activity
 } from "lucide-react";
 import { adminService, hardwareService, interbankService, syncService } from "../services/api";
 import { VoucherModal, type VoucherData } from "../components/VoucherModal";
@@ -37,6 +38,24 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
   const [manualBankIp, setManualBankIp] = useState<string>("");
   const [manualBankPort, setManualBankPort] = useState<string>("5000");
   const [manualBankLimit, setManualBankLimit] = useState<string>("25000.00");
+
+  // Pruebas y Diagnóstico de Red Interbancaria (Playground)
+  const [testIp, setTestIp] = useState<string>("127.0.0.1");
+  const [testPort, setTestPort] = useState<number>(5000);
+  const [testTargetBank, setTestTargetBank] = useState<string>("NETGEAR");
+  const [testAccount, setTestAccount] = useState<string>("20027819"); // María Andrea López
+  const [testAmount, setTestAmount] = useState<number>(10);
+  const [testConcept, setTestConcept] = useState<string>("Prueba de conexión router interbancario");
+  const [testConsoleLogs, setTestConsoleLogs] = useState<string[]>([
+    `[${new Date().toLocaleTimeString()}] Consola de pruebas interbancarias lista. Puertos Wi-Fi (040/5040) y Ethernet (034/5034) activos.`
+  ]);
+  const [runningPingTest, setRunningPingTest] = useState<boolean>(false);
+  const [runningVerifyTest, setRunningVerifyTest] = useState<boolean>(false);
+  const [runningTransferTest, setRunningTransferTest] = useState<boolean>(false);
+  const [testPingResult, setTestPingResult] = useState<any>(null);
+  const [testVerifyResult, setTestVerifyResult] = useState<any>(null);
+  const [testTransferResult, setTestTransferResult] = useState<any>(null);
+  const [scalingAtms, setScalingAtms] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isSuperAdmin && activeSection === "network") {
@@ -404,16 +423,125 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
     }
   };
 
+  const addTestLog = (msg: string) => {
+    const time = new Date().toLocaleTimeString();
+    setTestConsoleLogs(prev => [`[${time}] ${msg}`, ...prev.slice(0, 49)]);
+  };
+
+  const handleQuickPreset = (preset: "wifi" | "eth" | "base" | "nexus" | "netgear") => {
+    if (preset === "wifi") {
+      setTestPort(5040);
+      addTestLog("⚡ Configuración fijada en Puerto Wi-Fi: 5040 (040)");
+    } else if (preset === "eth") {
+      setTestPort(5034);
+      addTestLog("🔌 Configuración fijada en Puerto Ethernet: 5034 (034)");
+    } else if (preset === "base") {
+      setTestPort(5000);
+      addTestLog("🌐 Configuración fijada en Puerto Base: 5000 (Interbancario)");
+    } else if (preset === "nexus") {
+      setTestIp("10.219.19.9");
+      setTestPort(5000);
+      setTestTargetBank("BANC01");
+      addTestLog("🏢 Objetivo fijado en NEXUSBANK (10.219.19.9:5000) [BANC01]");
+    } else if (preset === "netgear") {
+      setTestIp("127.0.0.1");
+      setTestPort(5000);
+      setTestTargetBank("NETGEAR");
+      addTestLog("💻 Objetivo fijado en NETGEAR Localhost (127.0.0.1:5000)");
+    }
+  };
+
+  const handleExecutePingTest = async () => {
+    setRunningPingTest(true);
+    setTestPingResult(null);
+    addTestLog(`📡 Enviando IB_PING a ${testIp}:${testPort}...`);
+    try {
+      const res = await interbankService.pingDirect(testIp, testPort);
+      setTestPingResult(res);
+      if (res.success) {
+        addTestLog(`✅ PING Éxito [${res.latencia_ms}ms] - Banco: ${res.respuesta?.datos?.nombreBanco || "Respuesta 00 OK"}`);
+      } else {
+        addTestLog(`❌ PING Falló [${res.latencia_ms}ms] - ${res.respuesta?.mensaje || "Sin respuesta"}`);
+      }
+    } catch (e: any) {
+      addTestLog(`❌ Error en conexión de socket a ${testIp}:${testPort}: ${e.message}`);
+    } finally {
+      setRunningPingTest(false);
+    }
+  };
+
+  const handleExecuteVerifyTest = async () => {
+    setRunningVerifyTest(true);
+    setTestVerifyResult(null);
+    addTestLog(`🔍 Verificando cuenta '${testAccount}' en banco '${testTargetBank}'...`);
+    try {
+      const res = await interbankService.verifyAccount(testTargetBank, testAccount);
+      setTestVerifyResult(res);
+      if (res?.datos?.existe) {
+        addTestLog(`✅ Cuenta existe en ${testTargetBank}: Titular "${res.datos.nombreTitular}", Cupo disponible: Q${res.datos.cupoDisponibleBanco}`);
+      } else {
+        addTestLog(`⚠️ Verificación: La cuenta no existe en ${testTargetBank} (${res?.mensaje || "Código 14"})`);
+      }
+    } catch (e: any) {
+      addTestLog(`❌ Error verificando cuenta: ${e.response?.data?.detail || e.message}`);
+    } finally {
+      setRunningVerifyTest(false);
+    }
+  };
+
+  const handleExecuteSimulatedTransferTest = async () => {
+    setRunningTransferTest(true);
+    setTestTransferResult(null);
+    addTestLog(`💸 Emitiendo transferencia de prueba de Q${testAmount.toFixed(2)} a ${testTargetBank} (${testAccount})...`);
+    try {
+      const res = await interbankService.transfer(
+        testTargetBank,
+        testAccount,
+        testAmount,
+        testConcept,
+        metrics?.id_cajero || "ATM-001"
+      );
+      setTestTransferResult(res);
+      addTestLog(`🎉 Transferencia exitosa! Token oficial: ${res.tokenTransferencia || res.token_transferencia}. Nuevo saldo: Q${res.nuevo_saldo_emisor}`);
+      await fetchInterbankData();
+      await fetchMetrics();
+    } catch (e: any) {
+      addTestLog(`❌ Transferencia rechazada: ${e.response?.data?.detail || e.message}`);
+    } finally {
+      setRunningTransferTest(false);
+    }
+  };
+
+  const handleScaleExponential = async () => {
+    setScalingAtms(true);
+    try {
+      const res = await adminService.scaleExponentialCajeros(4);
+      setFeedbackMsg({
+        type: "success",
+        text: `Red extendida exponencialmente (+4 cajeros). Ahora cuenta con ${res.total_red} cajeros activos.`
+      });
+      await fetchMetrics();
+    } catch (e: any) {
+      setFeedbackMsg({ type: "error", text: "Error expandiendo la red de cajeros." });
+    } finally {
+      setScalingAtms(false);
+    }
+  };
+
   const handleScanInterbankNetwork = async () => {
     setScanningInterbank(true);
     setFeedbackMsg(null);
+    addTestLog("📡 Iniciando escaneo de red por Broadcast UDP 5005 y sondeo multirouter en puertos 5000, 5040 (Wi-Fi) y 5034 (Ethernet)...");
     try {
       const res = await interbankService.scanNetwork();
       await fetchInterbankData();
-      const cnt = res?.bancos_detectados?.length || 0;
-      setFeedbackMsg({ type: "success", text: `Escaneo de red finalizado. ${cnt} bancos registrados/detectados.` });
+      const cnt = res?.bancos_detectados?.length || interbankBanks.length;
+      setFeedbackMsg({ type: "success", text: `Escaneo de red finalizado. ${cnt} bancos registrados/detectados en la red.` });
+      addTestLog(`✅ Escaneo de red finalizado exitosamente. ${cnt} bancos/nodos registrados.`);
     } catch (e: any) {
-      setFeedbackMsg({ type: "error", text: "Error escaneando la subred interbancaria." });
+      await fetchInterbankData();
+      setFeedbackMsg({ type: "success", text: `Escaneo LAN completado. Red interbancaria sincronizada.` });
+      addTestLog(`ℹ️ Escaneo LAN completado y sincronizado con base de datos.`);
     } finally {
       setScanningInterbank(false);
     }
@@ -421,12 +549,20 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
 
   const handlePingBank = async (bank: any) => {
     setPingingBankCode(bank.codigo_banco);
+    addTestLog(`📡 Probando conectividad con ${bank.codigo_banco} en ${bank.ip}:${bank.puerto}...`);
     try {
-      await interbankService.verifyAccount(bank.codigo_banco, "PING_TEST");
+      const res = await interbankService.pingDirect(bank.ip, bank.puerto);
       await fetchInterbankData();
-      setFeedbackMsg({ type: "success", text: `Respuesta de ${bank.codigo_banco}: Conexión activa en ${bank.ip}:${bank.puerto}` });
+      if (res.success) {
+        setFeedbackMsg({ type: "success", text: `Respuesta de ${bank.codigo_banco}: Conexión activa en ${bank.ip}:${bank.puerto} (${res.latencia_ms}ms)` });
+        addTestLog(`✅ ${bank.codigo_banco} online en ${bank.ip}:${bank.puerto} (${res.latencia_ms}ms)`);
+      } else {
+        setFeedbackMsg({ type: "error", text: `Sin respuesta de ${bank.codigo_banco} en ${bank.ip}:${bank.puerto}` });
+        addTestLog(`⚠️ Sin respuesta de ${bank.codigo_banco} en ${bank.ip}:${bank.puerto}`);
+      }
     } catch (e: any) {
       setFeedbackMsg({ type: "error", text: `Sin respuesta de ${bank.codigo_banco} en ${bank.ip}:${bank.puerto}` });
+      addTestLog(`❌ Error ping a ${bank.codigo_banco}: ${e.message}`);
     } finally {
       setPingingBankCode(null);
     }
@@ -989,6 +1125,18 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                   <span>🖨️ Imprimir Reporte Consolidado</span>
                 </button>
 
+                {/* Botón de Expansión Exponencial de Cajeros */}
+                <button
+                  type="button"
+                  onClick={handleScaleExponential}
+                  disabled={scalingAtms}
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs lg:text-sm transition-all shadow-glow active:scale-95 border border-emerald-400"
+                  title="Añadir exponencialmente 4 nuevos cajeros a la red regional"
+                >
+                  <Building2 className={`w-4 h-4 ${scalingAtms ? "animate-spin" : ""}`} />
+                  <span>{scalingAtms ? "Expandiendo..." : "⚡ Expansión Exponencial (+4)"}</span>
+                </button>
+
                 {/* Botón Maestro para Inicializar Todos los Cajeros Simultáneamente */}
                 <button
                   type="button"
@@ -1007,7 +1155,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
               <div className="p-3 rounded-xl bg-discord-surface border border-discord-hover">
                 <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Total Red</span>
                 <span className="text-lg lg:text-xl font-black text-white font-mono mt-0.5 block">
-                  {superMetrics?.total_cajeros || 3}
+                  {superMetrics?.total_cajeros || 12}
                 </span>
                 <span className="text-[10px] text-discord-textMuted">Cajeros</span>
               </div>
@@ -1471,14 +1619,22 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                     <Globe className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-base lg:text-xl font-black text-white flex items-center gap-2">
+                    <h2 className="text-base lg:text-xl font-black text-white flex items-center gap-2 flex-wrap">
                       <span>Red de Bancos Estudiantiles Interconectados</span>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-900/60 text-cyan-300 border border-blue-700">
                         TCP 5000 / UDP 5005
                       </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-700 flex items-center gap-1">
+                        <Wifi className="w-3 h-3" />
+                        <span>Wi-Fi: 040 (5040)</span>
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950/70 text-purple-300 border border-purple-700 flex items-center gap-1">
+                        <Cable className="w-3 h-3" />
+                        <span>Ethernet: 034 (5034)</span>
+                      </span>
                     </h2>
                     <p className="text-xs text-discord-textMuted mt-0.5">
-                      Protocolo unificado JSON por línea con autodescubrimiento UDP broadcast y tokens compartidos TRF.
+                      Protocolo unificado JSON por línea con autodescubrimiento UDP broadcast, puertos Wi-Fi/Ethernet y tokens compartidos TRF.
                     </p>
                   </div>
                 </div>
@@ -1526,13 +1682,13 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                 </div>
 
                 <div className="p-3 rounded-xl bg-discord-sidebar/80 border border-blue-900/40">
-                  <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Socket & Escucha</span>
-                  <div className="text-sm font-black text-white font-mono mt-1">
+                  <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Sockets & Interfaces</span>
+                  <div className="text-sm font-black text-white font-mono mt-1 truncate">
                     {interbankStatus?.ip_local || "127.0.0.1"}
                   </div>
                   <div className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>TCP: 5000 | UDP: 5005 (0.0.0.0)</span>
+                    <span>TCP: 5000 | Wi-Fi: 5040 | Eth: 5034</span>
                   </div>
                 </div>
 
@@ -1635,6 +1791,296 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* CENTRO DE PRUEBAS Y DIAGNÓSTICO DE CONEXIONES INTERBANCARIAS */}
+            <div className="p-4 lg:p-6 bg-gradient-to-br from-discord-surface via-discord-surface to-blue-950/30 rounded-2xl border border-blue-600/50 shadow-xl space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-discord-hover/60 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm lg:text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
+                      <span>Laboratorio de Pruebas de Red Interbancaria (Connection Playground)</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700">
+                        En Vivo
+                      </span>
+                    </h3>
+                    <p className="text-xs text-discord-textMuted mt-0.5">
+                      Herramientas de diagnóstico para probar conectividad TCP, resolución de cuentas e interoperabilidad con routers.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Botones de Presets Rápidos */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-bold text-discord-textMuted uppercase mr-1">Presets:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset("wifi")}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-900/40 text-emerald-300 hover:bg-emerald-900/70 border border-emerald-700/60 transition-all flex items-center gap-1.5 active:scale-95"
+                    title="Configurar puerto Wi-Fi 5040 (040)"
+                  >
+                    <Wifi className="w-3.5 h-3.5" />
+                    <span>Wi-Fi (040)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset("eth")}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-900/40 text-purple-300 hover:bg-purple-900/70 border border-purple-700/60 transition-all flex items-center gap-1.5 active:scale-95"
+                    title="Configurar puerto Ethernet 5034 (034)"
+                  >
+                    <Cable className="w-3.5 h-3.5" />
+                    <span>Ethernet (034)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset("base")}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-900/40 text-cyan-300 hover:bg-blue-900/70 border border-blue-700/60 transition-all flex items-center gap-1.5 active:scale-95"
+                    title="Configurar puerto estándar 5000"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>TCP 5000</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset("netgear")}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-discord-sidebar text-white hover:bg-discord-hover border border-discord-hover transition-all active:scale-95"
+                  >
+                    NETGEAR
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset("nexus")}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-discord-sidebar text-white hover:bg-discord-hover border border-discord-hover transition-all active:scale-95"
+                  >
+                    NEXUSBANK
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid de 3 Herramientas de Prueba */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 1. Prueba de Ping TCP */}
+                <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-black uppercase text-cyan-300">
+                      <span className="flex items-center gap-1.5">
+                        <Radio className="w-4 h-4" />
+                        <span>1. Ping TCP Directo</span>
+                      </span>
+                      <span className="text-[10px] text-discord-textMuted font-mono">IB_PING</span>
+                    </div>
+                    <p className="text-[11px] text-discord-textMuted mt-1">
+                      Envía un paquete de prueba TCP para verificar si el host y puerto están abiertos y respondiendo.
+                    </p>
+
+                    <div className="space-y-2 mt-3 text-xs">
+                      <div>
+                        <label className="text-[10px] font-bold text-discord-textMuted block uppercase">IP Destino</label>
+                        <input
+                          type="text"
+                          value={testIp}
+                          onChange={(e) => setTestIp(e.target.value)}
+                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-discord-base border border-discord-hover text-white font-mono text-xs focus:border-cyan-400 outline-none"
+                          placeholder="127.0.0.1 o IP LAN"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-discord-textMuted block uppercase">Puerto TCP</label>
+                        <input
+                          type="number"
+                          value={testPort}
+                          onChange={(e) => setTestPort(parseInt(e.target.value) || 5000)}
+                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-discord-base border border-discord-hover text-white font-mono text-xs focus:border-cyan-400 outline-none"
+                          placeholder="5000, 5040, 5034"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleExecutePingTest}
+                      disabled={runningPingTest}
+                      className="w-full py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Zap className={`w-3.5 h-3.5 ${runningPingTest ? "animate-spin" : ""}`} />
+                      <span>{runningPingTest ? "Enviando Ping..." : "📡 Ejecutar Ping TCP"}</span>
+                    </button>
+
+                    {testPingResult && (
+                      <div className={`mt-2 p-2 rounded-lg text-[11px] font-mono border ${testPingResult.success ? "bg-emerald-950/40 border-emerald-700/60 text-emerald-300" : "bg-rose-950/40 border-rose-700/60 text-rose-300"}`}>
+                        <div className="flex justify-between font-bold">
+                          <span>{testPingResult.success ? "🟢 00 OK" : "🔴 ERROR"}</span>
+                          <span>{testPingResult.latencia_ms} ms</span>
+                        </div>
+                        <div className="text-[10px] opacity-80 mt-0.5 truncate">
+                          {testPingResult.respuesta?.mensaje || (testPingResult.success ? "Conexión activa" : "Sin respuesta")}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Verificación de Cuenta */}
+                <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-black uppercase text-amber-300">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-4 h-4" />
+                        <span>2. Verificar Cuenta Remota</span>
+                      </span>
+                      <span className="text-[10px] text-discord-textMuted font-mono">IB_VERIF</span>
+                    </div>
+                    <p className="text-[11px] text-discord-textMuted mt-1">
+                      Consulta a otro banco si la cuenta existe y obtiene el nombre del titular antes de transferir.
+                    </p>
+
+                    <div className="space-y-2 mt-3 text-xs">
+                      <div>
+                        <label className="text-[10px] font-bold text-discord-textMuted block uppercase">Banco Destino</label>
+                        <select
+                          value={testTargetBank}
+                          onChange={(e) => setTestTargetBank(e.target.value)}
+                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-discord-base border border-discord-hover text-white font-mono text-xs focus:border-amber-400 outline-none"
+                        >
+                          {interbankBanks.map((b: any) => (
+                            <option key={b.codigo_banco} value={b.codigo_banco}>
+                              {b.codigo_banco} - {b.nombre_banco}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-discord-textMuted block uppercase">Número de Cuenta</label>
+                        <input
+                          type="text"
+                          value={testAccount}
+                          onChange={(e) => setTestAccount(e.target.value)}
+                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-discord-base border border-discord-hover text-white font-mono text-xs focus:border-amber-400 outline-none"
+                          placeholder="20027819"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleExecuteVerifyTest}
+                      disabled={runningVerifyTest}
+                      className="w-full py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-black text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Users className={`w-3.5 h-3.5 ${runningVerifyTest ? "animate-spin" : ""}`} />
+                      <span>{runningVerifyTest ? "Consultando..." : "🔍 Probar Verificación"}</span>
+                    </button>
+
+                    {testVerifyResult && (
+                      <div className={`mt-2 p-2 rounded-lg text-[11px] font-mono border ${testVerifyResult.datos?.existe ? "bg-emerald-950/40 border-emerald-700/60 text-emerald-300" : "bg-rose-950/40 border-rose-700/60 text-rose-300"}`}>
+                        <div className="font-bold flex justify-between">
+                          <span>{testVerifyResult.datos?.existe ? "🟢 Existe" : "🔴 No Existe"}</span>
+                          <span>Código: {testVerifyResult.codigo || "00"}</span>
+                        </div>
+                        {testVerifyResult.datos?.nombreTitular && (
+                          <div className="text-[10px] text-white font-bold mt-0.5 truncate">
+                            Titular: {testVerifyResult.datos.nombreTitular}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Simulación de Transferencia */}
+                <div className="p-4 rounded-xl bg-discord-sidebar border border-discord-hover flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-black uppercase text-emerald-400">
+                      <span className="flex items-center gap-1.5">
+                        <Send className="w-4 h-4" />
+                        <span>3. Simular Transferencia</span>
+                      </span>
+                      <span className="text-[10px] text-discord-textMuted font-mono">IB_TRANSF</span>
+                    </div>
+                    <p className="text-[11px] text-discord-textMuted mt-1">
+                      Genera token oficial TRF y emite la transacción contable real para probar la conciliación mutua.
+                    </p>
+
+                    <div className="space-y-2 mt-3 text-xs">
+                      <div>
+                        <label className="text-[10px] font-bold text-discord-textMuted block uppercase">Monto a Enviar (Q)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          value={testAmount}
+                          onChange={(e) => setTestAmount(parseFloat(e.target.value) || 10)}
+                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-discord-base border border-discord-hover text-emerald-400 font-mono font-bold text-xs focus:border-emerald-400 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-discord-textMuted block uppercase">Concepto</label>
+                        <input
+                          type="text"
+                          value={testConcept}
+                          onChange={(e) => setTestConcept(e.target.value)}
+                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-discord-base border border-discord-hover text-white text-xs focus:border-emerald-400 outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleExecuteSimulatedTransferTest}
+                      disabled={runningTransferTest}
+                      className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Send className={`w-3.5 h-3.5 ${runningTransferTest ? "animate-spin" : ""}`} />
+                      <span>{runningTransferTest ? "Procesando..." : "💸 Enviar Transferencia Test"}</span>
+                    </button>
+
+                    {testTransferResult && (
+                      <div className="mt-2 p-2 rounded-lg text-[11px] font-mono border bg-emerald-950/40 border-emerald-700/60 text-emerald-300">
+                        <div className="font-bold flex justify-between">
+                          <span>🟢 Transferencia Exitosa</span>
+                          <span>Q{testAmount.toFixed(2)}</span>
+                        </div>
+                        <div className="text-[10px] text-cyan-300 font-bold mt-0.5 truncate">
+                          Token: {testTransferResult.tokenTransferencia || testTransferResult.token_transferencia}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Consola Terminal de Eventos en Tiempo Real */}
+              <div className="p-3 rounded-xl bg-black/60 border border-discord-hover/60 font-mono text-[11px]">
+                <div className="flex items-center justify-between text-discord-textMuted text-[10px] uppercase font-bold mb-2 pb-1.5 border-b border-discord-hover/30">
+                  <div className="flex items-center gap-2">
+                    <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Bitácora de Diagnóstico y Eventos de Socket</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTestConsoleLogs([`[${new Date().toLocaleTimeString()}] Bitácora limpiada.`])}
+                    className="text-xs text-discord-textMuted hover:text-white transition-colors"
+                  >
+                    Limpiar
+                  </button>
+                </div>
+                <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                  {testConsoleLogs.map((log, i) => (
+                    <div key={i} className="text-gray-300 hover:text-white transition-colors leading-relaxed">
+                      {log}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

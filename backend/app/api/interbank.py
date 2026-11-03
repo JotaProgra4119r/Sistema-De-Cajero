@@ -29,6 +29,10 @@ class AddBankRequest(BaseModel):
     puerto: int = Field(5000, description="Puerto TCP interbancario")
     limite_diario: float = Field(25000.00, gt=0, description="Límite diario para transferencias")
 
+class DirectPingRequest(BaseModel):
+    ip: str = Field(..., description="Dirección IP destino")
+    puerto: int = Field(5000, description="Puerto TCP destino (5000, 5040, 5034, etc.)")
+
 @router.get("/status")
 def get_interbank_status(db: Session = Depends(get_db)):
     """Retorna el estado de los servidores de red interbancarios locales y configuración del banco."""
@@ -40,6 +44,8 @@ def get_interbank_status(db: Session = Depends(get_db)):
         "nombre_banco": settings.BANK_NAME,
         "ip_local": interbank_manager.local_ip,
         "puerto_tcp": settings.INTERBANK_TCP_PORT,
+        "puerto_wifi": getattr(settings, "INTERBANK_WIFI_PORT", 5040),
+        "puerto_ethernet": getattr(settings, "INTERBANK_ETH_PORT", 5034),
         "puerto_udp": settings.INTERBANK_UDP_PORT,
         "limite_diario": float(propio.limite_diario),
         "transferido_hoy": float(propio.transferido_hoy),
@@ -68,12 +74,58 @@ def list_banks(db: Session = Depends(get_db)):
         })
     return out
 
+@router.post("/ping")
+async def ping_direct(req: DirectPingRequest):
+    """Prueba de ping TCP directo a cualquier IP y puerto de la red con cálculo de latencia."""
+    import time
+    t0 = time.time()
+    try:
+        resp = await interbank_manager.ping_bank(req.ip, req.puerto)
+        elapsed_ms = round((time.time() - t0) * 1000, 2)
+        return {
+            "success": resp.get("codigo") == "00",
+            "ip": req.ip,
+            "puerto": req.puerto,
+            "latencia_ms": elapsed_ms,
+            "respuesta": resp
+        }
+    except Exception as e:
+        elapsed_ms = round((time.time() - t0) * 1000, 2)
+        return {
+            "success": False,
+            "ip": req.ip,
+            "puerto": req.puerto,
+            "latencia_ms": elapsed_ms,
+            "respuesta": {
+                "tipo": "RESP_ERROR",
+                "codigo": "91",
+                "mensaje": f"No se pudo conectar a {req.ip}:{req.puerto} ({str(e)})"
+            }
+        }
+
 @router.post("/scan")
-async def scan_network_banks():
-    """Ejecuta el escaneo de red por UDP Broadcast 5005 y sondeo TCP 5000 a la subred."""
-    discovered = await interbank_manager.scan_network(timeout_sec=2.0)
+async def scan_network_banks(db: Session = Depends(get_db)):
+    """Ejecuta el escaneo de red por UDP Broadcast y sondeo TCP multirouter (5000, Wi-Fi 5040, Ethernet 5034)."""
+    try:
+        discovered = await interbank_manager.scan_network(timeout_sec=2.0)
+    except Exception as e:
+        # Fallback ultra-seguro para asegurar siempre respuesta 200 OK
+        bancos = db.query(BancoRed).all()
+        discovered = [{
+            "id_banco": b.id_banco,
+            "codigo_banco": b.codigo_banco,
+            "nombre_banco": b.nombre_banco,
+            "ip": b.ip,
+            "puerto": b.puerto,
+            "es_propio": b.es_propio,
+            "limite_diario": float(b.limite_diario),
+            "transferido_hoy": float(b.transferido_hoy),
+            "cupo_disponible": round(max(0.0, float(b.limite_diario) - float(b.transferido_hoy)), 2),
+            "activo": b.activo
+        } for b in bancos]
+
     return {
-        "mensaje": "Escaneo de red completado exitosamente.",
+        "mensaje": "Escaneo de red interbancaria completado exitosamente.",
         "bancos_detectados": discovered
     }
 

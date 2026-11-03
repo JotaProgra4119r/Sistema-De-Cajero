@@ -70,8 +70,12 @@ if not force_sqlite:
         if engine is None:
             # Probar candidatos de conexión ODBC en Windows
             candidates = [
+                f"Driver={{ODBC Driver 18 for SQL Server}};Server=.\\SQLEXPRESS;Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
+                f"Driver={{ODBC Driver 18 for SQL Server}};Server=.\\{SQL_SERVER_INSTANCE};Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
+                f"Driver={{ODBC Driver 18 for SQL Server}};Server=(local)\\SQLEXPRESS;Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
                 f"Driver={{ODBC Driver 18 for SQL Server}};Server=localhost\\{SQL_SERVER_INSTANCE};Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
                 f"Driver={{ODBC Driver 18 for SQL Server}};Server=localhost\\SQLEXPRESS;Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
+                f"Driver={{ODBC Driver 17 for SQL Server}};Server=.\\SQLEXPRESS;Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
                 f"Driver={{ODBC Driver 17 for SQL Server}};Server=localhost\\{SQL_SERVER_INSTANCE};Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
                 f"Driver={{ODBC Driver 17 for SQL Server}};Server=localhost\\SQLEXPRESS;Database={SQL_SERVER_DB};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;",
                 f"Driver={{ODBC Driver 18 for SQL Server}};Server={SQL_SERVER_HOST},{SQL_SERVER_PORT};Database={SQL_SERVER_DB};Uid={SQL_SERVER_USER};Pwd={SQL_SERVER_PASSWORD};TrustServerCertificate=yes;Connection Timeout=2;",

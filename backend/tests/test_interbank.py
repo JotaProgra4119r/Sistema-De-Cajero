@@ -271,3 +271,20 @@ def test_tcp_estado_transferencia_conciliacion():
         finally:
             db.close()
     asyncio.run(_run())
+
+
+def test_api_interbank_scan_and_ping():
+    """Valida el escaneo de subred y la prueba de ping directo por la API."""
+    resp_scan = client.post("/api/interbank/scan")
+    assert resp_scan.status_code == 200
+    data_scan = resp_scan.json()
+    assert "bancos_detectados" in data_scan
+    assert isinstance(data_scan["bancos_detectados"], list)
+
+    resp_ping = client.post("/api/interbank/ping", json={
+        "ip": "127.0.0.1",
+        "puerto": 5000
+    })
+    assert resp_ping.status_code == 200
+    data_ping = resp_ping.json()
+    assert "latencia_ms" in data_ping

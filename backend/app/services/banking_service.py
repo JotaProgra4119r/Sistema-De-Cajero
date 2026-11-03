@@ -1920,3 +1920,102 @@ class BankingService:
                 "eliminado_por": reg.eliminado_por_nombre if reg else "ADMIN"
             })
         return res
+
+
+    @staticmethod
+    async def scale_exponential_cajeros(db: Session, operator_user_id: int, count: int = 4) -> Dict[str, Any]:
+        """
+        Expande exponencialmente la red de cajeros generando nuevas terminales
+        con ubicaciones en departamentos y centros neurálgicos de Guatemala.
+        Inicializa automáticamente sus cartuchos y persiste en SQLite, SQL Server y .txt.
+        """
+        REGIONAL_LOCATIONS = [
+            ("Sucursal Plaza Médica", "Avenida Las Américas 15-40, Zona 13, Ciudad de Guatemala"),
+            ("C.C. Gran Carchá", "Km 218 Carretera a Las Verapaces, San Pedro Carchá, Alta Verapaz"),
+            ("Plaza Pradera Chimaltenango", "Km 55.5 Carretera Interamericana, Chimaltenango"),
+            ("Paseo Las Palmas", "Calzada Kaibil Balam, Zona 11, Huehuetenango"),
+            ("C.C. Pradera Zacapa", "Km 146 Carretera al Atlántico, Zacapa"),
+            ("Plaza Maya Flores", "Calle Centro América, Isla de Flores, Petén"),
+            ("Puerto Barrios Express", "12 Calle y 7ma Avenida, Puerto Barrios, Izabal"),
+            ("Metrocentro Villa Nueva", "Km 17.5 Carretera al Pacífico, Villa Nueva"),
+            ("Plaza Magdalena Cobán", "1a Calle 3-13, Zona 1, Cobán, Alta Verapaz"),
+            ("Pradera Chiquimula", "Km 167.5 Carretera a Esquipulas, Chiquimula"),
+            ("Plaza Américas Mazatenango", "Km 158 Carretera al Pacífico, Suchitepéquez"),
+            ("C.C. Interplaza Retalhuleu", "Km 186.5 Carretera al Pacífico, San Sebastián, Retalhuleu"),
+            ("Plaza Palmeras San Lucas", "Km 29.5 Carretera Interamericana, San Lucas Sacatepéquez"),
+            ("C.C. El Frutal", "Bulevar El Frutal 14-00, Zona 5, Villa Nueva"),
+            ("C.C. Santa Clara", "Km 17.5 Carretera al Pacífico, Villa Nueva"),
+            ("Plaza San Cristóbal", "Bulevar Principal San Cristóbal 8-00, Zona 8 de Mixco"),
+        ]
+
+        existing_atms = db.query(Cajero).all()
+        existing_ids = {c.id_cajero for c in existing_atms}
+        next_num = len(existing_atms) + 1
+
+        starter_map = {200: 20, 100: 25, 50: 20, 20: 50, 10: 50, 5: 50, 1: 100}
+        newly_created = []
+
+        now = datetime.now(timezone.utc)
+        for i in range(count):
+            while f"ATM-{next_num:03d}" in existing_ids:
+                next_num += 1
+            atm_id = f"ATM-{next_num:03d}"
+            existing_ids.add(atm_id)
+
+            loc_idx = (next_num - 1) % len(REGIONAL_LOCATIONS)
+            name_suffix, loc_address = REGIONAL_LOCATIONS[loc_idx]
+            atm_name = f"Cajero Red - {name_suffix}"
+
+            cajero = Cajero(
+                id_cajero=atm_id,
+                nombre=atm_name,
+                ubicacion=loc_address,
+                estado="ACTIVO",
+                is_initialized=True,
+                codigo_cajero="1234",
+                en_linea=True,
+                is_deleted=False
+            )
+            db.add(cajero)
+            newly_created.append(atm_id)
+
+            for denom, qty in starter_map.items():
+                db.add(DenominacionCajero(
+                    id_cajero=atm_id,
+                    denominacion=denom,
+                    cantidad_billetes=qty
+                ))
+
+            db.add(ArqueoCajero(
+                id_cajero=atm_id,
+                id_usuario=operator_user_id,
+                saldo_teorico=9350.00,
+                saldo_real=9350.00,
+                diferencia=0.00,
+                tipo_arqueo="INICIALIZACION_EXPONENCIAL",
+                fecha_hora=now
+            ))
+            next_num += 1
+
+        db.add(LogAuditoria(
+            id_usuario=operator_user_id,
+            accion="SUPERADMIN_EXPANSION_RED_CAJEROS",
+            detalles=f"Expansión exponencial de la red bancaria: {count} nuevos cajeros creados e inicializados ({', '.join(newly_created)}).",
+            fecha_hora=now
+        ))
+
+        db.commit()
+
+        try:
+            await txt_manager.sync_cajeros(db)
+            await txt_manager.sync_inventario(db)
+        except Exception as e:
+            print(f"[TXT_MANAGER] Error sincronizando expansión exponencial: {e}")
+
+        total_active = db.query(Cajero).filter(Cajero.is_deleted == False).count()
+        return {
+            "status": "SUCCESS",
+            "mensaje": f"Se han incorporado exitosamente {count} nuevos cajeros a la red multicajero.",
+            "cajeros_creados": newly_created,
+            "total_red": total_active
+        }

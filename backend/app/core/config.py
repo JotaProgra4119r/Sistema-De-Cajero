@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     # Parámetros del Protocolo de Conexión Interbancaria (TCP 5000 / UDP 5005)
     INTERBANK_TCP_PORT: int = 5000
     INTERBANK_UDP_PORT: int = 5005
+    INTERBANK_WIFI_PORT: int = 5040  # Puerto WiFi (040 / 5040)
+    INTERBANK_ETH_PORT: int = 5034   # Puerto Ethernet (034 / 5034)
     BANK_CODE: str = "BANC02"
     BANK_NAME: str = "Banco Nacional Inzano GYT"
     BANK_DAILY_LIMIT: float = 25000.00
