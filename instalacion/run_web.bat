@@ -51,6 +51,12 @@ echo [*] Verificando y liberando puertos 8000 y %PORT% si estuvieran ocupados...
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8000 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%PORT% ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
 
+echo [*] Asegurando servicio Microsoft SQL Server (sqlserver22 / SQLEXPRESS)...
+net start "MSSQL$SQLSERVER22" >nul 2>&1
+net start "MSSQL$SQLEXPRESS" >nul 2>&1
+net start "MSSQLSERVER" >nul 2>&1
+net start "SQLBrowser" >nul 2>&1
+
 echo [*] Verificando persistencia e integridad de base de datos...
 "%PYTHON_CMD%" database/init_db.py >nul 2>&1
 

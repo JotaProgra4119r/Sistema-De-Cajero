@@ -248,7 +248,8 @@ def init_db():
 
         # 7. Crear o actualizar Vistas SQL 'retiros' y 'depositos' para SQL Server / Workbench
         is_sqlite = "sqlite" in engine.url.drivername
-        view_prefix = "CREATE VIEW IF NOT EXISTS" if is_sqlite else "CREATE OR REPLACE VIEW"
+        is_mssql = "mssql" in engine.url.drivername
+        view_prefix = "CREATE VIEW IF NOT EXISTS" if is_sqlite else ("CREATE OR ALTER VIEW" if is_mssql else "CREATE OR REPLACE VIEW")
         try:
             db.execute(text(f"""
                 {view_prefix} retiros AS

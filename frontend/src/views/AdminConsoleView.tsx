@@ -191,7 +191,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
   };
 
   const renderTripartiteSyncPanel = () => {
-    const sqlServerStatus = syncStatus?.sqlserver || syncStatus?.mysql;
+    const sqlServerStatus = syncStatus?.sqlserver22 || syncStatus?.sqlserver || syncStatus?.mysql;
     const isSqlServerConnected = sqlServerStatus?.status === "connected" || sqlServerStatus?.status === "synced";
     const isSqlServerPending = sqlServerStatus?.status === "pending";
 
@@ -204,7 +204,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
               <span>Estado y Sincronización Tripartita de Bases de Datos</span>
             </h3>
             <p className="text-xs text-discord-textMuted mt-0.5">
-              Monitoreo en vivo de motores de persistencia: SQLite Local, Microsoft SQL Server 2022 y Servidor en Línea (Render Cloud Gateway)
+              Monitoreo en vivo de motores de persistencia: SQLite Local, Microsoft SQL Server 2022 (sqlserver22) y Servidor en Línea (Render Cloud Gateway)
             </p>
           </div>
 
@@ -257,7 +257,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
             </div>
           </div>
 
-          {/* 2. Base de Datos Relacional (MySQL / SQL Server) */}
+          {/* 2. Microsoft SQL Server 2022 (sqlserver22) */}
           <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
             isSqlServerConnected
               ? "bg-emerald-950/20 border-emerald-500/40"
@@ -268,7 +268,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
                 <Database className="w-4 h-4 text-blue-400" />
-                <span>{sqlServerStatus?.name || "Base de Datos SQL"}</span>
+                <span>{sqlServerStatus?.name || "Microsoft SQL Server 2022 (sqlserver22)"}</span>
               </span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
                 isSqlServerConnected
@@ -285,11 +285,11 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
               </span>
             </div>
             <p className="text-xs text-discord-textMuted">
-              {sqlServerStatus?.message || "Instancia de base de datos relacional local"}
+              {sqlServerStatus?.message || "Instancia de Microsoft SQL Server 2022 (sqlserver22)"}
             </p>
             <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
               <span>Motor:</span>
-              <span className="text-blue-400 font-bold">{sqlServerStatus?.name || "SQL Relacional"}</span>
+              <span className="text-blue-400 font-bold">{sqlServerStatus?.name || "SQL Server 2022 (sqlserver22)"}</span>
             </div>
           </div>
 

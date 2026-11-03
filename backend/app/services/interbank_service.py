@@ -914,9 +914,13 @@ class InterbankProtocolManager:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         try:
-            sock.sendto(msg_udp.encode("utf-8"), ("255.255.255.255", settings.INTERBANK_UDP_PORT))
-            if bcast_ip != "255.255.255.255":
-                sock.sendto(msg_udp.encode("utf-8"), (bcast_ip, settings.INTERBANK_UDP_PORT))
+            broadcast_targets = {"255.255.255.255", bcast_ip, "192.168.1.255", "192.168.0.255", "26.255.255.255"}
+            for b_addr in broadcast_targets:
+                if b_addr:
+                    try:
+                        sock.sendto(msg_udp.encode("utf-8"), (b_addr, settings.INTERBANK_UDP_PORT))
+                    except Exception:
+                        pass
         except Exception as e:
             logger.warning(f"[UDP SCAN] Broadcast fallo: {e}")
         finally:

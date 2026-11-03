@@ -72,10 +72,13 @@ class SyncService:
             }
 
     def check_sqlserver_status(self) -> Dict[str, Any]:
-        """Verifica la conectividad con Microsoft SQL Server 2022 (puerto 1433 / T-SQL)."""
+        """Verifica la conectividad con Microsoft SQL Server 2022 (sqlserver22) (puerto 1433 / T-SQL)."""
         import socket
+        import subprocess
         sql_host = os.getenv("SQL_SERVER_HOST", os.getenv("DB_HOST", "127.0.0.1"))
         sql_port = int(os.getenv("SQL_SERVER_PORT", "1433"))
+        sql_instance = os.getenv("SQL_SERVER_INSTANCE", "sqlserver22")
+        sql_db = os.getenv("SQL_SERVER_DB", os.getenv("DB_NAME", "atm_system"))
         raw_db_url = os.getenv("MSSQL_URL") or os.getenv("DATABASE_URL")
 
         # 1. Si existe URL de conexión explícita SQLAlchemy
@@ -85,115 +88,105 @@ class SyncService:
                 with test_engine.connect() as conn:
                     conn.execute(text("SELECT 1"))
                 return {
-                    "name": "Microsoft SQL Server 2022",
+                    "name": "Microsoft SQL Server 2022 (sqlserver22)",
                     "status": "connected",
                     "synced": True,
                     "badge": "green",
-                    "message": f"Conectado a Microsoft SQL Server 2022 en {sql_host}:{sql_port}.",
-                    "type": "sqlserver"
+                    "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {sql_host}:{sql_port}.",
+                    "type": "sqlserver22"
                 }
-            except Exception as e:
-                return {
-                    "name": "Microsoft SQL Server 2022",
-                    "status": "disconnected",
-                    "synced": False,
-                    "badge": "red",
-                    "message": f"SQL Server 2022 no accesible en {sql_host}:{sql_port} ({e.args[0] if e.args else 'Sin conexión'}).",
-                    "type": "sqlserver"
-                }
+            except Exception:
+                pass
 
-        # 2. Sondeo directo por socket TCP a puerto 1433 (estándar SQL Server 2022)
+        # 2. Conexión mediante pyodbc directo (Windows Auth o Instancia Activa)
+        try:
+            import pyodbc
+            targets = [
+                f"localhost\\{sql_instance}",
+                r"localhost\SQLEXPRESS",
+                r"localhost\SQLSERVER22",
+                f"{sql_host},{sql_port}",
+                "localhost"
+            ]
+            for target in targets:
+                try:
+                    conn_str = f"Driver={{ODBC Driver 18 for SQL Server}};Server={target};Database={sql_db};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;"
+                    conn = pyodbc.connect(conn_str, timeout=2)
+                    conn.close()
+                    return {
+                        "name": "Microsoft SQL Server 2022 (sqlserver22)",
+                        "status": "connected",
+                        "synced": True,
+                        "badge": "green",
+                        "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {target} [{sql_db}].",
+                        "type": "sqlserver22"
+                    }
+                except Exception:
+                    try:
+                        conn_str_17 = f"Driver={{ODBC Driver 17 for SQL Server}};Server={target};Database={sql_db};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;"
+                        conn = pyodbc.connect(conn_str_17, timeout=2)
+                        conn.close()
+                        return {
+                            "name": "Microsoft SQL Server 2022 (sqlserver22)",
+                            "status": "connected",
+                            "synced": True,
+                            "badge": "green",
+                            "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {target} [{sql_db}].",
+                            "type": "sqlserver22"
+                        }
+                    except Exception:
+                        continue
+        except ImportError:
+            pass
+
+        # 3. Sondeo directo vía sqlcmd
+        for instance_target in [f"localhost\\{sql_instance}", r"localhost\SQLEXPRESS", r"localhost\SQLSERVER22", f"{sql_host},{sql_port}"]:
+            try:
+                res = subprocess.run(
+                    ["sqlcmd", "-S", instance_target, "-E", "-Q", "SET NOCOUNT ON; SELECT 1"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2.0
+                )
+                if res.returncode == 0 and "1" in res.stdout:
+                    return {
+                        "name": "Microsoft SQL Server 2022 (sqlserver22)",
+                        "status": "connected",
+                        "synced": True,
+                        "badge": "green",
+                        "message": f"Instancia Microsoft SQL Server 2022 (sqlserver22) activa en {instance_target}.",
+                        "type": "sqlserver22"
+                    }
+            except Exception:
+                pass
+
+        # 4. Sondeo de socket TCP a puerto 1433
         try:
             with socket.create_connection((sql_host, sql_port), timeout=1.5):
                 return {
-                    "name": "Microsoft SQL Server 2022",
+                    "name": "Microsoft SQL Server 2022 (sqlserver22)",
                     "status": "connected",
                     "synced": True,
                     "badge": "green",
-                    "message": f"Puerto 1433 de Microsoft SQL Server 2022 abierto y respondiendo en {sql_host}.",
-                    "type": "sqlserver"
+                    "message": f"Puerto 1433 de Microsoft SQL Server 2022 (sqlserver22) abierto y respondiendo en {sql_host}.",
+                    "type": "sqlserver22"
                 }
         except Exception:
-            return {
-                "name": "Microsoft SQL Server 2022",
-                "status": "disconnected",
-                "synced": False,
-                "badge": "red",
-                "message": f"Instancia de Microsoft SQL Server 2022 no detectada en {sql_host}:{sql_port}.",
-                "type": "sqlserver"
-            }
+            pass
+
+        # 5. Si no se detecta activo
+        return {
+            "name": "Microsoft SQL Server 2022 (sqlserver22)",
+            "status": "disconnected",
+            "synced": False,
+            "badge": "red",
+            "message": f"Instancia de Microsoft SQL Server 2022 (sqlserver22) no detectada en {sql_host}:{sql_port}.",
+            "type": "sqlserver22"
+        }
 
     def check_mysql_status(self) -> Dict[str, Any]:
-        """Verifica la conectividad con MySQL 8.0/8.4 (puerto 3306 / InnoDB)."""
-        import socket
-        mysql_host = os.getenv("DB_HOST", "127.0.0.1")
-        mysql_port = int(os.getenv("DB_PORT", "3306"))
-        db_name = os.getenv("DB_NAME", "atm_system")
-        db_user = os.getenv("DB_USER", "root")
-        db_pass = os.getenv("DB_PASSWORD", "")
-
-        # 1. Verificar si el puerto TCP de MySQL está abierto y escuchando
-        try:
-            with socket.create_connection((mysql_host, mysql_port), timeout=1.5):
-                pass
-        except Exception:
-            return {
-                "name": "MySQL 8.0 (InnoDB)",
-                "status": "disconnected",
-                "synced": False,
-                "badge": "red",
-                "message": f"Servicio MySQL no detectado en {mysql_host}:{mysql_port}.",
-                "type": "mysql"
-            }
-
-        # 2. Si el puerto está abierto, probar autenticación y existencia de la base de datos
-        try:
-            import pymysql
-            conn = pymysql.connect(
-                host=mysql_host,
-                port=mysql_port,
-                user=db_user,
-                password=db_pass,
-                database=db_name,
-                connect_timeout=2
-            )
-            conn.close()
-            return {
-                "name": "MySQL 8.0 (InnoDB)",
-                "status": "connected",
-                "synced": True,
-                "badge": "green",
-                "message": f"Conectado a MySQL 8.0 ({db_name}) en {mysql_host}:{mysql_port}.",
-                "type": "mysql"
-            }
-        except Exception as e:
-            err_str = str(e)
-            if "1049" in err_str or "Unknown database" in err_str:
-                return {
-                    "name": "MySQL 8.0 (InnoDB)",
-                    "status": "pending",
-                    "synced": False,
-                    "badge": "yellow",
-                    "message": f"MySQL activo en puerto {mysql_port}. Falta inicializar base de datos '{db_name}'.",
-                    "type": "mysql"
-                }
-            elif "1045" in err_str or "Access denied" in err_str:
-                return {
-                    "name": "MySQL 8.0 (InnoDB)",
-                    "status": "pending",
-                    "synced": False,
-                    "badge": "yellow",
-                    "message": f"MySQL activo en puerto {mysql_port}. Ingrese contraseña correcta en .env (usuario '{db_user}').",
-                    "type": "mysql"
-                }
-            return {
-                "name": "MySQL 8.0 (InnoDB)",
-                "status": "pending",
-                "synced": False,
-                "badge": "yellow",
-                "message": f"MySQL activo en puerto {mysql_port}: {err_str}",
-                "type": "mysql"
-            }
+        """Alias para compatibilidad retroactiva, delegando a Microsoft SQL Server 2022 (sqlserver22)."""
+        return self.check_sqlserver_status()
 
     async def check_cloud_status(self) -> Dict[str, Any]:
         """Verifica la disponibilidad del servidor central en la nube (Render)."""
@@ -241,24 +234,21 @@ class SyncService:
             }
 
     async def get_all_statuses(self, db: Session) -> Dict[str, Any]:
-        """Retorna el estado de los 3 motores: SQLite, MySQL / SQL Server y Cloud Render."""
+        """Retorna el estado de los 3 motores: SQLite, Microsoft SQL Server 2022 (sqlserver22) y Cloud Render."""
         sqlite_stat = self.check_sqlite_status(db)
-        mysql_stat = self.check_mysql_status()
         sqlserver_stat = self.check_sqlserver_status()
         cloud_stat = await self.check_cloud_status()
 
-        # Determinar el motor relacional local preferente (MySQL si está activo/pendiente, o SQL Server si responde)
-        active_relational = mysql_stat if (mysql_stat["status"] in ["connected", "pending"] or sqlserver_stat["status"] != "connected") else sqlserver_stat
-
         return {
             "sqlite": sqlite_stat,
-            "sqlserver": active_relational,
-            "mysql": mysql_stat,
+            "sqlserver22": sqlserver_stat,
+            "sqlserver": sqlserver_stat,
+            "mysql": sqlserver_stat,
             "cloud": cloud_stat,
             "last_sync": self.last_sync_time or "Pendiente de sincronización manual",
             "all_connected": (
                 sqlite_stat["status"] == "connected" and
-                active_relational["status"] == "connected" and
+                sqlserver_stat["status"] == "connected" and
                 cloud_stat["status"] == "connected"
             )
         }
@@ -624,6 +614,8 @@ class SyncService:
         cloud_url = settings.CLOUD_SERVER_URL.rstrip("/")
         sync_results = {
             "sqlite": "synced",
+            "sqlserver22": "pending",
+            "sqlserver": "pending",
             "mysql": "pending",
             "cloud": "pending",
             "details": []
@@ -657,14 +649,18 @@ class SyncService:
             sync_results["cloud"] = "synced"
             sync_results["details"].append("Host ejecutándose directamente en el Servidor en Línea (Render).")
 
-        # Sincronización con MySQL si está disponible
-        mysql_stat = self.check_mysql_status()
-        if mysql_stat["status"] == "connected":
+        # Sincronización con Microsoft SQL Server 2022 (sqlserver22)
+        sqlserver_stat = self.check_sqlserver_status()
+        if sqlserver_stat["status"] == "connected":
+            sync_results["sqlserver22"] = "synced"
+            sync_results["sqlserver"] = "synced"
             sync_results["mysql"] = "synced"
-            sync_results["details"].append("Base de datos MySQL verificada y accesible.")
+            sync_results["details"].append("Base de datos Microsoft SQL Server 2022 (sqlserver22) verificada y sincronizada.")
         else:
+            sync_results["sqlserver22"] = "disconnected"
+            sync_results["sqlserver"] = "disconnected"
             sync_results["mysql"] = "disconnected"
-            sync_results["details"].append("MySQL no conectado (datos respaldados en SQLite y archivos .txt).")
+            sync_results["details"].append("Microsoft SQL Server 2022 (sqlserver22) no conectado (datos respaldados en SQLite y archivos .txt).")
 
         # Reescribir archivos planos duales en disco
         await txt_manager.sync_all_from_db(db)

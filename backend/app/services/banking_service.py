@@ -1223,7 +1223,7 @@ class BankingService:
             init_status = "Inicializado" if is_init else "Pendiente"
 
         pin_changed_count = db.query(Usuario).filter(Usuario.cambio_pin_realizado == True, Usuario.is_deleted == False).count()
-        last_user = db.query(Usuario).filter(Usuario.is_deleted == False).order_by(Usuario.fecha_ultimo_acceso.desc().nullslast()).first()
+        last_user = db.query(Usuario).filter(Usuario.is_deleted == False).order_by(Usuario.fecha_ultimo_acceso.desc()).first()
         last_user_info = {
             "nombre": last_user.nombre_completo if last_user else "Ninguno",
             "timestamp": last_user.fecha_ultimo_acceso.strftime("%Y-%m-%d %H:%M:%S") if (last_user and last_user.fecha_ultimo_acceso) else "Sin accesos"

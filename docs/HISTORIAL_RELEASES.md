@@ -23,6 +23,24 @@ timeline
 
 ---
 
+## 🚀 Versión 2.4.1 — Identificación sqlserver22, Arranque Automático de Servicios en Scripts Batch y Detección Multicajero entre Routers (03/11/2026)
+
+### Novedades Principales
+1. **Identificación y Mapeo de Microsoft SQL Server 2022 (`sqlserver22`):**
+   - Actualización de la entidad de diagnóstico en el panel tripartito a `Microsoft SQL Server 2022 (sqlserver22)`.
+   - Conexión multiprotocolo mediante `pyodbc` (ODBC Driver 18/17) e instancias de red (`localhost\sqlserver22`, `localhost\SQLEXPRESS`, o puerto 1433 TCP).
+   - Generación y soporte nativo de vistas relacionales T-SQL (`CREATE OR ALTER VIEW`) en base de datos `atm_system`.
+
+2. **Arranque Automático de Servicios de Base de Datos en Scripts Batch (`.bat`):**
+   - Incorporación de secuencias `net start "MSSQL$SQLSERVER22"`, `net start "MSSQL$SQLEXPRESS"`, `net start "MSSQLSERVER"` y `net start "SQLBrowser"` en `install.bat`, `run_web.bat`, `run_windows.bat`, `run_kiosk.bat` y scripts auxiliares.
+   - Garantiza que al instalar o ejecutar el proyecto mediante archivos por lotes, el motor SQL Server esté encendido y listo para recibir conexiones.
+
+3. **Interoperabilidad Interbancaria y Visibilidad Multicajero entre Routers:**
+   - La red de cajeros persistida en SQL Server permite que cualquier terminal conectada a través de routers o subredes acceda a la lista unificada de cajeros activos (`cajeros`) y bancos interconectados (`bancos_red`).
+   - El subsistema interbancario (`interbank_service.py`) amplía el escaneo UDP y sondeo TCP 5000 a través de múltiples subredes y redes virtuales (Radmin VPN `26.x.x.x`), asegurando compatibilidad continua con `BANC02`, `BANC01` y `NETGEAR`.
+
+---
+
 ## 🚀 Versión 2.4.0 — Soporte Microsoft SQL Server 2022, Panel Tripartito en Administrador Local, Protocolo de Baja Lógica de Cajeros y Enlace Mandatorio Kiosk (01/11/2026)
 
 ### Novedades Principales

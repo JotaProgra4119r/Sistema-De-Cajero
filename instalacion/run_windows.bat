@@ -47,6 +47,12 @@ if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
 )
 if not defined PYTHON_CMD set "PYTHON_CMD=python"
 
+echo [*] Asegurando servicio Microsoft SQL Server (sqlserver22 / SQLEXPRESS)...
+net start "MSSQL$SQLSERVER22" >nul 2>&1
+net start "MSSQL$SQLEXPRESS" >nul 2>&1
+net start "MSSQLSERVER" >nul 2>&1
+net start "SQLBrowser" >nul 2>&1
+
 echo.
 echo [*] Verificando y liberando puerto 8000 si estuviera ocupado...
 "%PYTHON_CMD%" -c "import psutil; [p.kill() for p in psutil.process_iter() if any(getattr(getattr(c, 'laddr', None), 'port', None) == 8000 for c in getattr(p, 'net_connections', lambda *a: [])('inet'))]" >nul 2>nul

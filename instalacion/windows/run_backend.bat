@@ -25,6 +25,12 @@ if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
 )
 if not defined PYTHON_CMD set "PYTHON_CMD=python"
 
+echo [*] Asegurando servicio Microsoft SQL Server (sqlserver22 / SQLEXPRESS)...
+net start "MSSQL$SQLSERVER22" >nul 2>&1
+net start "MSSQL$SQLEXPRESS" >nul 2>&1
+net start "MSSQLSERVER" >nul 2>&1
+net start "SQLBrowser" >nul 2>&1
+
 echo [*] Iniciando Backend FastAPI en http://127.0.0.1:8000...
 "%PYTHON_CMD%" -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 pause
