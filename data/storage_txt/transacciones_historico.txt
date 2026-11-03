@@ -6,3 +6,5 @@
 8|2026-11-03 09:32:48|2|DEPOSITO_A_TERCERO|100.00|{"100": 1}
 3|2026-11-03 15:29:59|1|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261031-932185", "banco_origen": "BANC01", "remitente": "Diego Remitente Nexus", "concepto": "Prueba Unitaria Interbancaria"}
 7|2026-11-03 15:32:48|1|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261031-520188", "banco_origen": "BANC01", "remitente": "Diego Remitente Nexus", "concepto": "Prueba Unitaria Interbancaria"}
+9|2026-11-03 15:56:27|2|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261103-787855", "banco_origen": "BANC02", "remitente": "Mar\u00eda Andrea L\u00f3pez", "concepto": "Transferencia Interbancaria de Prueba (Maria)"}
+10|2026-11-03 15:56:27|3|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_SALIENTE", "token": "TRF-20261103-787855", "banco_destino": "NETGEAR", "destinatario": "Carlos Roberto G\u00f3mez", "cuenta_destino": "10014528", "concepto": "Transferencia Interbancaria de Prueba (Maria)"}

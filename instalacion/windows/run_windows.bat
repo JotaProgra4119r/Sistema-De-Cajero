@@ -54,20 +54,31 @@ net start "MSSQLSERVER" >nul 2>&1
 net start "SQLBrowser" >nul 2>&1
 
 echo.
-echo [1/2] Iniciando Backend FastAPI en http://0.0.0.0:8000...
-start "Backend FastAPI (Puerto 8000)" cmd /k ""%PYTHON_CMD%" -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+echo [*] Verificando y liberando puertos 8000 y 5173 si estuvieran ocupados...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8000 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :5173 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
+
+echo.
+echo [1/3] Iniciando Backend FastAPI en http://0.0.0.0:8000...
+start "Backend FastAPI (Puerto 8000)" cmd /k ""%PYTHON_CMD%" -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
 
 timeout /t 2 /nobreak > nul
 
-echo [2/2] Iniciando Terminal de Kiosco Electron...
+echo [2/3] Iniciando Servidor Web Frontend en http://localhost:5173...
+start "Servidor Web Frontend (Puerto 5173)" cmd /k ""%PYTHON_CMD%" -m http.server 5173 --directory frontend\dist"
+
+timeout /t 1 /nobreak > nul
+
+echo [3/3] Iniciando Terminal de Kiosco Electron y Navegador...
+start http://localhost:5173
 start "Kiosco Electron" cmd /c "cd frontend && npm run start"
 
 echo.
 echo ===================================================================
 echo   Sistema ejecutandose con exito:
-echo   - Frontend: Ventana Kiosco Electron
+echo   - Frontend Kiosco: Ventana Kiosco Electron + http://localhost:5173
 echo   - Backend API: http://127.0.0.1:8000 (Swagger: /docs)
-echo   - Atajos: F11 (Pantalla Completa), Esc (Modo Ventana)
+echo   - Persistencia: SQLite Local + Microsoft SQL Server 2022 (sqlserver22)
 echo ===================================================================
 pause
 exit /b 0

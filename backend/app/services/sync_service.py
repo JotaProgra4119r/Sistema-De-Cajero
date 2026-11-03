@@ -102,51 +102,52 @@ class SyncService:
         try:
             import pyodbc
             targets = [
-                f"localhost\\{sql_instance}",
                 r"localhost\SQLEXPRESS",
+                f"localhost\\{sql_instance}",
                 r"localhost\SQLSERVER22",
                 f"{sql_host},{sql_port}",
                 "localhost"
             ]
             for target in targets:
-                try:
-                    conn_str = f"Driver={{ODBC Driver 18 for SQL Server}};Server={target};Database={sql_db};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;"
-                    conn = pyodbc.connect(conn_str, timeout=2)
-                    conn.close()
-                    return {
-                        "name": "Microsoft SQL Server 2022 (sqlserver22)",
-                        "status": "connected",
-                        "synced": True,
-                        "badge": "green",
-                        "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {target} [{sql_db}].",
-                        "type": "sqlserver22"
-                    }
-                except Exception:
+                for db_name in [sql_db, "master"]:
                     try:
-                        conn_str_17 = f"Driver={{ODBC Driver 17 for SQL Server}};Server={target};Database={sql_db};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=2;"
-                        conn = pyodbc.connect(conn_str_17, timeout=2)
+                        conn_str = f"Driver={{ODBC Driver 18 for SQL Server}};Server={target};Database={db_name};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=1;"
+                        conn = pyodbc.connect(conn_str, timeout=1)
                         conn.close()
                         return {
                             "name": "Microsoft SQL Server 2022 (sqlserver22)",
                             "status": "connected",
                             "synced": True,
                             "badge": "green",
-                            "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {target} [{sql_db}].",
+                            "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {target} [{db_name}].",
                             "type": "sqlserver22"
                         }
                     except Exception:
-                        continue
+                        try:
+                            conn_str_17 = f"Driver={{ODBC Driver 17 for SQL Server}};Server={target};Database={db_name};Trusted_Connection=yes;TrustServerCertificate=yes;Connection Timeout=1;"
+                            conn = pyodbc.connect(conn_str_17, timeout=1)
+                            conn.close()
+                            return {
+                                "name": "Microsoft SQL Server 2022 (sqlserver22)",
+                                "status": "connected",
+                                "synced": True,
+                                "badge": "green",
+                                "message": f"Conectado a Microsoft SQL Server 2022 (sqlserver22) en {target} [{db_name}].",
+                                "type": "sqlserver22"
+                            }
+                        except Exception:
+                            continue
         except ImportError:
             pass
 
         # 3. Sondeo directo vía sqlcmd
-        for instance_target in [f"localhost\\{sql_instance}", r"localhost\SQLEXPRESS", r"localhost\SQLSERVER22", f"{sql_host},{sql_port}"]:
+        for instance_target in [r"localhost\SQLEXPRESS", f"localhost\\{sql_instance}", r"localhost\SQLSERVER22", f"{sql_host},{sql_port}"]:
             try:
                 res = subprocess.run(
-                    ["sqlcmd", "-S", instance_target, "-E", "-Q", "SET NOCOUNT ON; SELECT 1"],
+                    ["sqlcmd", "-S", instance_target, "-d", "master", "-E", "-Q", "SET NOCOUNT ON; SELECT 1"],
                     capture_output=True,
                     text=True,
-                    timeout=2.0
+                    timeout=1.5
                 )
                 if res.returncode == 0 and "1" in res.stdout:
                     return {
