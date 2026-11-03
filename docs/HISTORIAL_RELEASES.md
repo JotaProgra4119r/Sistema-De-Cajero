@@ -23,6 +23,26 @@ timeline
 
 ---
 
+## 🚀 Versión 2.4.4 — Estabilización de Paridad Tripartita, Input Accesible de Token Dinámico y Recuperación Robusta de Bóvedas (03/11/2026)
+
+### Novedades Principales
+1. **Entrada Interactiva y Directa de Token Dinámico (TOTP):**
+   - Incorporación de controles `<input>` reales y accesibles tanto para Token Dinámico como para Tarjeta y PIN en `WelcomeAuthView.tsx`, permitiendo digitación inmediata por teclado físico, pantalla táctil, teclado virtual o pegado directo.
+   - Optimización de "Usar Token": auto-asigna el token de 6 dígitos instantáneamente sin bloqueos asíncronos y enfoca el campo de texto en 0 milisegundos.
+   - Prevención definitiva de bloqueos en `"------"` ante despertares en reposo de la nube (Render).
+
+2. **Estabilidad y Eliminación de Parpadeo en Paridad Tripartita:**
+   - Caché con amortiguador inteligente para `check_cloud_status` en `sync_service.py` con tolerancia de hasta 180 segundos para evitar que el estado de Render alterne constantemente entre conectado y desconectado ("se activa y desactiva por veces").
+   - Conexión ultra-rápida y directa a Microsoft SQL Server 2022 (`.\SQLEXPRESS` / `sqlserver22`) priorizando ODBC Driver 18/17 en Windows para respuesta instantánea en verde.
+
+3. **Auto-Recuperación de Cajero Activo en Endpoints de Autenticación:**
+   - En `get_token_preview` y `get_atm_status`, si una sesión o navegador almacena un identificador no persistido (como `ATM-004`), el backend se recupera automáticamente seleccionando el primer cajero activo con fondos (`ATM-001`), impidiendo falsos avisos de "Bóveda Vacía".
+
+4. **Identidad Blindada Banco Inzano GYT:**
+   - Protección estricta en las tarjetas de red interbancaria asegurando el nombre oficial **`Banco Inzano GYT`** bajo `BANC02` y visualización de la IP de la máquina, manteniendo a `NETGEAR` como banco vecino independiente.
+
+---
+
 ## 🚀 Versión 2.4.3 — Identidad Oficial Banco Inzano GYT, Adaptación al Protocolo NETGEAR y Resiliencia de Token Dinámico en Render Cloud (03/11/2026)
 
 ### Novedades Principales

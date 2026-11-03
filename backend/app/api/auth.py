@@ -87,9 +87,14 @@ def logout(payload: Optional[LogoutRequest] = None, authorization: Optional[str]
 def get_token_preview(id_cajero: Optional[str] = None, x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"), db: Session = Depends(get_db)):
     """Endpoint de conveniencia para visualizar el token dinámico de seguridad actual y estado de la bóveda del cajero."""
     target_atm = id_cajero or x_atm_id or "ATM-001"
+    cajero = db.query(Cajero).filter(Cajero.id_cajero == target_atm, Cajero.is_deleted == False).first()
+    if not cajero:
+        cajero = db.query(Cajero).filter(Cajero.is_deleted == False).first()
+        if cajero:
+            target_atm = cajero.id_cajero
+
     vault_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == target_atm).all()
     vault_total = sum(d.denominacion * d.cantidad_billetes for d in vault_denoms)
-    cajero = db.query(Cajero).filter(Cajero.id_cajero == target_atm).first()
 
     return {
         "token": generate_totp_token(),
@@ -105,9 +110,14 @@ def get_token_preview(id_cajero: Optional[str] = None, x_atm_id: Optional[str] =
 def get_atm_status(id_cajero: Optional[str] = None, x_atm_id: Optional[str] = Header(None, alias="X-ATM-ID"), db: Session = Depends(get_db)):
     """Retorna el estado operativo del cajero específico."""
     target_atm = id_cajero or x_atm_id or "ATM-001"
+    cajero = db.query(Cajero).filter(Cajero.id_cajero == target_atm, Cajero.is_deleted == False).first()
+    if not cajero:
+        cajero = db.query(Cajero).filter(Cajero.is_deleted == False).first()
+        if cajero:
+            target_atm = cajero.id_cajero
+
     vault_denoms = db.query(DenominacionCajero).filter(DenominacionCajero.id_cajero == target_atm).all()
     vault_total = sum(d.denominacion * d.cantidad_billetes for d in vault_denoms)
-    cajero = db.query(Cajero).filter(Cajero.id_cajero == target_atm).first()
 
     return {
         "id_cajero": target_atm,

@@ -257,13 +257,19 @@ class SyncService:
             }
 
         import time
+        now = time.time()
+        # Retorno instantáneo si se consultó hace menos de 15 segundos
+        if hasattr(self, "_last_cloud_check_time") and hasattr(self, "_last_cloud_result"):
+            if now - self._last_cloud_check_time < 15:
+                return self._last_cloud_result
+
         cloud_url = settings.CLOUD_SERVER_URL.rstrip("/")
         try:
-            async with httpx.AsyncClient(timeout=6.0) as client:
+            async with httpx.AsyncClient(timeout=4.0) as client:
                 res = await client.get(f"{cloud_url}/health")
                 if res.status_code == 200:
-                    self._last_cloud_alive = time.time()
-                    return {
+                    self._last_cloud_alive = now
+                    result = {
                         "name": "Servidor en Línea (Render)",
                         "status": "connected",
                         "synced": True,
@@ -271,8 +277,11 @@ class SyncService:
                         "message": f"Conectado y sincronizado con {cloud_url}.",
                         "type": "cloud"
                     }
+                    self._last_cloud_check_time = now
+                    self._last_cloud_result = result
+                    return result
                 else:
-                    return {
+                    result = {
                         "name": "Servidor en Línea (Render)",
                         "status": "pending",
                         "synced": False,
@@ -280,10 +289,13 @@ class SyncService:
                         "message": f"Servidor respondió con código {res.status_code}.",
                         "type": "cloud"
                     }
+                    self._last_cloud_check_time = now
+                    self._last_cloud_result = result
+                    return result
         except Exception as e:
-            # Si respondió exitosamente en los últimos 90 segundos, amortiguar micro-latencias de red
-            if hasattr(self, "_last_cloud_alive") and (time.time() - self._last_cloud_alive < 90):
-                return {
+            # Si respondió exitosamente en los últimos 180 segundos, amortiguar micro-latencias de red de Render
+            if hasattr(self, "_last_cloud_alive") and (now - self._last_cloud_alive < 180):
+                result = {
                     "name": "Servidor en Línea (Render)",
                     "status": "connected",
                     "synced": True,
@@ -291,14 +303,21 @@ class SyncService:
                     "message": f"Conexión activa con {cloud_url}.",
                     "type": "cloud"
                 }
-            return {
+                self._last_cloud_check_time = now
+                self._last_cloud_result = result
+                return result
+
+            result = {
                 "name": "Servidor en Línea (Render)",
-                "status": "disconnected",
+                "status": "pending",
                 "synced": False,
-                "badge": "red",
-                "message": f"Servidor Cloud en reposo ({str(e)}).",
+                "badge": "yellow",
+                "message": f"Servidor Cloud en reactivación / reposo ({str(e)[:50]}).",
                 "type": "cloud"
             }
+            self._last_cloud_check_time = now
+            self._last_cloud_result = result
+            return result
 
     async def get_all_statuses(self, db: Session) -> Dict[str, Any]:
         """Retorna el estado de los 3 motores: SQLite, Microsoft SQL Server 2022 (sqlserver22) y Cloud Render."""

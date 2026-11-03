@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Lock, UserCheck, CreditCard, Clock, AlertCircle, Eye, EyeOff, RefreshCw, Cloud, CheckCircle2 } from "lucide-react";
 import { VirtualKeypad } from "../components/VirtualKeypad";
 import { HardwareBadges } from "../components/HardwareBadges";
@@ -19,6 +19,10 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   const [token, setToken] = useState<string>("");
   const [activeField, setActiveField] = useState<ActiveField>("card");
   const [showPin, setShowPin] = useState<boolean>(false);
+
+  const cardInputRef = useRef<HTMLInputElement>(null);
+  const pinInputRef = useRef<HTMLInputElement>(null);
+  const tokenInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -90,14 +94,23 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
     const fetchToken = async () => {
       try {
         const res = await authService.getTokenPreview(activeAtm);
-        setDynamicTokenPreview(res.token);
-        if (res.cajero_nombre) setAtmName(res.cajero_nombre);
-        if (res.vault_total !== undefined) {
+        if (res?.token && /^\d{6}$/.test(res.token)) {
+          setDynamicTokenPreview(res.token);
+        }
+        if (res?.id_cajero && res.id_cajero !== activeAtm) {
+          setActiveAtm(res.id_cajero);
+          localStorage.setItem("active_atm_id", res.id_cajero);
+        }
+        if (res?.cajero_nombre) setAtmName(res.cajero_nombre);
+        if (res?.vault_total !== undefined) {
           setVaultTotal(res.vault_total);
           setVaultEmpty(res.vault_empty ?? res.vault_total <= 0);
         }
       } catch {
-        // ignore
+        // Fallback inmediato si el servidor está en reposo o con latencia
+        if (!dynamicTokenPreview || !/^\d{6}$/.test(dynamicTokenPreview)) {
+          setDynamicTokenPreview("123456");
+        }
       }
     };
     fetchToken();
@@ -412,28 +425,28 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 </div>
                 <button
                   type="button"
-                  onClick={async () => {
+                  onClick={() => {
                     let tok = dynamicTokenPreview.replace(/\D/g, "");
-                    try {
-                      const res = await authService.getTokenPreview(activeAtm);
+                    if (tok.length !== 6) {
+                      tok = "123456";
+                      setDynamicTokenPreview("123456");
+                    }
+                    setToken(tok);
+                    setActiveField("token");
+                    setErrorMessage(null);
+                    setTimeout(() => tokenInputRef.current?.focus(), 50);
+
+                    // Refrescar en segundo plano sin bloquear la interfaz
+                    authService.getTokenPreview(activeAtm).then((res) => {
                       if (res?.token && /^\d{6}$/.test(res.token)) {
-                        tok = res.token;
                         setDynamicTokenPreview(res.token);
+                        setToken(res.token);
                       }
-                    } catch {
-                      if (tok.length !== 6) {
-                        tok = "123456";
-                        setDynamicTokenPreview("123456");
-                      }
-                    }
-                    if (tok.length === 6) {
-                      setToken(tok);
-                      setErrorMessage(null);
-                    }
+                    }).catch(() => {});
                   }}
-                  className="px-3 py-1.5 text-xs font-bold rounded-lg bg-discord-surface hover:bg-discord-hover text-white border border-discord-hover transition-all active:scale-95"
+                  className="px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white border border-blue-400 transition-all active:scale-95 shadow-md flex items-center gap-1.5"
                 >
-                  Usar Token
+                  <span>Usar Token</span>
                 </button>
               </div>
             </div>
@@ -520,7 +533,10 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
 
             <div className="space-y-4 mb-6">
               <div
-                onClick={() => setActiveField("card")}
+                onClick={() => {
+                  setActiveField("card");
+                  cardInputRef.current?.focus();
+                }}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                   activeField === "card"
                     ? "bg-discord-sidebar border-discord-blurple ring-2 ring-discord-blurple/50"
@@ -531,14 +547,32 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                   <span>Número de Tarjeta (16 dígitos)</span>
                   {activeField === "card" && <span className="text-discord-blurple">● Activo</span>}
                 </div>
-                <div className="font-mono text-xl font-bold tracking-widest text-white">
-                  {cardNumber || <span className="text-gray-600">XXXX-XXXX-XXXX-XXXX</span>}
-                </div>
+                <input
+                  ref={cardInputRef}
+                  type="text"
+                  inputMode="numeric"
+                  value={cardNumber}
+                  onFocus={() => setActiveField("card")}
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/\D/g, "").slice(0, 16);
+                    setCardNumber(formatCard(clean));
+                    setErrorMessage(null);
+                    if (clean.length === 16) {
+                      setActiveField("pin");
+                      setTimeout(() => pinInputRef.current?.focus(), 50);
+                    }
+                  }}
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  className="w-full bg-transparent font-mono text-xl font-bold tracking-widest text-white outline-none placeholder:text-gray-600 cursor-text"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div
-                  onClick={() => setActiveField("pin")}
+                  onClick={() => {
+                    setActiveField("pin");
+                    pinInputRef.current?.focus();
+                  }}
                   className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                     activeField === "pin"
                       ? "bg-discord-sidebar border-discord-blurple ring-2 ring-discord-blurple/50"
@@ -563,28 +597,31 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                       {activeField === "pin" && <span className="text-discord-blurple">● Activo</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 h-7 font-mono font-bold text-xl text-discord-green">
-                    {showPin ? (
-                      <span className="tracking-widest">{pin ? pin.padEnd(4, "•") : "••••"}</span>
-                    ) : (
-                      [0, 1, 2, 3].map((idx) => (
-                        <div
-                          key={idx}
-                          className={`w-3.5 h-3.5 rounded-full border transition-all ${
-                            idx < pin.length
-                              ? "bg-discord-green border-discord-green shadow-sm"
-                              : "border-gray-600 bg-discord-surface"
-                          }`}
-                        />
-                      ))
-                    )}
-                  </div>
+                  <input
+                    ref={pinInputRef}
+                    type={showPin ? "text" : "password"}
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={pin}
+                    onFocus={() => setActiveField("pin")}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      setPin(clean);
+                      setErrorMessage(null);
+                      if (clean.length === 4) {
+                        setActiveField("token");
+                        setTimeout(() => tokenInputRef.current?.focus(), 50);
+                      }
+                    }}
+                    placeholder="••••"
+                    className="w-full bg-transparent font-mono text-xl font-bold tracking-widest text-discord-green outline-none placeholder:text-gray-600 cursor-text"
+                  />
                 </div>
 
                 <div
                   onClick={() => {
                     setActiveField("token");
-                    setToken((prev) => prev.replace(/\D/g, ""));
+                    tokenInputRef.current?.focus();
                   }}
                   className={`p-3.5 rounded-xl border transition-all cursor-pointer relative ${
                     activeField === "token"
@@ -596,10 +633,25 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                     <span>Token Dinámico</span>
                     {activeField === "token" && <span className="text-discord-blurple">● Activo (6 dígitos)</span>}
                   </div>
-                  <div className="font-mono text-xl font-bold tracking-widest text-discord-green flex items-center justify-between">
-                    <span>{token.replace(/\D/g, "") || <span className="text-gray-600">000000</span>}</span>
+                  <div className="flex items-center justify-between">
+                    <input
+                      ref={tokenInputRef}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      value={token.replace(/\D/g, "")}
+                      onFocus={() => setActiveField("token")}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                        setToken(val);
+                        setErrorMessage(null);
+                      }}
+                      placeholder="000000"
+                      className="w-full bg-transparent font-mono text-xl font-bold tracking-widest text-discord-green outline-none placeholder:text-gray-600 cursor-text"
+                    />
                     {token.replace(/\D/g, "").length === 6 && (
-                      <span className="text-[11px] font-sans font-bold text-discord-green bg-discord-green/20 px-2 py-0.5 rounded">
+                      <span className="text-[11px] font-sans font-bold text-discord-green bg-discord-green/20 px-2 py-0.5 rounded whitespace-nowrap ml-2">
                         ✓ Listo
                       </span>
                     )}

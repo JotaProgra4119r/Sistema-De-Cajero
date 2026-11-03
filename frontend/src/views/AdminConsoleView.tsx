@@ -1738,10 +1738,10 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <span className="text-xs font-mono font-black text-cyan-400 block">
-                              {b.codigo_banco} {b.es_propio && <span className="text-[10px] text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-700/60 ml-1">NUESTRO BANCO</span>}
+                              {b.codigo_banco} {(b.es_propio || b.codigo_banco === "BANC02") && <span className="text-[10px] text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-700/60 ml-1">NUESTRO BANCO</span>}
                             </span>
                             <h4 className="text-sm font-black text-white mt-0.5">
-                              {b.es_propio ? "Banco Inzano GYT" : b.nombre_banco}
+                              {(b.es_propio || b.codigo_banco === "BANC02") ? "Banco Inzano GYT" : (b.codigo_banco === "NETGEAR" ? "NETGEAR Interbank" : b.nombre_banco)}
                             </h4>
                           </div>
                           <span
@@ -1760,7 +1760,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                           <div className="flex justify-between text-discord-textMuted">
                             <span>Dirección IP:</span>
                             <strong className="text-white">
-                              {b.es_propio ? (interbankStatus?.ip_local || b.ip) : b.ip}:{b.puerto}
+                              {(b.es_propio || b.codigo_banco === "BANC02") ? (interbankStatus?.ip_local || b.ip) : b.ip}:{b.puerto}
                             </strong>
                           </div>
                           <div className="flex justify-between text-discord-textMuted">
