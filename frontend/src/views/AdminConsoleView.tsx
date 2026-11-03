@@ -1676,7 +1676,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                   <span className="text-[10px] uppercase font-bold text-discord-textMuted block">Identificador Local</span>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-base font-black text-cyan-300 font-mono">BANC02</span>
-                    <span className="text-xs text-white font-bold truncate">{interbankStatus?.nombre_banco || "Banco Nacional Inzano GYT"}</span>
+                    <span className="text-xs text-white font-bold truncate">{interbankStatus?.nombre_banco || "Banco Inzano GYT"}</span>
                   </div>
                   <span className="text-[10px] text-discord-textMuted">Nodo Propio en Sistema</span>
                 </div>
@@ -1741,7 +1741,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                               {b.codigo_banco} {b.es_propio && <span className="text-[10px] text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-700/60 ml-1">NUESTRO BANCO</span>}
                             </span>
                             <h4 className="text-sm font-black text-white mt-0.5">
-                              {b.nombre_banco}
+                              {b.es_propio ? "Banco Inzano GYT" : b.nombre_banco}
                             </h4>
                           </div>
                           <span
@@ -1759,7 +1759,9 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                         <div className="mt-2.5 space-y-1 text-xs font-mono">
                           <div className="flex justify-between text-discord-textMuted">
                             <span>Dirección IP:</span>
-                            <strong className="text-white">{b.ip}:{b.puerto}</strong>
+                            <strong className="text-white">
+                              {b.es_propio ? (interbankStatus?.ip_local || b.ip) : b.ip}:{b.puerto}
+                            </strong>
                           </div>
                           <div className="flex justify-between text-discord-textMuted">
                             <span>Cupo Disponible:</span>

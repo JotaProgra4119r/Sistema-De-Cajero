@@ -60,6 +60,15 @@ class InterbankProtocolManager:
             banco.fecha_ultimo_reinicio = datetime.now(timezone.utc)
             db.commit()
 
+    def ip_hacia(self, destino: str) -> str:
+        """Retorna la dirección IP local del adaptador que enruta hacia el destino indicado."""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as ruta:
+                ruta.connect((destino, settings.INTERBANK_UDP_PORT))
+                return ruta.getsockname()[0]
+        except Exception:
+            return self.local_ip
+
     def _get_or_create_own_bank(self, db: Session) -> BancoRed:
         """Obtiene o crea el registro del banco propio en la base de datos."""
         banco = db.query(BancoRed).filter(BancoRed.codigo_banco == settings.BANK_CODE).first()
@@ -80,8 +89,17 @@ class InterbankProtocolManager:
             db.refresh(banco)
         else:
             self._ensure_daily_reset(banco, db)
-            if banco.ip != self.local_ip:
+            updated = False
+            if banco.nombre_banco != settings.BANK_NAME:
+                banco.nombre_banco = settings.BANK_NAME
+                updated = True
+            if not banco.es_propio:
+                banco.es_propio = True
+                updated = True
+            if self.local_ip and self.local_ip not in ("127.0.0.1", "0.0.0.0") and banco.ip != self.local_ip:
                 banco.ip = self.local_ip
+                updated = True
+            if updated:
                 db.commit()
         return banco
 
@@ -523,14 +541,21 @@ class InterbankProtocolManager:
                         sender_ip = parts[3].strip() or addr[0]
                         sender_port = int(parts[4].strip()) if parts[4].strip().isdigit() else 5000
 
-                        # Registrar banco remitente si no es el nuestro
-                        if sender_code != settings.BANK_CODE:
+                        # Proteger la identidad de nuestro banco si el remitente usa BANC02 o es NETGEAR
+                        actual_code = sender_code
+                        if actual_code == settings.BANK_CODE:
+                            if "NETGEAR" in sender_name.upper():
+                                actual_code = "NETGEAR"
+                            else:
+                                actual_code = None  # Eco de nuestro propio broadcast
+
+                        if actual_code:
                             db = SessionLocal()
                             try:
-                                banco = db.query(BancoRed).filter(BancoRed.codigo_banco == sender_code).first()
+                                banco = db.query(BancoRed).filter(BancoRed.codigo_banco == actual_code).first()
                                 if not banco:
                                     db.add(BancoRed(
-                                        codigo_banco=sender_code,
+                                        codigo_banco=actual_code,
                                         nombre_banco=sender_name,
                                         ip=sender_ip,
                                         puerto=sender_port,
@@ -541,7 +566,7 @@ class InterbankProtocolManager:
                                         activo=True
                                     ))
                                     db.commit()
-                                else:
+                                elif not banco.es_propio:
                                     banco.nombre_banco = sender_name
                                     banco.ip = sender_ip
                                     banco.puerto = sender_port
@@ -550,7 +575,7 @@ class InterbankProtocolManager:
                             finally:
                                 db.close()
 
-                        # Responder con HERE_BANCO_ATM
+                        # Responder con HERE_BANCO_ATM (Exactamente 7 campos según protocolo NETGEAR / LLM)
                         db = SessionLocal()
                         try:
                             propio = self.manager._get_or_create_own_bank(db)
@@ -559,7 +584,9 @@ class InterbankProtocolManager:
                         finally:
                             db.close()
 
-                        reply = f"HERE_BANCO_ATM|{settings.BANK_CODE}|{settings.BANK_NAME}|{self.manager.local_ip}|{settings.INTERBANK_TCP_PORT}|{lim_diario:.2f}|{transf_hoy:.2f}"
+                        # Anunciar la IP local que enruta directamente hacia el remitente
+                        ip_anunciada = self.manager.ip_hacia(addr[0])
+                        reply = f"HERE_BANCO_ATM|{settings.BANK_CODE}|{settings.BANK_NAME}|{ip_anunciada}|{settings.INTERBANK_TCP_PORT}|{lim_diario:.2f}|{transf_hoy:.2f}"
                         if self.transport:
                             self.transport.sendto(reply.encode("utf-8"), addr)
                             logger.info(f"[UDP 5005] Respondido HERE_BANCO_ATM a {addr}: {reply}")
@@ -575,13 +602,20 @@ class InterbankProtocolManager:
                         daily_limit = float(parts[5].strip()) if parts[5].strip().replace('.', '', 1).isdigit() else 25000.00
                         transf_today = float(parts[6].strip()) if parts[6].strip().replace('.', '', 1).isdigit() else 0.00
 
-                        if bank_code != settings.BANK_CODE:
+                        actual_code = bank_code
+                        if actual_code == settings.BANK_CODE:
+                            if "NETGEAR" in bank_name.upper():
+                                actual_code = "NETGEAR"
+                            else:
+                                actual_code = None
+
+                        if actual_code:
                             db = SessionLocal()
                             try:
-                                banco = db.query(BancoRed).filter(BancoRed.codigo_banco == bank_code).first()
+                                banco = db.query(BancoRed).filter(BancoRed.codigo_banco == actual_code).first()
                                 if not banco:
                                     db.add(BancoRed(
-                                        codigo_banco=bank_code,
+                                        codigo_banco=actual_code,
                                         nombre_banco=bank_name,
                                         ip=bank_ip,
                                         puerto=bank_port,
@@ -592,7 +626,7 @@ class InterbankProtocolManager:
                                         activo=True
                                     ))
                                     db.commit()
-                                else:
+                                elif not banco.es_propio:
                                     banco.nombre_banco = bank_name
                                     banco.ip = bank_ip
                                     banco.puerto = bank_port
@@ -600,7 +634,7 @@ class InterbankProtocolManager:
                                     banco.transferido_hoy = transf_today
                                     banco.activo = True
                                     db.commit()
-                                logger.info(f"[UDP 5005] Banco descubierto y registrado: {bank_code} ({bank_name}) en {bank_ip}:{bank_port}")
+                                logger.info(f"[UDP 5005] Banco descubierto y registrado: {actual_code} ({bank_name}) en {bank_ip}:{bank_port}")
                             finally:
                                 db.close()
 
@@ -1044,6 +1078,12 @@ class InterbankProtocolManager:
                             bank_code = datos.get("codigoBanco") or cod
                             bank_name = datos.get("nombreBanco") or nom
 
+                            if bank_code == settings.BANK_CODE:
+                                if "NETGEAR" in str(bank_name).upper():
+                                    bank_code = "NETGEAR"
+                                else:
+                                    continue
+
                             banco_bd = db_write.query(BancoRed).filter(BancoRed.codigo_banco == bank_code).first()
                             if not banco_bd:
                                 banco_bd = BancoRed(
@@ -1058,7 +1098,7 @@ class InterbankProtocolManager:
                                     activo=True
                                 )
                                 db_write.add(banco_bd)
-                            else:
+                            elif not banco_bd.es_propio:
                                 banco_bd.ip = ip
                                 banco_bd.puerto = prt
                                 banco_bd.nombre_banco = bank_name
@@ -1080,8 +1120,8 @@ class InterbankProtocolManager:
                     results.append({
                         "id_banco": b.id_banco,
                         "codigo_banco": b.codigo_banco,
-                        "nombre_banco": b.nombre_banco,
-                        "ip": b.ip,
+                        "nombre_banco": settings.BANK_NAME if b.es_propio else b.nombre_banco,
+                        "ip": self.local_ip if b.es_propio else b.ip,
                         "puerto": b.puerto,
                         "es_propio": b.es_propio,
                         "limite_diario": float(b.limite_diario),

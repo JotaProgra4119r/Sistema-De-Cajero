@@ -244,7 +244,7 @@ class SyncService:
         return self.check_sqlserver_status()
 
     async def check_cloud_status(self) -> Dict[str, Any]:
-        """Verifica la disponibilidad del servidor central en la nube (Render)."""
+        """Verifica la disponibilidad del servidor central en la nube (Render) con resiliencia y estabilidad."""
         # Si estamos ejecutándonos directamente en Render
         if os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID") == "srv-db5b6mnlot8c73ebkovg":
             return {
@@ -256,11 +256,13 @@ class SyncService:
                 "type": "cloud"
             }
 
+        import time
         cloud_url = settings.CLOUD_SERVER_URL.rstrip("/")
         try:
-            async with httpx.AsyncClient(timeout=4.0) as client:
+            async with httpx.AsyncClient(timeout=6.0) as client:
                 res = await client.get(f"{cloud_url}/health")
                 if res.status_code == 200:
+                    self._last_cloud_alive = time.time()
                     return {
                         "name": "Servidor en Línea (Render)",
                         "status": "connected",
@@ -279,12 +281,22 @@ class SyncService:
                         "type": "cloud"
                     }
         except Exception as e:
+            # Si respondió exitosamente en los últimos 90 segundos, amortiguar micro-latencias de red
+            if hasattr(self, "_last_cloud_alive") and (time.time() - self._last_cloud_alive < 90):
+                return {
+                    "name": "Servidor en Línea (Render)",
+                    "status": "connected",
+                    "synced": True,
+                    "badge": "green",
+                    "message": f"Conexión activa con {cloud_url}.",
+                    "type": "cloud"
+                }
             return {
                 "name": "Servidor en Línea (Render)",
                 "status": "disconnected",
                 "synced": False,
                 "badge": "red",
-                "message": f"Servidor Cloud en reposo o inalcanzable ({str(e)}).",
+                "message": f"Servidor Cloud en reposo ({str(e)}).",
                 "type": "cloud"
             }
 

@@ -590,7 +590,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm sm:text-base lg:text-lg font-black text-discord-textPure tracking-wide">
-                Banco Nacional Inzano GYT
+                Banco Inzano GYT
               </h1>
               <span className="text-[10px] bg-blue-900/60 text-blue-200 px-2 py-0.5 rounded-full font-bold border border-blue-700">
                 {userSummary.id_cajero || "ATM-001"}

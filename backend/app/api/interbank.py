@@ -60,11 +60,13 @@ def list_banks(db: Session = Depends(get_db)):
     for b in bancos:
         interbank_manager._ensure_daily_reset(b, db)
         cupo_disp = max(0.0, float(b.limite_diario) - float(b.transferido_hoy))
+        b_name = settings.BANK_NAME if b.es_propio else b.nombre_banco
+        b_ip = interbank_manager.local_ip if b.es_propio else b.ip
         out.append({
             "id_banco": b.id_banco,
             "codigo_banco": b.codigo_banco,
-            "nombre_banco": b.nombre_banco,
-            "ip": b.ip,
+            "nombre_banco": b_name,
+            "ip": b_ip,
             "puerto": b.puerto,
             "es_propio": b.es_propio,
             "limite_diario": float(b.limite_diario),

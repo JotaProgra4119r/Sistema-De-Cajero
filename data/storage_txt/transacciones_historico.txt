@@ -12,6 +12,13 @@
 19|2026-11-03 11:20:29|2|RETIRO|123.00|{"100": 1, "20": 1, "1": 3}
 20|2026-11-03 11:20:29|2|DEPOSITO|500.00|{"200": 2, "50": 2}
 22|2026-11-03 11:20:39|2|DEPOSITO_A_TERCERO|100.00|{"100": 1}
+26|2026-11-03 12:15:20|2|RETIRO|123.00|{"100": 1, "20": 1, "1": 3}
+27|2026-11-03 12:15:20|2|DEPOSITO|500.00|{"200": 2, "50": 2}
+29|2026-11-03 12:15:27|2|DEPOSITO_A_TERCERO|100.00|{"100": 1}
 9|2026-11-03 15:56:27|2|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261103-787855", "banco_origen": "BANC02", "remitente": "Mar\u00eda Andrea L\u00f3pez", "concepto": "Transferencia Interbancaria de Prueba (Maria)"}
 10|2026-11-03 15:56:27|3|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_SALIENTE", "token": "TRF-20261103-787855", "banco_destino": "NETGEAR", "destinatario": "Carlos Roberto G\u00f3mez", "cuenta_destino": "10014528", "concepto": "Transferencia Interbancaria de Prueba (Maria)"}
 21|2026-11-03 17:20:33|1|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261031-243321", "banco_origen": "BANC01", "remitente": "Diego Remitente Nexus", "concepto": "Prueba Unitaria Interbancaria"}
+23|2026-11-03 17:30:03|3|TRANSFERENCIA_INTERBANCARIA|10.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261103-100984", "banco_origen": "BANC02", "remitente": "Administrador B\u00f3veda", "concepto": "Prueba de conexi\u00f3n router interbancario"}
+24|2026-11-03 17:30:03|1|TRANSFERENCIA_INTERBANCARIA|10.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_SALIENTE", "token": "TRF-20261103-100984", "banco_destino": "NETGEAR", "destinatario": "Mar\u00eda Andrea L\u00f3pez", "cuenta_destino": "20027819", "concepto": "Prueba de conexi\u00f3n router interbancario"}
+25|2026-11-03 18:14:41|1|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261031-421640", "banco_origen": "BANC01", "remitente": "Diego Remitente Nexus", "concepto": "Prueba Unitaria Interbancaria"}
+28|2026-11-03 18:15:23|1|TRANSFERENCIA_INTERBANCARIA|150.00|{"tipo": "TRANSFERENCIA_INTERBANCARIA_ENTRANTE", "token": "TRF-20261031-545033", "banco_origen": "BANC01", "remitente": "Diego Remitente Nexus", "concepto": "Prueba Unitaria Interbancaria"}

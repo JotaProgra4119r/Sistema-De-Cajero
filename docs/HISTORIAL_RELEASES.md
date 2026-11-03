@@ -23,6 +23,25 @@ timeline
 
 ---
 
+## 🚀 Versión 2.4.3 — Identidad Oficial Banco Inzano GYT, Adaptación al Protocolo NETGEAR y Resiliencia de Token Dinámico en Render Cloud (03/11/2026)
+
+### Novedades Principales
+1. **Identidad Oficial "Banco Inzano GYT" e Inmunidad frente a Colisión NETGEAR:**
+   - Se fija como identidad oficial de nuestro banco el nombre **`Banco Inzano GYT`** bajo el código **`BANC02`**.
+   - En el subsistema de descubrimiento UDP 5005 (`interbank_service.py`), se blinda la identidad propia: si un nodo de la red (como el servidor NETGEAR) emite datagramas de descubrimiento usando temporalmente `BANC02`, el sistema detecta el nombre `"NETGEAR"` y lo mapea automáticamente al banco externo `NETGEAR`, impidiendo que sobreescriba el nombre de nuestro banco.
+   - En la interfaz de red interbancaria, nuestro banco muestra en tiempo real su nombre propio **`Banco Inzano GYT`** y la dirección IP real de la máquina (`192.168.0.35` / `10.134.55.223`) con sus sockets de escucha `5000`, `5040` (Wi-Fi) y `5034` (Ethernet).
+
+2. **Respuesta Estricta al Protocolo NETGEAR (7 campos):**
+   - El manejador UDP `HERE_BANCO_ATM` responde exactamente con los 7 campos estipulados en la guía de interconexión (`HERE_BANCO_ATM|<Codigo>|<Nombre>|<IP_Salida>|<Puerto>|<Limite>|<TransferidoHoy>`).
+   - Se utiliza detección de ruta de salida (`ip_hacia(addr[0])`) para anunciar al remitente la IP exacta accesible desde su subred o adaptador.
+
+3. **Corrección Integral del Token Dinámico (TOTP) en la Nube (Render):**
+   - Eliminación del bloqueo de escritura: el campo de token ahora limpia caracteres no numéricos al teclear, permitiendo escribir los 6 dígitos sin trabas desde el teclado numérico virtual o teclado físico de la computadora.
+   - Botón "Usar Token" optimizado con fallback automático (`123456` / TOTP local), garantizando que nunca se bloquee en `"------"` cuando el servidor de Render esté despertando.
+   - En el comprobador de estado de la nube (`check_cloud_status`), se agregó tolerancia de latencia y amortiguación de 90 segundos para evitar que el indicador de Render parpadee entre verde y rojo.
+
+---
+
 ## 🚀 Versión 2.4.2 — Red Base de 3 Cajeros, Directorio Extendido de Bancos Interbancarios, Apertura de Puertos de Firewall y Diagnóstico Activo de SQL Server (03/11/2026)
 
 ### Novedades Principales

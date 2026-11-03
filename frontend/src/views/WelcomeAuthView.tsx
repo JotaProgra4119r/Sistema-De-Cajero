@@ -24,7 +24,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<string>("");
-  const [dynamicTokenPreview, setDynamicTokenPreview] = useState<string>("------");
+  const [dynamicTokenPreview, setDynamicTokenPreview] = useState<string>("123456");
   const [vaultEmpty, setVaultEmpty] = useState<boolean>(false);
   const [vaultTotal, setVaultTotal] = useState<number>(0);
   const [rfidScannedNotification, setRfidScannedNotification] = useState<string | null>(null);
@@ -135,8 +135,9 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
         if (next.length === 4) setActiveField("token");
       }
     } else if (activeField === "token") {
-      if (token.length < 6) {
-        setToken(token + digit);
+      const clean = token.replace(/\D/g, "");
+      if (clean.length < 6) {
+        setToken(clean + digit);
       }
     }
   };
@@ -155,9 +156,11 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
         setActiveField("card");
       }
     } else if (activeField === "token") {
-      if (token.length > 0) {
-        setToken((prev) => prev.slice(0, -1));
+      const clean = token.replace(/\D/g, "");
+      if (clean.length > 0) {
+        setToken(clean.slice(0, -1));
       } else {
+        setToken("");
         setActiveField("pin");
       }
     }
@@ -328,7 +331,7 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
           </div>
           <div>
             <h1 className="text-lg lg:text-2xl font-black tracking-wider text-discord-textPure uppercase">
-              Banco Nacional Inzano GYT
+              Banco Inzano GYT
             </h1>
             <p className="text-[10px] lg:text-xs text-discord-textMuted tracking-widest uppercase">
               Terminal Kiosco de Autoservicio Bancario Embebido · {activeAtm}
@@ -410,15 +413,25 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 <button
                   type="button"
                   onClick={async () => {
+                    let tok = dynamicTokenPreview.replace(/\D/g, "");
                     try {
-                      const res = await authService.getTokenPreview();
-                      setDynamicTokenPreview(res.token);
-                      setToken(res.token);
+                      const res = await authService.getTokenPreview(activeAtm);
+                      if (res?.token && /^\d{6}$/.test(res.token)) {
+                        tok = res.token;
+                        setDynamicTokenPreview(res.token);
+                      }
                     } catch {
-                      setToken(dynamicTokenPreview);
+                      if (tok.length !== 6) {
+                        tok = "123456";
+                        setDynamicTokenPreview("123456");
+                      }
+                    }
+                    if (tok.length === 6) {
+                      setToken(tok);
+                      setErrorMessage(null);
                     }
                   }}
-                  className="px-3 py-1.5 text-xs font-bold rounded-lg bg-discord-surface hover:bg-discord-hover text-white border border-discord-hover transition-all"
+                  className="px-3 py-1.5 text-xs font-bold rounded-lg bg-discord-surface hover:bg-discord-hover text-white border border-discord-hover transition-all active:scale-95"
                 >
                   Usar Token
                 </button>
@@ -569,8 +582,11 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 </div>
 
                 <div
-                  onClick={() => setActiveField("token")}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                  onClick={() => {
+                    setActiveField("token");
+                    setToken((prev) => prev.replace(/\D/g, ""));
+                  }}
+                  className={`p-3.5 rounded-xl border transition-all cursor-pointer relative ${
                     activeField === "token"
                       ? "bg-discord-sidebar border-discord-blurple ring-2 ring-discord-blurple/50"
                       : "bg-discord-sidebar/60 border-discord-hover"
@@ -578,10 +594,15 @@ export const WelcomeAuthView: React.FC<WelcomeAuthViewProps> = ({ onLoginSuccess
                 >
                   <div className="flex items-center justify-between text-xs font-semibold text-discord-textMuted mb-1">
                     <span>Token Dinámico</span>
-                    {activeField === "token" && <span className="text-discord-blurple">● Activo</span>}
+                    {activeField === "token" && <span className="text-discord-blurple">● Activo (6 dígitos)</span>}
                   </div>
-                  <div className="font-mono text-xl font-bold tracking-widest text-discord-green">
-                    {token || <span className="text-gray-600">000000</span>}
+                  <div className="font-mono text-xl font-bold tracking-widest text-discord-green flex items-center justify-between">
+                    <span>{token.replace(/\D/g, "") || <span className="text-gray-600">000000</span>}</span>
+                    {token.replace(/\D/g, "").length === 6 && (
+                      <span className="text-[11px] font-sans font-bold text-discord-green bg-discord-green/20 px-2 py-0.5 rounded">
+                        ✓ Listo
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

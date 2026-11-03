@@ -288,7 +288,7 @@ def init_db():
 
         # 8. Seed Red Interbancaria (Bancos y Routers Interconectados en la Red)
         bancos_seed = [
-            ("BANC02", "Banco Nacional Inzano GYT (Nuestro Banco)", "127.0.0.1", 5000, True, 25000.00),
+            ("BANC02", "Banco Inzano GYT", "192.168.0.35", 5000, True, 25000.00),
             ("NETGEAR", "NETGEAR Interbank Gateway", "127.0.0.1", 5000, False, 25000.00),
             ("BANC01", "NEXUSBANK (Router Principal LAN)", "10.219.19.9", 5000, False, 25000.00),
             ("BANC03", "Banco Industrial Interbancario", "10.28.117.72", 5000, False, 25000.00),
