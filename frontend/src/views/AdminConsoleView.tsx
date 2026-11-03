@@ -257,7 +257,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
             </div>
           </div>
 
-          {/* 2. Microsoft SQL Server 2022 */}
+          {/* 2. Base de Datos Relacional (MySQL / SQL Server) */}
           <div className={`p-4 rounded-xl border flex flex-col justify-between space-y-2.5 ${
             isSqlServerConnected
               ? "bg-emerald-950/20 border-emerald-500/40"
@@ -268,7 +268,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
                 <Database className="w-4 h-4 text-blue-400" />
-                <span>Microsoft SQL Server 2022</span>
+                <span>{sqlServerStatus?.name || "Base de Datos SQL"}</span>
               </span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
                 isSqlServerConnected
@@ -285,11 +285,11 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
               </span>
             </div>
             <p className="text-xs text-discord-textMuted">
-              {sqlServerStatus?.message || "Instancia de Microsoft SQL Server 2022 (puerto 1433)"}
+              {sqlServerStatus?.message || "Instancia de base de datos relacional local"}
             </p>
             <div className="text-[10px] text-discord-textMuted font-mono pt-1 border-t border-discord-hover/40 flex justify-between">
               <span>Motor:</span>
-              <span className="text-blue-400 font-bold">SQL Server 2022 (T-SQL)</span>
+              <span className="text-blue-400 font-bold">{sqlServerStatus?.name || "SQL Relacional"}</span>
             </div>
           </div>
 

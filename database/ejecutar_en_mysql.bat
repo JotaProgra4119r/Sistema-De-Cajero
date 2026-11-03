@@ -42,6 +42,7 @@ if %ERRORLEVEL% equ 0 (
         echo DB_NAME=atm_system
         echo DB_USER=root
         echo DB_PASSWORD=%DB_PASS%
+        echo USE_MYSQL=true
         echo.
         echo # API Backend y Seguridad
         echo API_PORT=8000
