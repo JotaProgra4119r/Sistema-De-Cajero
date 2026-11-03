@@ -23,6 +23,39 @@ timeline
 
 ---
 
+## 🚀 Versión 2.4.2 — Red Base de 3 Cajeros, Directorio Extendido de Bancos Interbancarios, Apertura de Puertos de Firewall y Diagnóstico Activo de SQL Server (03/11/2026)
+
+### Novedades Principales
+1. **Red Multicajero Base Normalizada a 3 Cajeros Iniciales:**
+   - La base de datos relacional (Microsoft SQL Server 2022 y SQLite) y los archivos planos sincronizan exactamente 3 cajeros base: `ATM-001` (Sede Principal Zona 10), `ATM-002` (Centro Histórico Zona 1) y `ATM-003` (C.C. Miraflores Roosevelt).
+   - Capacidad intacta para que el administrador registre y escale cajeros adicionales dinámicamente desde la interfaz o por API.
+
+2. **Directorio y Listado Extendido de Bancos Estudiantiles en Red Interbancaria:**
+   - Se incorporan y persisten en la tabla `bancos_red` los bancos y routers interconectados de la red estudiantil:
+     * `BANC02`: Banco Nacional Inzano GYT (Nuestro Banco - 127.0.0.1 / 10.28.117.72)
+     * `NETGEAR`: NETGEAR Interbank Gateway (127.0.0.1:5000)
+     * `BANC01`: NEXUSBANK (Router Principal LAN - 10.219.19.9:5000)
+     * `BANC03`: Banco Industrial Interbancario (10.28.117.72:5000)
+     * `BANC04`: Banrural Estudiantil (Router Wi-Fi 040 - 10.134.55.40:5040)
+     * `BANC05`: Banco Agromercantil BAM (Router Ethernet 034 - 10.134.55.34:5034)
+     * `BANC06`: Banco Promerica Router Estudiantil (192.168.1.50:5000)
+     * `BANC07`: BAC Credomatic Router Node (192.168.0.100:5000)
+     * `BANC08`: Banco G&T Continental VPN (26.121.70.247:5000)
+   - Botón directo de Ping TCP para cada puerto (`Ping TCP 5000`, `Ping TCP 5040`, `Ping TCP 5034`) en el panel de control.
+
+3. **Apertura de Puertos en Firewall de Windows y Escucha Multi-Socket:**
+   - Script `abrir_puertos_firewall.bat` con auto-elevación UAC como Administrador.
+   - Reglas de entrada para:
+     * Bases de datos: Microsoft SQL Server (1433 TCP / 1434 UDP), MySQL (3306 TCP).
+     * Backend y Frontend: FastAPI (8000 / 8080 TCP), Web Kiosco (5173 / 3000 TCP).
+     * Red Interbancaria: Puertos Base 5000 TCP, UDP Broadcast 5005, Wi-Fi 040 (5040 / 40 TCP y UDP), Ethernet 034 (5034 / 34 TCP y UDP), y puertos auxiliares de routers 5001, 5002, 5003, 5004, 5010 TCP.
+
+4. **Diagnóstico Resiliente de Persistencia Tripartita:**
+   - Verificación instantánea del engine activo para Microsoft SQL Server 2022 (`sqlserver22`), garantizando estado `CONECTADO` sin demoras ni falsos desconectados.
+   - Verificación directa sobre `atm_system.db` para SQLite Local.
+
+---
+
 ## 🚀 Versión 2.4.1 — Identificación sqlserver22, Arranque Automático de Servicios en Scripts Batch y Detección Multicajero entre Routers (03/11/2026)
 
 ### Novedades Principales

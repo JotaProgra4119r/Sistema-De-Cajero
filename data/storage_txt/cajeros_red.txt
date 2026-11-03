@@ -1,14 +1,3 @@
-ATM-001|Cajero Central - Sede Principal (Zona 10)|1234|7ma Avenida 12-34, Zona 10, Ciudad de Guatemala|ACTIVO|1|1|9350.00|2026-11-03 16:50:18
+ATM-001|Cajero Central - Sede Principal (Zona 10)|1234|7ma Avenida 12-34, Zona 10, Ciudad de Guatemala|ACTIVO|1|1|3970.00|2026-11-03 17:20:39
 ATM-002|Cajero Express - Sucursal Zona 1|1234|6ta Avenida 4-20, Centro Histórico, Zona 1|ACTIVO|0|1|3870.00|
 ATM-003|Cajero Miraflores - Centro Comercial|1234|Calzada Roosevelt, C.C. Miraflores, Local K-12|ACTIVO|0|1|3870.00|
-ATM-004|Cajero ATM 4 - Sucursal Inzano|000|12 Calle 5-45, Zona 9, Plaza Inzano|ACTIVO|0|1|3870.00|
-ATM-005|Cajero de José Javier|1234|Oficina Central|ACTIVO|1|1|3870.00|2026-11-03 15:30:01
-ATM-006|Cajero Temporal Test Soft Delete|1234|Zona 14 Test|ACTIVO|0|1|3870.00|2026-11-03 15:30:02
-ATM-007|Cajero de José Javier|1234|Oficina Central|ACTIVO|1|1|3870.00|2026-11-03 15:32:49
-ATM-008|Cajero Temporal Test Soft Delete|1234|Zona 14 Test|ACTIVO|0|1|3870.00|2026-11-03 15:32:49
-ATM-009|Cajero Quetzaltenango - C.C. Pradera Xela|1234|Avenida Las Américas 7-12, Zona 3, Quetzaltenango|ACTIVO|0|1|3870.00|
-ATM-010|Cajero Antigua Guatemala - Calle del Arco|1234|5ta Avenida Norte #22, Antigua Guatemala, Sacatepéquez|ACTIVO|0|1|3870.00|
-ATM-011|Cajero Escuintla - Plaza Palmeras|1234|Km 58 Autopista Palín-Escuintla, Local 18|ACTIVO|0|1|3870.00|
-ATM-012|Cajero Aeropuerto La Aurora - Terminal Internacional|1234|Zona 13, Aeropuerto Internacional La Aurora, Sala de Espera|ACTIVO|0|1|3870.00|
-ATM-013|Cajero de José Javier|4321|Oficina Central|ACTIVO|1|1|9350.00|2026-11-03 16:50:18
-ATM-014|Cajero Temporal Test Soft Delete|5555|Zona 14 Test|ACTIVO|0|1|9350.00|2026-11-03 16:50:18

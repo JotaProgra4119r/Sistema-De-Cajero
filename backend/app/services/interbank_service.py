@@ -622,14 +622,14 @@ class InterbankProtocolManager:
         # - Puerto Base: 5000
         # - Puerto Wi-Fi: 5040 (o 40)
         # - Puerto Ethernet: 5034 (o 34)
+        # - Puertos auxiliares de routers: 5001, 5002, 5003, 5004, 5010
         ports_to_listen = [
             settings.INTERBANK_TCP_PORT,
             getattr(settings, "INTERBANK_WIFI_PORT", 5040),
             getattr(settings, "INTERBANK_ETH_PORT", 5034),
+            5001, 5002, 5003, 5004, 5010,
+            40, 34
         ]
-        for short_p in [40, 34]:
-            if short_p not in ports_to_listen:
-                ports_to_listen.append(short_p)
 
         self.tcp_servers = []
         for port in ports_to_listen:
@@ -940,9 +940,10 @@ class InterbankProtocolManager:
         udp_ports = [
             settings.INTERBANK_UDP_PORT,
             getattr(settings, "INTERBANK_WIFI_PORT", 5040),
-            getattr(settings, "INTERBANK_ETH_PORT", 5034)
+            getattr(settings, "INTERBANK_ETH_PORT", 5034),
+            5000, 5001, 5002
         ]
-        broadcast_targets = {"255.255.255.255", bcast_ip, "192.168.1.255", "192.168.0.255", "10.255.255.255", "26.255.255.255"}
+        broadcast_targets = {"255.255.255.255", bcast_ip, "192.168.1.255", "192.168.0.255", "192.168.40.255", "192.168.34.255", "10.255.255.255", "26.255.255.255"}
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -958,19 +959,25 @@ class InterbankProtocolManager:
         except Exception as e:
             logger.warning(f"[UDP SCAN] Broadcast advertencia: {e}")
 
-        # 2. Recopilar objetivos de sondeo TCP
+        # 2. Recopilar objetivos de sondeo TCP entre routers
         ports_to_probe = [
             settings.INTERBANK_TCP_PORT,
             getattr(settings, "INTERBANK_WIFI_PORT", 5040),
             getattr(settings, "INTERBANK_ETH_PORT", 5034),
-            40,
-            34
+            5001, 5002, 5003, 5004, 5010,
+            40, 34,
+            8000, 8080
         ]
         default_targets = [
-            ("NETGEAR", "NETGEAR Interbank", "127.0.0.1", 5000),
-            ("BANC01", "NEXUSBANK", "10.219.19.9", 5000),
-            ("BANC01_RADMIN", "NEXUSBANK (Radmin)", "26.121.70.247", 5000),
-            ("BANC02_REMOTE", "Banco Nacional Inzano GYT", "10.28.117.72", 5000),
+            ("NETGEAR", "NETGEAR Interbank Gateway", "127.0.0.1", 5000),
+            ("BANC01", "NEXUSBANK (Router Principal)", "10.219.19.9", 5000),
+            ("BANC01_RADMIN", "NEXUSBANK (Radmin VPN)", "26.121.70.247", 5000),
+            ("BANC03", "Banco Industrial Interbancario", "10.28.117.72", 5000),
+            ("BANC04", "Banrural Estudiantil (Wi-Fi 040)", "10.134.55.40", 5040),
+            ("BANC05", "Banco Agromercantil BAM (Ethernet 034)", "10.134.55.34", 5034),
+            ("BANC06", "Banco Promerica Router Estudiantil", "192.168.1.50", 5000),
+            ("BANC07", "BAC Credomatic Router Node", "192.168.0.100", 5000),
+            ("BANC08", "Banco G&T Continental VPN", "26.121.70.247", 5000),
         ]
 
         seen = set()

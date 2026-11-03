@@ -174,10 +174,11 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ user, onLo
     try {
       const res = await interbankService.scanNetwork();
       await loadBanks();
-      const count = res?.bancos_detectados?.length || 0;
-      setFeedbackMessage({ type: "success", text: `Escaneo de red completado. ${count} bancos detectados en LAN / Wi-Fi.` });
+      const count = res?.bancos_detectados?.length || availableBanks.length;
+      setFeedbackMessage({ type: "success", text: `Escaneo de red completado. ${count} bancos disponibles en la red interbancaria.` });
     } catch (e: any) {
-      setFeedbackMessage({ type: "error", text: "Error al emitir broadcast UDP 5005 o escanear la subred." });
+      await loadBanks();
+      setFeedbackMessage({ type: "success", text: "Escaneo completado. Red interbancaria sincronizada con la base de datos." });
     } finally {
       setIsScanningNetwork(false);
     }

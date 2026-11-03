@@ -1718,7 +1718,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                   <span>Nodos y Bancos Estudiantiles Conectados ({interbankBanks.length})</span>
                 </h3>
                 <span className="text-xs text-discord-textMuted">
-                  Haga clic en "Ping" para probar conectividad en puerto 5000
+                  Haga clic en "Ping" para probar conectividad directa por socket (5000, Wi-Fi 5040, Ethernet 5034)
                 </span>
               </div>
 
@@ -1781,7 +1781,7 @@ export const AdminConsoleView: React.FC<AdminConsoleViewProps> = ({ adminUser, o
                             className="flex-1 py-1.5 rounded-lg bg-discord-surface hover:bg-discord-hover text-white text-xs font-bold transition-all border border-discord-hover flex items-center justify-center gap-1.5"
                           >
                             <Radio className={`w-3.5 h-3.5 text-cyan-400 ${isPinging ? "animate-spin" : ""}`} />
-                            <span>{isPinging ? "Probando..." : "Ping TCP 5000"}</span>
+                            <span>{isPinging ? "Probando..." : `Ping TCP ${b.puerto || 5000}`}</span>
                           </button>
                         )}
                         <span className="text-[10px] text-discord-textMuted my-auto">

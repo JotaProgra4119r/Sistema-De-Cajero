@@ -94,20 +94,11 @@ def init_db():
             db.add(role_super)
         db.commit()
 
-        # 2. Seed Red Multicajero (Red de Cajeros Exponencial Extendida)
+        # 2. Seed Red Multicajero (3 Cajeros Iniciales Base)
         atms_seed = [
             ("ATM-001", "Cajero Central - Sede Principal (Zona 10)", "7ma Avenida 12-34, Zona 10, Ciudad de Guatemala", "1234", True),
             ("ATM-002", "Cajero Express - Sucursal Zona 1", "6ta Avenida 4-20, Centro Histórico, Zona 1", "1234", True),
             ("ATM-003", "Cajero Miraflores - Centro Comercial", "Calzada Roosevelt, C.C. Miraflores, Local K-12", "1234", True),
-            ("ATM-004", "Cajero ATM 4 - Sucursal Inzano", "12 Calle 5-45, Zona 9, Plaza Inzano", "000", True),
-            ("ATM-005", "Cajero Oakland Mall - Zona 10", "Diagonal 6 13-01, Centro Comercial Oakland Mall, Nivel 1", "1234", True),
-            ("ATM-006", "Cajero Cayalá - Paseo Cayalá", "Bulevar Rafael Landívar 10-05, Zona 16, Paseo Cayalá", "1234", True),
-            ("ATM-007", "Cajero Portales - Zona 17", "Km 4.5 Carretera al Atlántico, C.C. Portales", "1234", True),
-            ("ATM-008", "Cajero Pradera Concepción - Carretera a El Salvador", "Km 15.5 Carretera a El Salvador, Santa Catarina Pinula", "1234", True),
-            ("ATM-009", "Cajero Quetzaltenango - C.C. Pradera Xela", "Avenida Las Américas 7-12, Zona 3, Quetzaltenango", "1234", True),
-            ("ATM-010", "Cajero Antigua Guatemala - Calle del Arco", "5ta Avenida Norte #22, Antigua Guatemala, Sacatepéquez", "1234", True),
-            ("ATM-011", "Cajero Escuintla - Plaza Palmeras", "Km 58 Autopista Palín-Escuintla, Local 18", "1234", True),
-            ("ATM-012", "Cajero Aeropuerto La Aurora - Terminal Internacional", "Zona 13, Aeropuerto Internacional La Aurora, Sala de Espera", "1234", True),
         ]
         for atm_id, name, location, code, initialized in atms_seed:
             existing_atm = db.query(Cajero).filter(Cajero.id_cajero == atm_id).first()
@@ -295,11 +286,17 @@ def init_db():
         except Exception as v_err:
             print(f"[DATABASE] Nota sobre creación de vistas: {v_err}")
 
-        # 8. Seed Red Interbancaria (Protocolo TCP 5000 / UDP 5005)
+        # 8. Seed Red Interbancaria (Bancos y Routers Interconectados en la Red)
         bancos_seed = [
-            ("BANC02", "Banco Nacional Inzano GYT", "127.0.0.1", 5000, True, 25000.00),
-            ("NETGEAR", "NETGEAR Interbank", "127.0.0.1", 5000, False, 25000.00),
-            ("BANC01", "NEXUSBANK", "10.219.19.9", 5000, False, 25000.00),
+            ("BANC02", "Banco Nacional Inzano GYT (Nuestro Banco)", "127.0.0.1", 5000, True, 25000.00),
+            ("NETGEAR", "NETGEAR Interbank Gateway", "127.0.0.1", 5000, False, 25000.00),
+            ("BANC01", "NEXUSBANK (Router Principal LAN)", "10.219.19.9", 5000, False, 25000.00),
+            ("BANC03", "Banco Industrial Interbancario", "10.28.117.72", 5000, False, 25000.00),
+            ("BANC04", "Banrural Estudiantil (Router Wi-Fi 040)", "10.134.55.40", 5040, False, 25000.00),
+            ("BANC05", "Banco Agromercantil BAM (Router Eth 034)", "10.134.55.34", 5034, False, 25000.00),
+            ("BANC06", "Banco Promerica Router Estudiantil", "192.168.1.50", 5000, False, 25000.00),
+            ("BANC07", "BAC Credomatic Router Node", "192.168.0.100", 5000, False, 25000.00),
+            ("BANC08", "Banco G&T Continental VPN", "26.121.70.247", 5000, False, 25000.00),
         ]
         for cod, nom, ip, port, propio, lim in bancos_seed:
             banco = db.query(BancoRed).filter(BancoRed.codigo_banco == cod).first()

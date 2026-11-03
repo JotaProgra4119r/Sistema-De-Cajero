@@ -1497,10 +1497,10 @@ class BankingService:
 
         clean_code = str(codigo_cajero).strip()
         expected_code = str(cajero.codigo_cajero or "1234").strip()
-        # Accept exact match, or ATM-004 special aliases ("000" / "0000")
+        # Accept exact match, or if configured with "000", allow "0000" alias
         valid_code = (
             clean_code == expected_code or
-            (cajero.id_cajero == "ATM-004" and clean_code in ["000", "0000"])
+            (expected_code in ["000", "0000"] and clean_code in ["000", "0000"])
         )
         if not valid_code:
             raise HTTPException(status_code=401, detail="Código de seguridad incorrecto para este cajero.")
