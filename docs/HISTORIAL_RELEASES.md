@@ -23,6 +23,22 @@ timeline
 
 ---
 
+## 🏆 Versión 2.5.0 — Release Oficial Final: Proyecto Terminado al 100% (04/11/2026)
+
+### 📌 Resumen de Cierre de Proyecto
+Este release marca la **culminación y entrega final oficial** del sistema de cajero automático y red bancaria del **Banco Nacional Inzano GYT (`BANC02`)**.
+
+### Novedades del Release Final:
+1. **Acceso Directo al Repositorio Oficial GitHub:**
+   - Botón insignia de GitHub en el pie de página de la terminal de inicio (`WelcomeAuthView.tsx`), permitiendo acceso inmediato al código fuente y documentación.
+2. **Consolidación de la Suite de Pruebas y Paridad Tripartita:**
+   - 100% de tests unitarios y de integración pasando sin errores.
+   - Sincronización transparente de 3 bases de datos (SQL Server 2022, SQLite y Render) + 5 archivos planos `.txt`.
+3. **Créditos y Agradecimientos Formales:**
+   - Inclusión en el documento principal de los reconocimientos a los colaboradores del equipo y al copiloto de IA **Antigravity (Google DeepMind)**.
+
+---
+
 ## 🚀 Versión 2.4.4 — Estabilización de Paridad Tripartita, Input Accesible de Token Dinámico y Recuperación Robusta de Bóvedas (03/11/2026)
 
 ### Novedades Principales

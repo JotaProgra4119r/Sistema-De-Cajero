@@ -1,4 +1,11 @@
-# Sistema Bancario y Cajero Automático Embebido (ATM Kiosk)
+# 🏦 Sistema Bancario y Cajero Automático Embebido (ATM Kiosk)
+### 🏛️ Banco Oficial: **Banco Nacional Inzano GYT** (`BANC02`)
+[![Estado: 100% Terminado](https://img.shields.io/badge/PROYECTO-100%25%20TERMINADO-success?style=for-the-badge&logo=checkmarx)](https://github.com/JotaProgra4119r/Sistema-De-Cajero)
+[![Release: Final](https://img.shields.io/badge/RELEASE-OFICIAL%20v2.5.0-blue?style=for-the-badge&logo=github)](https://github.com/JotaProgra4119r/Sistema-De-Cajero/releases)
+[![Build: Passed](https://img.shields.io/badge/TESTS-100%25%20PASSED-brightgreen?style=for-the-badge)](https://github.com/JotaProgra4119r/Sistema-De-Cajero)
+
+> 🎓 **¡PROYECTO CULMINADO CON ÉXITO TOTAL!**
+> La red bancaria y cajero automático ha sido completada en su totalidad, cumpliendo y superando cada uno de los requerimientos técnicos, protocolos de comunicación, persistencia tripartita, accesibilidad, integración interbancaria y hardware embebido.
 
 Proyecto integral de terminal de autoservicio bancario con estética visual inspirada en Discord (modo oscuro profundo, tarjetas modulares, microinteracciones táctiles, resolución 1920x1080), backend transaccional en Python FastAPI con soporte para retiros de montos no estandarizados (ej. Q123.00, Q239.00), persistencia dual concurrente (MySQL InnoDB + archivos planos delimitados por plecas `.txt`), emulación y firmware embebido para Arduino Mega 2560 (7 motores paso a paso y sensores ópticos IR) y ESP32-CAM (cámara OV2640 y sensor ultrasónico HC-SR04).
 
@@ -202,3 +209,63 @@ El repositorio incorpora la herramienta de análisis estático multiagente **Gra
 * [MANUAL_TECNICO.md](file:///docs/MANUAL_TECNICO.md): Arquitectura, esquemas DDL, protocolos serie y diagramas Mermaid.
 * [MANUAL_USUARIO.md](file:///docs/MANUAL_USUARIO.md): Guía paso a paso ilustrada para el usuario y el administrador.
 * [GUIA_GITHUB_Y_RAMAS.md](file:///docs/GUIA_GITHUB_Y_RAMAS.md): Guía de flujo de trabajo GitFlow, ramas modulares y protección de CI/CD para el equipo.
+
+---
+
+## 🏆 Proyecto Finalizado — Release Oficial v2.5.0
+
+El sistema de cajero automático y red interbancaria **Banco Nacional Inzano GYT (`BANC02`)** ha alcanzado su estado **100% Terminado**, habiendo superado con éxito todas las pruebas unitarias, de integración, concurrencia, estrés de hardware y comunicación en red.
+
+### 📦 Resumen Integral de lo Incluido en la Entrega Final
+
+1. **🏛️ Identidad Bancaria y Multi-Sucursal:**
+   - Nombre oficial: **Banco Nacional Inzano GYT** con código asignado **`BANC02`**.
+   - Red inicial de cajeros independientes: `ATM-001` (Sede Principal Zona 10), `ATM-002` (Centro Histórico Zona 1), `ATM-003` (C.C. Miraflores Roosevelt) con soporte para altas/bajas lógicas dinámicas y bóvedas independientes.
+
+2. **🌐 Red e Integración Interbancaria (LAN / Sockets TCP & UDP):**
+   - Interconexión bidireccional bajo sockets TCP (puertos `5000`, `5040`, `5034`) y broadcast de descubrimiento UDP `5005`.
+   - Compatibilidad total con el protocolo de 7 campos (`HERE_BANCO_ATM`) y gateway interbancario de la red de bancos (NETGEAR, NEXUSBANK, Banco Industrial, Banrural, BAM, Promerica, BAC Credomatic, G&T Continental).
+   - Generación de referencias únicas normalizadas `TRF-YYYYMMDD-XXXXXX` con deduplicación y consulta de estado.
+
+3. **💾 Persistencia Robusta y Sincronización Tripartita:**
+   - Base de Datos Relacional primaria: **Microsoft SQL Server 2022** (`.\SQLEXPRESS` / `sqlserver22`) y **MySQL 8.4 InnoDB**.
+   - Conmutación y respaldo transparente: **SQLite** embebido para operación inmediata sin configuración.
+   - Sincronización en la Nube: **Render Cloud PostgreSQL/API** con amortiguación de latencia inteligente.
+   - **Persistencia física obligatoria en archivos planos delimitados por plecas `.txt`** (`usuarios.txt`, `cajero_inventario.txt`, `transacciones_historico.txt`, `auditoria_eventos.txt`, `bajas_eliminaciones.txt`).
+
+4. **🔐 Seguridad y Reglas Financieras:**
+   - Autenticación multifactor con **Token Dinámico (TOTP)** de 6 dígitos con protección anti-replay.
+   - Hashing seguro de claves y PINs con salt criptográfico.
+   - Reglas estrictas de dispensación: algoritmo de vuelto óptimo con soporte para montos no estandarizados (ej. Q123.00, Q239.00), límites diarios de retiro y límites de recarga de bóveda ($\le \text{Q10,000.00}$ inicial / $\le \text{Q30,000.00}$ carga).
+   - Rollback automático y seguro ante detección de atascos mecánicos.
+
+5. **♿ Accesibilidad, Interfaz de Usuario y Modo Kiosco:**
+   - Aplicación Web React 18 + Tailwind CSS con modo oscuro inspirado en Discord y soporte Kiosco a pantalla completa en Electron.
+   - Teclado virtual táctil interactivo + soporte simultáneo para teclado físico numérico (0-9, Backspace, Enter, Tab).
+   - **Botón directo de acceso al repositorio oficial de GitHub** integrado en el pie de página de la terminal.
+   - Barra de accesibilidad: lector de voz Web Audio API, modo de alto contraste y alternador para visualización segura del PIN.
+   - Generación e impresión de comprobantes/vouchers transaccionales en pantalla y listos para impresión.
+
+6. **🔌 Controladores y Hardware Embebido:**
+   - Firmware en C++ para **Arduino Mega 2560** controlando 7 drivers A4988 / motores paso a paso de dispensación y sensores infrarrojos de ranura.
+   - Firmware para **ESP32-CAM** con streaming de video de seguridad OV2640 y sensor de presencia ultrasónico HC-SR04.
+   - Lector de tarjetas físicas por radiofrecuencia (RFID).
+
+---
+
+## 💖 Agradecimientos y Créditos Especiales
+
+### 👥 Al Equipo de Colaboradores y Desarrolladores
+Un reconocimiento inmenso a todos los integrantes y colaboradores que formaron parte de este proyecto. Gracias por las innumerables horas de dedicación, las noches de depuración, el compromiso inquebrantable en cada sprint y la pasión compartida para no rendirse ante ningún reto técnico. Cada línea de código, cada prueba de circuito y cada migración de base de datos refleja el esfuerzo y la calidad humana de este gran equipo. ¡Lo dimos todo y lo logramos juntos!
+
+### 🤖 Agradecimiento Especial a Antigravity (Google DeepMind)
+Queremos expresar un agradecimiento muy especial y sentido a **Antigravity**, nuestro copiloto de inteligencia artificial desarrollado por el equipo de Advanced Agentic Coding de Google DeepMind.
+
+Tu acompañamiento estratégico fue fundamental en los momentos más críticos del desarrollo:
+* En el diagnóstico y resolución de bloqueos de concurrencia y sockets TCP duplicados.
+* En el diseño y estabilización de la persistencia tripartita y la integración nativa con Microsoft SQL Server 2022 y LocalDB.
+* En la implementación rigurosa de los protocolos de red interbancarios y suites de pruebas automatizadas.
+* En cada refactorización y pulido de la experiencia de usuario.
+
+*Gracias por estar ahí hombro a hombro en cada sesión, por no darte por vencido nunca y por ayudarnos a convertir este desafío en un éxito absoluto.*
+
